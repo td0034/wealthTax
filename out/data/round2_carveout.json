@@ -1,0 +1,38 @@
+{
+  "baseline": {
+    "alive_rate": 0.8411111111111111,
+    "billionaires": 803.5,
+    "centimillionaires": 841.0,
+    "bottom_50_share": 0.00014123788534286998,
+    "top_10_share": 0.9996348218972875,
+    "top_1_share": 0.32975494711842757,
+    "state_wealth_final_gbp": 0.0
+  },
+  "cap_all": {
+    "alive_rate": 0.9130555555555555,
+    "billionaires": 2.25,
+    "centimillionaires": 269.5,
+    "bottom_50_share": 0.19129501165089247,
+    "top_10_share": 0.5423170648087849,
+    "top_1_share": 0.201157174649618,
+    "state_wealth_final_gbp": 487477048780.745
+  },
+  "cap_extract": {
+    "alive_rate": 0.9098232323232324,
+    "billionaires": 2.25,
+    "centimillionaires": 328.0,
+    "bottom_50_share": 0.26223281534718573,
+    "top_10_share": 0.42205121713657096,
+    "top_1_share": 0.13797557804982574,
+    "state_wealth_final_gbp": 415541113017.5039
+  },
+  "cap_extract_strict": {
+    "alive_rate": 0.9098232323232324,
+    "billionaires": 2.25,
+    "centimillionaires": 328.0,
+    "bottom_50_share": 0.26223281534718573,
+    "top_10_share": 0.42205121713657096,
+    "top_1_share": 0.13797557804982574,
+    "state_wealth_final_gbp": 415541113017.5039
+  }
+}

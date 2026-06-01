@@ -146,6 +146,12 @@ class Dials:
     # transmission (new in v1)
     inheritance_cap: float = float("inf")     # absolute cap on bequest
     inheritance_tax_rate: float = 0.0         # share clawed back at death
+    # Enforcement friction (R2-4). Fraction of the above-cap excess that
+    # the state actually captures. 1.0 means perfect enforcement (default,
+    # matches behaviour before R2-4). Values < 1.0 represent BPR/APR
+    # carve-outs, valuation discounts, foreign assets, trusts: a share
+    # (1 - inheritance_capture_rate) of the excess flows to the heir.
+    inheritance_capture_rate: float = 1.0
     memory_bandwidth_base: float = 0.5        # skill-dims always transmitted
     memory_bandwidth_wealth_scale: float = 0.5  # extra dims = scale * (wealth / 100)
     skill_mutation_rate: float = 0.05         # chance per dim per generation
@@ -740,7 +746,13 @@ def step(agents: list[Agent], d: Dials, rng: np.random.Generator,
             _record_death(a, "age")
             net = max(0.0, a.net_worth)
             after_tax = net * (1 - d.inheritance_tax_rate)
-            bequest = min(after_tax, d.inheritance_cap)
+            capped = min(after_tax, d.inheritance_cap)
+            # Enforcement friction (R2-4): only a fraction of the
+            # above-cap excess is actually captured. The leak goes to
+            # the heir.
+            excess = max(0.0, after_tax - capped)
+            leak = excess * (1 - d.inheritance_capture_rate)
+            bequest = capped + leak
             if state is not None:
                 state.wealth += (net - bequest)
                 _rec(a.type.name, "STATE", net - bequest)

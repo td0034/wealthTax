@@ -1,0 +1,227 @@
+{
+  "A_status_quo__flight0.0": {
+    "alive_rate": 0.8269949494949496,
+    "billionaires": 804.25,
+    "bottom_50_share": 0.00013900006328606922,
+    "top_10_share": 0.999624358785965,
+    "top_1_share": 0.3265610065319398,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "A_status_quo__flight0.005": {
+    "alive_rate": 0.8269949494949496,
+    "billionaires": 804.25,
+    "bottom_50_share": 0.00013900006328606922,
+    "top_10_share": 0.999624358785965,
+    "top_1_share": 0.3265610065319398,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "A_status_quo__flight0.01": {
+    "alive_rate": 0.8269949494949496,
+    "billionaires": 804.25,
+    "bottom_50_share": 0.00013900006328606922,
+    "top_10_share": 0.999624358785965,
+    "top_1_share": 0.3265610065319398,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "A_status_quo__flight0.02": {
+    "alive_rate": 0.8269949494949496,
+    "billionaires": 804.25,
+    "bottom_50_share": 0.00013900006328606922,
+    "top_10_share": 0.999624358785965,
+    "top_1_share": 0.3265610065319398,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "A_status_quo__flight0.05": {
+    "alive_rate": 0.8269949494949496,
+    "billionaires": 804.25,
+    "bottom_50_share": 0.00013900006328606922,
+    "top_10_share": 0.999624358785965,
+    "top_1_share": 0.3265610065319398,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "B_spend_only__flight0.0": {
+    "alive_rate": 0.8411111111111111,
+    "billionaires": 803.5,
+    "bottom_50_share": 0.00014123788534286998,
+    "top_10_share": 0.9996348218972875,
+    "top_1_share": 0.32975494711842757,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "B_spend_only__flight0.005": {
+    "alive_rate": 0.8411111111111111,
+    "billionaires": 803.5,
+    "bottom_50_share": 0.00014123788534286998,
+    "top_10_share": 0.9996348218972875,
+    "top_1_share": 0.32975494711842757,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "B_spend_only__flight0.01": {
+    "alive_rate": 0.8411111111111111,
+    "billionaires": 803.5,
+    "bottom_50_share": 0.00014123788534286998,
+    "top_10_share": 0.9996348218972875,
+    "top_1_share": 0.32975494711842757,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "B_spend_only__flight0.02": {
+    "alive_rate": 0.8411111111111111,
+    "billionaires": 803.5,
+    "bottom_50_share": 0.00014123788534286998,
+    "top_10_share": 0.9996348218972875,
+    "top_1_share": 0.32975494711842757,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "B_spend_only__flight0.05": {
+    "alive_rate": 0.8411111111111111,
+    "billionaires": 803.5,
+    "bottom_50_share": 0.00014123788534286998,
+    "top_10_share": 0.9996348218972875,
+    "top_1_share": 0.32975494711842757,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "C_iht40_spend__flight0.0": {
+    "alive_rate": 0.9052777777777776,
+    "billionaires": 800.75,
+    "bottom_50_share": 0.00047187671755750255,
+    "top_10_share": 0.9988450993799987,
+    "top_1_share": 0.3682943490140754,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "C_iht40_spend__flight0.005": {
+    "alive_rate": 0.9052777777777776,
+    "billionaires": 800.75,
+    "bottom_50_share": 0.00047187671755750255,
+    "top_10_share": 0.9988450993799987,
+    "top_1_share": 0.3682943490140754,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "C_iht40_spend__flight0.01": {
+    "alive_rate": 0.9052777777777776,
+    "billionaires": 800.75,
+    "bottom_50_share": 0.00047187671755750255,
+    "top_10_share": 0.9988450993799987,
+    "top_1_share": 0.3682943490140754,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "C_iht40_spend__flight0.02": {
+    "alive_rate": 0.9052777777777776,
+    "billionaires": 800.75,
+    "bottom_50_share": 0.00047187671755750255,
+    "top_10_share": 0.9988450993799987,
+    "top_1_share": 0.3682943490140754,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "C_iht40_spend__flight0.05": {
+    "alive_rate": 0.9052777777777776,
+    "billionaires": 800.75,
+    "bottom_50_share": 0.00047187671755750255,
+    "top_10_share": 0.9988450993799987,
+    "top_1_share": 0.3682943490140754,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "D_cap_spend__flight0.0": {
+    "alive_rate": 0.9130555555555555,
+    "billionaires": 2.25,
+    "bottom_50_share": 0.19129501165089247,
+    "top_10_share": 0.5423170648087849,
+    "top_1_share": 0.201157174649618,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "D_cap_spend__flight0.005": {
+    "alive_rate": 0.5543181818181819,
+    "billionaires": 0.0,
+    "bottom_50_share": 0.3029260124672162,
+    "top_10_share": 0.20472318051971408,
+    "top_1_share": 0.03472591473873061,
+    "flown_count": 3339.75,
+    "flown_wealth_gbp": 83424484899.15633
+  },
+  "D_cap_spend__flight0.01": {
+    "alive_rate": 0.42553030303030304,
+    "billionaires": 0.0,
+    "bottom_50_share": 0.27324698894224947,
+    "top_10_share": 0.21846145421091318,
+    "top_1_share": 0.03595909964206855,
+    "flown_count": 4051.0,
+    "flown_wealth_gbp": 72582862882.97476
+  },
+  "D_cap_spend__flight0.02": {
+    "alive_rate": 0.31452020202020203,
+    "billionaires": 0.0,
+    "bottom_50_share": 0.21893032344386895,
+    "top_10_share": 0.2374392659984587,
+    "top_1_share": 0.039232699875784614,
+    "flown_count": 3826.25,
+    "flown_wealth_gbp": 54275481659.859764
+  },
+  "D_cap_spend__flight0.05": {
+    "alive_rate": 0.162979797979798,
+    "billionaires": 0.0,
+    "bottom_50_share": 0.2234389232190861,
+    "top_10_share": 0.21765866254700078,
+    "top_1_share": 0.03174955440667977,
+    "flown_count": 2679.5,
+    "flown_wealth_gbp": 33175587528.28212
+  },
+  "E_cap_iht_spend__flight0.0": {
+    "alive_rate": 0.9136616161616161,
+    "billionaires": 0.75,
+    "bottom_50_share": 0.19081503045142406,
+    "top_10_share": 0.5398907958305865,
+    "top_1_share": 0.19564833070280002,
+    "flown_count": 0.0,
+    "flown_wealth_gbp": 0.0
+  },
+  "E_cap_iht_spend__flight0.005": {
+    "alive_rate": 0.5904040404040405,
+    "billionaires": 0.0,
+    "bottom_50_share": 0.25776387089362895,
+    "top_10_share": 0.2139750012520678,
+    "top_1_share": 0.03614030379296175,
+    "flown_count": 3191.75,
+    "flown_wealth_gbp": 82759614458.42001
+  },
+  "E_cap_iht_spend__flight0.01": {
+    "alive_rate": 0.46611111111111114,
+    "billionaires": 0.0,
+    "bottom_50_share": 0.17587208240563895,
+    "top_10_share": 0.25326107386599095,
+    "top_1_share": 0.04305923336480613,
+    "flown_count": 3880.0,
+    "flown_wealth_gbp": 71166885344.31905
+  },
+  "E_cap_iht_spend__flight0.02": {
+    "alive_rate": 0.28204545454545454,
+    "billionaires": 0.0,
+    "bottom_50_share": 0.13735266205351568,
+    "top_10_share": 0.2767335216188679,
+    "top_1_share": 0.040732825208048315,
+    "flown_count": 3759.25,
+    "flown_wealth_gbp": 55408932537.461395
+  },
+  "E_cap_iht_spend__flight0.05": {
+    "alive_rate": 0.14646464646464646,
+    "billionaires": 0.0,
+    "bottom_50_share": 0.17068634746367498,
+    "top_10_share": 0.31782971875325533,
+    "top_1_share": 0.05921958759837056,
+    "flown_count": 2613.0,
+    "flown_wealth_gbp": 33632631672.04976
+  }
+}

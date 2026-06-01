@@ -1,0 +1,47 @@
+{
+  "A_status_quo": {
+    "alive_rate": 0.8269949494949496,
+    "bottom_50_share_raw": 0.00013900006328606922,
+    "bottom_50_share_was": 0.00014223447734282345,
+    "top_10_share_raw": 0.999624358785965,
+    "top_10_share_was": 0.99961867033702,
+    "top_1_share_raw": 0.3265610065319398,
+    "top_1_share_was": 0.3265591481068202
+  },
+  "B_spend_only": {
+    "alive_rate": 0.8411111111111111,
+    "bottom_50_share_raw": 0.00014123788534286998,
+    "bottom_50_share_was": 0.00014451292566685275,
+    "top_10_share_raw": 0.9996348218972875,
+    "top_10_share_was": 0.9996290312885818,
+    "top_1_share_raw": 0.32975494711842757,
+    "top_1_share_was": 0.32975303681143514
+  },
+  "C_iht40_spend": {
+    "alive_rate": 0.9052777777777776,
+    "bottom_50_share_raw": 0.00047187671755750255,
+    "bottom_50_share_was": 0.00048316868133296907,
+    "top_10_share_raw": 0.9988450993799987,
+    "top_10_share_was": 0.9988244537024336,
+    "top_1_share_raw": 0.3682943490140754,
+    "top_1_share_was": 0.36828670057403584
+  },
+  "D_cap_spend": {
+    "alive_rate": 0.9130555555555555,
+    "bottom_50_share_raw": 0.19129501165089247,
+    "bottom_50_share_was": 0.19462995327900512,
+    "top_10_share_raw": 0.5423170648087849,
+    "top_10_share_was": 0.5373110755072871,
+    "top_1_share_raw": 0.201157174649618,
+    "top_1_share_was": 0.19918801168679728
+  },
+  "E_cap_iht_spend": {
+    "alive_rate": 0.9136616161616161,
+    "bottom_50_share_raw": 0.19081503045142406,
+    "bottom_50_share_was": 0.194196249165264,
+    "top_10_share_raw": 0.5398907958305865,
+    "top_10_share_was": 0.5348159494631909,
+    "top_1_share_raw": 0.19564833070280002,
+    "top_1_share_was": 0.19369423123502172
+  }
+}

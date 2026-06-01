@@ -1,0 +1,65 @@
+{
+  "capture_0.4": {
+    "alive_rate": 0.8961616161616162,
+    "billionaires": 800.25,
+    "centimillionaires": 825.5,
+    "bottom_50_share": 0.0006561711442684538,
+    "top_10_share": 0.9985335817044773,
+    "top_1_share": 0.3567318394632456,
+    "state_wealth_final_gbp": 10569439645670.56
+  },
+  "capture_0.5": {
+    "alive_rate": 0.9007575757575759,
+    "billionaires": 800.5,
+    "centimillionaires": 819.0,
+    "bottom_50_share": 0.0009140891312270125,
+    "top_10_share": 0.9979395463214404,
+    "top_1_share": 0.37442473985433167,
+    "state_wealth_final_gbp": 9355735654648.596
+  },
+  "capture_0.6": {
+    "alive_rate": 0.9039646464646465,
+    "billionaires": 800.0,
+    "centimillionaires": 811.75,
+    "bottom_50_share": 0.0013846087285189943,
+    "top_10_share": 0.996850068941629,
+    "top_1_share": 0.38709355232003684,
+    "state_wealth_final_gbp": 8196995086458.436
+  },
+  "capture_0.7": {
+    "alive_rate": 0.9069444444444444,
+    "billionaires": 800.0,
+    "centimillionaires": 805.75,
+    "bottom_50_share": 0.0023487726677401143,
+    "top_10_share": 0.9945832516639879,
+    "top_1_share": 0.4082584848950767,
+    "state_wealth_final_gbp": 6105566153781.449
+  },
+  "capture_0.8": {
+    "alive_rate": 0.9087373737373737,
+    "billionaires": 800.0,
+    "centimillionaires": 803.25,
+    "bottom_50_share": 0.004817030767912541,
+    "top_10_share": 0.9887397126086557,
+    "top_1_share": 0.4281380352043858,
+    "state_wealth_final_gbp": 4115967755415.0205
+  },
+  "capture_0.9": {
+    "alive_rate": 0.9109090909090909,
+    "billionaires": 584.25,
+    "centimillionaires": 801.5,
+    "bottom_50_share": 0.014987560023676783,
+    "top_10_share": 0.96420074348354,
+    "top_1_share": 0.45085871501884556,
+    "state_wealth_final_gbp": 2048578296002.939
+  },
+  "capture_1.0": {
+    "alive_rate": 0.9130555555555555,
+    "billionaires": 2.25,
+    "centimillionaires": 269.5,
+    "bottom_50_share": 0.19129501165089247,
+    "top_10_share": 0.5423170648087849,
+    "top_1_share": 0.201157174649618,
+    "state_wealth_final_gbp": 487477048780.745
+  }
+}
