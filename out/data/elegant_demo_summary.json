@@ -1,0 +1,52 @@
+{
+  "status_quo": {
+    "alive": 8200.0,
+    "alive_rate": 0.8282828282828283,
+    "billionaires": 803.0,
+    "centi_millionaires": 849.0,
+    "deci_millionaires": 4077.0,
+    "max_wealth_gbp": 2480308587638.5195,
+    "top1_share": 0.3310123780212827,
+    "top10_share": 0.9996256419410235
+  },
+  "zucman_2pct": {
+    "alive": 8199.0,
+    "alive_rate": 0.8281818181818181,
+    "billionaires": 800.0,
+    "centi_millionaires": 804.0,
+    "deci_millionaires": 4053.0,
+    "max_wealth_gbp": 78572247480.41144,
+    "top1_share": 0.29793839626571206,
+    "top10_share": 0.9917626951455937
+  },
+  "bequest_cap_5M": {
+    "alive": 8182.0,
+    "alive_rate": 0.8264646464646465,
+    "billionaires": 0.0,
+    "centi_millionaires": 203.0,
+    "deci_millionaires": 1423.0,
+    "max_wealth_gbp": 889040689.1640867,
+    "top1_share": 0.19768686952740178,
+    "top10_share": 0.5574256631370491
+  },
+  "zucman_plus_cap": {
+    "alive": 8182.0,
+    "alive_rate": 0.8264646464646465,
+    "billionaires": 0.0,
+    "centi_millionaires": 63.0,
+    "deci_millionaires": 1412.0,
+    "max_wealth_gbp": 353175729.12015676,
+    "top1_share": 0.13585757206417123,
+    "top10_share": 0.4186472346556423
+  },
+  "interest_ban": {
+    "alive": 8750.0,
+    "alive_rate": 0.8838383838383839,
+    "billionaires": 803.0,
+    "centi_millionaires": 847.0,
+    "deci_millionaires": 4122.0,
+    "max_wealth_gbp": 2512651025750.247,
+    "top1_share": 0.3476262166902798,
+    "top10_share": 0.9996577901891429
+  }
+}

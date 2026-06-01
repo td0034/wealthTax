@@ -1,0 +1,945 @@
+% Compile with:
+%   pdflatex paper_alife && bibtex paper_alife && pdflatex paper_alife && pdflatex paper_alife
+\documentclass[11pt]{article}
+
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage[final,protrusion=true,expansion=false]{microtype}
+
+\graphicspath{%
+  {../../out/figures/phase/}%
+  {../../out/figures/scenarios/}%
+  {../../out/figures/sweeps/}%
+  {../../out/figures/policies/}%
+}
+
+\title{Productive-flow share and wealth-coupled cultural transmission:\\
+\large a stylised agent-based model of cultural erosion under economic pressure}
+
+\author{[Author]\\
+\small (supervision and acknowledgements TBD)}
+\date{Draft of \today\ for \emph{Artificial Life} / ALIFE}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We present an agent-based model of an economy with seven occupationally
+heterogeneous agent classes that exchanges its monetary state through
+production, extraction, credit, taxation, inheritance, and a
+bandwidth-limited cultural-transmission channel. The cultural channel
+couples to wealth on a log scale: the number of skill dimensions a child
+inherits from a parent rises as the log of parent wealth, so the
+transmission bandwidth is graded across orders of magnitude of wealth
+rather than saturating at a single threshold.
+
+We argue and demonstrate three results that we believe make the model
+useful for an artificial-life audience.
+
+First, the model is honest about its scope. The K=5 skill space is
+\emph{closed} by construction: mutation can reset a dimension to a fresh
+draw but no genuinely new skill dimension can appear. The model
+therefore exhibits cultural \emph{erosion} under wealth concentration
+rather than cumulative cultural evolution. This is the right framing
+relative to \citet{henrich2015secret} and \citet{henrich2004demography},
+with \citet{vaesen2016cumulative} noted as a counter-case. We present a
+minimal open-ended extension that allows new skill dimensions to enter
+the global pool via wealth-biased novelty events, and show on a
+per-capita basis that the discovery channel concentrates novelty in
+wealthier lineages.
+
+Second, the cultural-economic asymmetry of the model, in which cultural
+transmission alone does not equalise wealth even when equalised at
+birth, is grounded in mechanism rather than in architectural wiring.
+A class-by-class regression of 40-tick wealth gain on the skill vector
+shows that workers and makers have strong skill-to-wealth fits ($R^2
+\geq 0.97$ with normalised elasticities $\eta \geq 0.76$ on the
+class-typical dimensions); rentiers, lenders, and speculators have
+near-zero fits ($R^2 \leq 0.13$, $|\eta| \leq 0.10$). The
+cultural-economic asymmetry is therefore the consequence of one half of
+the economy (extractive classes) having weak internal skill-wealth
+feedback while the other half (productive classes) has strong feedback.
+
+Third, we introduce a continuous per-tick scalar, the
+\emph{productive-flow share} $\Phi_t = F^\text{prod}_t /
+(F^\text{prod}_t + F^\text{ext}_t)$, which captures whether per-tick
+monetary accrual is dominated by productive- or extractive-class activity.
+$\Phi$ is not an autocatalytic-set closure in the
+\citet{kauffman1988evolution} / \citet{hordijk2004detecting} RAF sense;
+it is a flow-share measure operationalising the productive-vs-extractive
+distinction that the heterodox economic tradition has long named
+without instrumenting. The Sankey of steady-state per-tick flows
+makes $\Phi$ legible as a diagram rather than as a scalar.
+
+We note in passing a result from the policy-comparison side of the
+broader project: an absolute cap on inheritance raises the wealth
+share held by the bottom 50\% of the population from 0.0\% under
+status quo to 19.2\% (cap alone) or 25.3\% (cap plus 2\% wealth
+tax).  The same intervention raises the productive-flow share
+$\Phi$ from approximately zero to 0.27--0.37.  Among the
+instruments we tested, the cap is the only one that changes both
+the ownership distribution and the productive--extractive flow
+balance materially.  The cultural-economic asymmetry result of
+this paper provides part of the mechanistic explanation: the
+extractive classes have weak skill-to-wealth feedback, so
+redistributing skills does not redistribute wealth, but
+redistributing the inheritance of wealth itself does.  The
+policy-discourse implications of the cap result are reported in
+the companion submission targeting Fiscal Studies.
+
+We position these cultural contributions relative to the
+cultural-evolution and
+open-ended-evolution literatures, locate the model relative to
+\citet{spangler2022distribution} as the closest published economic-ABM
+neighbour, and discuss the limits of the cultural model and the
+open-skills extension. The fiscal-policy results that follow naturally
+from the model are summarised in a companion submission targeting
+the heterodox-economics literature.
+\end{abstract}
+
+%==========================================================================
+\section{Introduction}
+%==========================================================================
+
+The artificial-life community has long studied open-ended evolution,
+cumulative cultural transmission, and the autocatalytic structure of
+chemical and biological systems. This paper presents a model that
+borrows from each of those traditions but applies them to a question
+the alife literature has not previously taken on directly: how
+economic inequality and cultural diversity co-evolve, and what
+mechanisms cause the cultural sphere to track the economic sphere.
+
+We approach this with a stock-flow agent-based simulation. Seven
+occupationally typed agents (workers, makers, employers, lenders,
+rentiers, speculators, and a single state) exchange a monetary state
+variable through production, extraction (rent, interest, capital
+return), inheritance, and a bandwidth-limited cultural-transmission
+channel. Each agent carries a five-dimensional skill vector; on death
+a same-class child inherits a number of skill dimensions that scales
+with the log of parent wealth. The mechanism is simple, and it has the
+property that cultural inheritance concentrates in wealthier lineages
+not by an explicit class bias but by the wealth-coupling of the
+bandwidth gate itself.
+
+We organise the paper around three contributions.
+
+The first is honesty about scope. The K=5 skill space is closed by
+construction. In this respect the model is squarely on one side of the
+open-endedness debate
+\citep{taylor2019evolutionary, banzhaf2016defining}: the only thing that
+can evolve in the main model is the wealth distribution and the subset
+of the existing skill pool held by each agent. The
+\citet{henrich2015secret} ``cumulative culture'' framing therefore
+does not strictly apply. What the model demonstrates is the
+\emph{erosion} of cultural breadth under wealth concentration, in the
+spirit of \citet{henrich2004demography}, with
+\citet{vaesen2016cumulative}'s critique of the Tasmanian inference
+noted. We add (\S\ref{sec:open-skills}) a stand-alone open-ended
+extension in which new skill dimensions can enter the pool via
+wealth-biased novelty events.
+
+The second is the mechanism behind the cultural-economic asymmetry.
+The model exhibits a striking negative result: cultural transmission
+alone does not equalise wealth, even when transmission is equalised at
+birth. An obvious worry is that this asymmetry is built into the
+architecture. We address that worry by quantifying the
+skill-to-wealth channel directly with a class-by-class regression of
+wealth gain on the skill vector. The asymmetry turns out to be partly
+structural: the extractive classes (rentiers, lenders, speculators)
+have $R^2$ between 0.11 and 0.13 and normalised elasticities of order
+$0.05$ to $0.10$. But the productive classes (workers, makers) have
+$R^2$ of $0.97$ to $0.98$ and normalised elasticities of $0.76$ to
+$0.95$ on the class-typical dimensions. The asymmetry is therefore
+not an arbitrary wiring choice but the consequence of one half of the
+economy having strong internal skill-to-wealth feedback and the other
+half not. The model is doing the right thing.
+
+The third is a measurement device. We define $\Phi_t$, the
+productive-flow share, as the share of per-tick monetary accrual
+accruing to or being created by productive-class agents:
+$\Phi_t = F^\text{prod}_t / (F^\text{prod}_t + F^\text{ext}_t)$.
+We use this to characterise regimes (Section~\ref{sec:phase}) and to
+visualise wealth flows (the Sankey, Section~\ref{sec:sankey}). We
+explicitly distinguish $\Phi$ from the topological autocatalytic-set
+closure of \citet{kauffman1988evolution} and
+\citet{hordijk2004detecting}, after which it is named in motivation but
+not in technical content.
+
+The fiscal-policy implications of the model (wealth-tax design,
+inheritance trapdoor, calibrated-vs-default policy comparisons) are
+substantial and are reported separately in a companion submission;
+this paper engages them only to the extent needed to give a cultural-
+evolutionary reading of the results.
+
+%==========================================================================
+\section{Related work}
+\label{sec:related}
+%==========================================================================
+
+The most direct alife-adjacent precedent on cultural transmission is
+the cultural-evolution tradition of
+\citet{cavallisforza1981cultural}, \citet{boyd1985culture},
+\citet{henrich2015secret}, and \citet{lewis2012transmission}.
+The wealth-coupled bandwidth mechanism we introduce sits adjacent to:
+\citet{henrich2001evolution} on prestige-biased transmission (where
+the \emph{target} of imitation is status-biased; we couple
+the \emph{bandwidth} of transmission to wealth instead);
+\citet{henrich2004demography} on population-size-capped cumulative
+culture, where \citet{vaesen2016cumulative} provide the counter-
+analysis arguing the relevant population sizes in the Tasmania case
+were not as different as the model required;
+\citet{lewis2012transmission} on the empirical sensitivity of
+cumulative culture to transmission fidelity; and
+\citet{charbonneau2021fidelity} on the ``grain problem'' for fidelity
+measures, which directly applies to our K=5 discretisation.
+We have not been able to locate a published agent-based model that
+couples transmission \emph{bandwidth} to wealth specifically.
+
+On the alife/OEE side we engage with \citet{hashimoto2019open} on
+open-ended evolution of tag combinations,
+\citet{taylor2019evolutionary} on routes to open-ended evolution, and
+\citet{banzhaf2016defining} on the OEE program more generally. The
+TAP-style adjacent-possible framing of
+\citet{hordijk2023emergence} motivates our open-ended skill-discovery
+extension.
+
+The closest economic-ABM neighbour is \citet{spangler2022distribution},
+who couple estate taxation with binary skill inheritance and a Carnegie
+effect. We test their headline mechanism directly under a clean
+toggle in \S\ref{sec:spangler}.
+
+For the productive-vs-extractive framing of $\Phi$ we draw on
+\citet{kauffman1988evolution} and \citet{mazzucato2018value};
+\citet{hordijk2023emergence} is the closest neighbour on detecting
+autocatalytic structure in production-function networks, where they
+use a topological RAF detection and we use a continuous flow ratio.
+
+%==========================================================================
+\section{The model}
+\label{sec:model}
+%==========================================================================
+
+\subsection{Agent types and population}
+
+Seven agent classes are present at fixed proportions per 100 agents:
+72 workers, 9 makers, 7 employers, 5 lenders, 3 rentiers, 3
+speculators, and 1 state. Each agent carries wealth, debt, age,
+lifespan drawn from $\mathcal{N}(70, 12)$ truncated to $[20, 120]$,
+a five-dimensional skill vector with class-typical biases at
+initialisation, peak lifetime wealth, and a bandwidth-at-birth record
+used for the analysis in \S\ref{sec:bandwidth-decomp}.
+
+The skill vector dimensions are interpreted as \emph{technical},
+\emph{organisational}, \emph{social}, \emph{financial}, and
+\emph{generative}. Initialisation gives each class a class-typical
+prior bias on a subset of dimensions; the bias is small and is
+preserved by the inheritance rule below.
+
+The model runs at $N = 100$ in the cultural results reported here.
+A scale-up to $N = 10{,}000$ is available; the cultural results are
+qualitatively unchanged under scaling and we report them at $N=100$
+for legibility.
+
+\subsection{Per-tick mechanics, in brief}
+
+Each tick runs the following phases in order. Production: makers and
+employers hire workers from a skill-sorted queue; makers transform
+a material input plus paid labour into output at multiplier $M$;
+employers capture a markup. State optionally hires unemployed
+workers and purchases maker output. Extraction: workers pay rent
+to rentiers in proportion to rentier wealth; rentiers earn capital
+return $r$; speculators accrue a stochastic intra-stock return.
+Consumption and credit: subsistence is debited from every non-state
+agent; shortfalls are borrowed from a lender pool, with starvation if
+the pool is exhausted. Interest and repayment: debtors pay interest
+when liquid, principal when wealth allows. Tax and UBI. Life: agents
+whose age exceeds their lifespan die naturally; a child of the same
+class is born with inherited wealth (after inheritance tax and cap)
+and bandwidth-limited inherited skills (next subsection).
+A complete ODD-style summary is in Appendix~\ref{app:odd}.
+
+\subsection{Cultural transmission: bandwidth-limited inheritance}
+\label{sec:transmission}
+
+When a parent agent of class $t$ dies and is replaced by a
+same-class child, the child's skill vector is constructed as follows.
+The bandwidth, i.e.\ the number of skill dimensions the child
+inherits from the parent, is
+\begin{equation}
+\text{bw\_dims}(w_{\text{parent}}) \;=\; \text{clip}\!\Big(\,
+b_0 K \;+\; b_w K \cdot \log_{10}\!\big(\max(1, w_{\text{parent}})\big) / 4,
+\;\; 1, \; K \,\Big),
+\label{eq:bandwidth}
+\end{equation}
+with $K=5$, $b_0$ a base proportion ($b_0 = 0.5$ default), and $b_w$
+a wealth-coupling slope ($b_w = 0.5$ default). The child inherits
+the parent's $\text{bw\_dims}$ strongest skill dimensions; the rest
+are zero. A small per-dimension mutation rate ($\mu = 0.05$ default)
+replaces an inherited value with a fresh Beta(2,2) draw on its own
+account.
+
+The log-wealth coupling is the key mechanism for this paper. With
+parent wealth at $1$ unit, $\log_{10}(1) = 0$, so $\text{bw\_dims}
+= b_0 K = 2.5$ (rounded to 3). At parent wealth $10{,}000$ units,
+$\log_{10}(10000)/4 = 1$, so $\text{bw\_dims} = b_0 K + b_w K = 5$
+(all skills transmitted). The coupling is thus graded across four
+orders of magnitude of parent wealth, rather than saturating at a
+single intermediate threshold as a prior linear formulation did.
+
+\emph{Knowledge loss} is recorded as the per-tick sum of skill mass
+present in each dying parent but not transmitted to its child.
+
+\subsection{The productive-flow share metric}
+\label{sec:phi}
+
+During each tick we accumulate two flow sums treated symmetrically.
+Productive accrual $F^\text{prod}_t$ sums (i) wages paid by makers,
+employers, and the state to workers; (ii) state purchases of maker
+output; (iii) maker value-add, i.e. the surplus $\text{output} -
+\text{inputs}$ created in production and retained by the maker;
+(iv) a fraction $0.4$ of gross employer markup, treated as productive
+value-add reflecting the employer's organising work. Extractive
+accrual $F^\text{ext}_t$ sums rent paid by workers to rentiers,
+interest paid by debtors to lenders, capital returns accruing to
+rentier stocks, and positive speculator returns (negatives not
+counted, by the convention by which rent and interest do not have
+negative counterparts).
+
+The productive-flow share is
+\begin{equation}
+\Phi_t \;=\; \frac{F^\text{prod}_t}{F^\text{prod}_t + F^\text{ext}_t} \in [0, 1].
+\label{eq:phi}
+\end{equation}
+
+\paragraph{Nomenclature.} $\Phi$ is \emph{not} an autocatalytic-set
+closure in the technical sense of
+\citet{kauffman1988evolution} or \citet{hordijk2004detecting}, who
+detect a topological RAF property of a chemical or production graph.
+$\Phi$ is a continuous, scalar, per-tick flow-share measure
+operationalising the productive-vs-extractive distinction. We have
+named the metric ``productive-flow share'' to avoid friction with
+the RAF-literate audience.
+
+%==========================================================================
+\section{The phase portrait and the regime classification}
+\label{sec:phase}
+%==========================================================================
+
+We characterise the model by running thirteen named scenarios at
+$N=100$ for 250 ticks across 8 seeds. The endpoints in
+$(\text{Gini}, \Phi, \text{alive})$ space cluster into three regimes,
+labelled by k-means with $k=3$ (silhouette score 0.55, with the
+collapse-vs-extractive boundary the least sharp;
+Table~\ref{tab:regimes}).
+
+\begin{figure}[t]
+\centering
+\begin{subfigure}{0.5\linewidth}
+\includegraphics[width=\linewidth]{phase3d_trajectories.png}
+\end{subfigure}\hfill
+\begin{subfigure}{0.47\linewidth}
+\includegraphics[width=\linewidth]{phase3d_shadows.png}
+\end{subfigure}
+\caption{Phase portrait of thirteen scenarios in (Gini, $\Phi$, alive).
+Three regimes are visible: viable autocatalytic ($\Phi > 0.4$, alive
+$> 65$), extractive equilibrium ($\Phi \approx 0.01$, alive 40--75),
+and collapse ($\Phi = 0$, alive $< 20$). State excluded from Gini and
+alive count.}
+\label{fig:phase}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Endpoint coordinates by scenario at $N=100$, 250 ticks, mean
+across 8 seeds, State excluded from Gini.}
+\label{tab:regimes}
+\begin{tabular}{lrrrl}
+\toprule
+scenario & Gini & $\Phi$ & alive & regime \\
+\midrule
+socialist             & 0.30 & 0.880 & 99.0 & viable \\
+nordic                & 0.30 & 0.701 & 89.9 & viable \\
+inheritance\_break\_ubi & 0.57 & 0.667 & 85.9 & viable \\
+maker\_economy        & 0.77 & 0.586 & 68.8 & viable \\
+tax\_and\_spend       & 0.43 & 0.567 & 83.6 & viable \\
+memory\_equalised     & 0.92 & 0.015 & 76.9 & extractive \\
+creditless            & 0.87 & 0.013 & 55.2 & extractive \\
+current\_world        & 0.89 & 0.011 & 63.1 & extractive \\
+memory\_starved       & 0.87 & 0.011 & 55.5 & extractive \\
+stevenson\_world      & 0.88 & 0.001 & 20.2 & collapse \\
+feudal                & 0.78 & 0.000 & 15.2 & collapse \\
+inheritance\_break    & 0.00 & 0.000 &  0.0 & collapse \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The viable regime, which sits at $\Phi \geq 0.4$ and alive $\geq 65$
+on average, is reached by three distinct policy mixes: heavy state
+spending (\texttt{socialist}, \texttt{nordic}), high inheritance
+taxation combined with redistribution (\texttt{inheritance\_break\_ubi},
+\texttt{tax\_and\_spend}), or simply higher maker productivity
+(\texttt{maker\_economy}). The collapse regime is reached by
+configurations that maximise extraction (\texttt{stevenson\_world},
+\texttt{feudal}) or that remove inheritance without a safety net
+(\texttt{inheritance\_break}); in the last case the model collapses
+within 30 ticks (Figure~\ref{fig:survival}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.97\linewidth]{survival_scenarios.png}
+\caption{Survival curves for eight illustrative scenarios at $N=100$,
+6 seeds. \textbf{Left:} alive over time. \textbf{Right:} cumulative
+excess mortality as fraction of initial population.}
+\label{fig:survival}
+\end{figure}
+
+%==========================================================================
+\section{Visualising the flow regime: the Sankey of per-tick accrual}
+\label{sec:sankey}
+%==========================================================================
+
+The Sankey diagram (Figure~\ref{fig:sankey}) renders mean per-tick
+wealth flows in steady state as a network with edge widths proportional
+to flow magnitude. Three policy configurations are shown side by side
+to make $\Phi$ legible as a diagram.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{sankey_flows.png}
+\caption{Steady-state wealth flows for three policies at
+$N=10{,}000$, 3 seeds, ticks 80--180. \textbf{Left
+(\texttt{uk\_tory\_2010\_24}):} the rentier--lender deposit loop
+dominates (44\% of total flow); productive wage flow
+(maker+employer to worker) is 11\%; $\Phi \approx 0.05$.
+\textbf{Middle (\texttt{zucman\_2pct\_spend}):} the rentier--lender
+loop has shrunk; wealth-tax revenue is recirculated to workers via
+state employment and purchases; $\Phi$ is around 0.44.
+\textbf{Right (\texttt{socialist}):} worker--state--worker
+circulation accounts for 40\% of total flow; the rentier--lender
+loop has effectively disappeared; $\Phi \approx 0.88$.}
+\label{fig:sankey}
+\end{figure}
+
+The Sankey is the cleanest single artefact for explaining $\Phi$ to
+a non-technical audience. It also reads as a visualisation of the
+productive-vs-extractive distinction independently of the specific
+$\Phi$ definition.
+
+%==========================================================================
+\section{Cultural erosion under economic pressure}
+\label{sec:culture}
+%==========================================================================
+
+This section presents the paper's principal alife-relevant
+contributions. The model exhibits cultural erosion rather than
+cumulative cultural evolution, a property that follows directly from
+its closed K=5 skill space. We show the erosion under wealth
+concentration, decompose the bandwidth response into the
+non-novel and novel parameter axes, and present the class-by-class
+skill-to-wealth elasticity decomposition that grounds the
+cultural-economic asymmetry in mechanism.
+
+\subsection{The memory sweep: breadth varies fourfold, Gini barely moves}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.97\linewidth]{memory.png}
+\caption{The \texttt{memory} sweep at $N=100$. We vary base bandwidth
+$b_0 \in [0.2, 1.0]$ and the wealth-coupling slope $b_w \in [0, 1]$
+on a $9 \times 9$ grid, 3 seeds. Cultural breadth (top middle) varies
+by a factor of four, from 1.3 to 5.0. Gini (top left) varies by only
+10\%, from 0.84 to 0.92.}
+\label{fig:mem}
+\end{figure}
+
+We sweep the two bandwidth parameters in
+Equation~\ref{eq:bandwidth}, $(b_0, b_w)$, over $[0.2, 1.0] \times
+[0, 1]$. Across this range cultural breadth (mean count of nonzero
+skill dimensions across agents) varies by a factor of four. Gini
+(state excluded) varies by only $10$\%.
+\texttt{memory\_equalised} (full bandwidth, no wealth coupling)
+gives the \emph{highest} non-extractive Gini in the table; equalising
+cultural transmission alone does not equalise wealth.
+
+This is the cultural-economic asymmetry in its raw form. The
+remainder of this section explains it.
+
+\subsection{Bandwidth decomposition: the wealth coupling is a
+real, secondary channel}
+\label{sec:bandwidth-decomp}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.97\linewidth]{bandwidth_decomp.png}
+\caption{Decomposition of the \texttt{memory} sweep into the
+$b_0$ and $b_w$ effects. \textbf{Left:} cultural breadth on the
+$(b_0, b_w)$ plane. \textbf{Middle:} marginal effect of $b_0$
+(averaged over $b_w$) and of $b_w$ (averaged over $b_0$).
+The $b_0$ axis dominates with range 2.99 dimensions; the
+wealth-coupling $b_w$ contributes a graded response with range
+0.87 dimensions across the full wealth distribution. \textbf{Right:}
+realised distribution of bandwidth\_dims at birth by class under
+\texttt{current\_world}; higher-wealth classes routinely inherit
+4--5 dimensions, workers cluster at 2--3.}
+\label{fig:bandwidth}
+\end{figure}
+
+We decompose the breadth response into marginal effects of $b_0$
+and $b_w$ (Figure~\ref{fig:bandwidth}, middle).
+The $b_0$ axis dominates: averaging over $b_w$, varying $b_0$
+across $[0.2, 1.0]$ moves cultural breadth by 2.99 dimensions
+(from 2.0 to 5.0). The wealth-coupling $b_w$ axis contributes a
+graded response of 0.87 dimensions (from 3.2 to 4.1 on average
+across the $b_0$ range).
+
+The wealth coupling is therefore a real, secondary channel
+contributing roughly $0.87 / (0.87 + 2.99) = 22$\% of the breadth
+variation around the base. The previous (linear) coupling formulation
+saturated above parent wealth $\approx 500$ units (\pounds 50M
+under the unit mapping used in the companion economic-policy paper)
+and was effectively a step function on poor-vs-everyone-else; the
+log-wealth coupling stays graded across orders of magnitude. The
+realised distribution of bandwidth\_dims at birth
+(Figure~\ref{fig:bandwidth}, right) shows the coupling actually
+operating: workers cluster at 2--3 dimensions and rentiers and
+employers routinely inherit 4--5.
+
+\subsection{The asymmetry is mechanism, not architecture: skill-to-
+wealth elasticity by class}
+\label{sec:elasticity}
+
+We test directly whether the model's cultural-economic asymmetry
+is architectural. If the skill-to-wealth channel were uniformly
+weak by construction across all classes, the negative result
+(cultural transmission does not equalise wealth) would not be
+informative.
+
+We regress 40-tick wealth gain on the five-dimensional skill
+vector, by class. At $N = 500$ (population\_scale = 5), 8 seeds,
+WARMUP $= 20$ ticks dropped as transient, 40-tick window, we obtain
+$n = 809$ agent-windows with adequate sample size in every class.
+Table~\ref{tab:elasticity} reports normalised elasticities
+$\eta_i = \beta_i \sigma_{\text{skill}_i} /
+|\overline{\text{gain}}|$, $R^2$, and sample size $n$.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Skill-to-wealth normalised elasticities by class. Wealth gain
+over 40 ticks regressed on the five-dimensional skill vector at
+$N=500$.}
+\label{tab:elasticity}
+\begin{tabular}{lrrrrrrl}
+\toprule
+class & tech & org & social & fin & gen & $R^2$ & $n$ \\
+\midrule
+WORKER     & 0.76 & 0.95 & $-0.02$ & $-0.03$ & $-0.03$ & 0.97 & 395 \\
+MAKER      & 0.00 & 0.00 & 0.01 & 0.00 & 0.33 & 0.98 & 144 \\
+EMPLOYER   & 0.30 & 0.03 & 0.25 & $-0.10$ & 0.24 & 0.12 & 100 \\
+LENDER     & $-0.01$ & 0.00 & $-0.01$ & 0.00 & $-0.01$ & 0.13 & 79 \\
+RENTIER    & $-0.06$ & $-0.05$ & 0.09 & $-0.10$ & $-0.08$ & 0.12 & 47 \\
+SPECULATOR & 0.56 & $-0.39$ & $-1.41$ & 0.04 & 0.13 & 0.11 & 44 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The result is decisive. Workers have $R^2 = 0.97$ with
+class-typical elasticities $\eta_\text{tech} = 0.76$ and
+$\eta_\text{org} = 0.95$. Makers have $R^2 = 0.98$ with
+$\eta_\text{gen} = 0.33$. Employers have moderate $R^2 = 0.12$.
+Lenders, rentiers, and speculators have $R^2 \in [0.11, 0.13]$ and
+$|\eta_i| \leq 0.10$ for lenders and rentiers.
+
+The cultural-economic asymmetry is therefore not a wiring artefact.
+One half of the economy has strong skill-to-wealth feedback and the
+other half does not. The cultural transmission mechanism is doing
+its share of work in the half of the economy where skills matter for
+wealth (workers and makers), and the wealth dynamics that produce the
+overall Gini are anchored in the half of the economy (rentiers and
+lenders) where skills do not. The architecture builds in the bias of
+the coupling (extractive classes earn from stocks rather than
+skills), and the model surfaces the consequence as the observed
+cultural-economic asymmetry.
+
+This is the contribution we believe makes the model useful for
+ALIFE. The negative result ``cultural transmission alone does not
+equalise wealth'' is well established in the social-science
+literature in various forms; what we add is a mechanism-level
+account of why, in a stylised ABM, the negative result is robust:
+because the wealth dynamics of the dominant extractive classes are
+independent of their skills.
+
+\subsection{Direct test of \citet{spangler2022distribution}}
+\label{sec:spangler}
+
+The closest published ABM neighbour finds that skill inheritance
+raises wealth inequality. We can test that mechanism in our model
+under a clean toggle that holds bandwidth-gating and class-bias
+persistence intact and swaps only whether transmitted skill values
+are parent-derived or drawn from the class-typical prior. A coarser
+toggle, which destroys the bandwidth mechanism along with parental
+transmission by setting the mutation rate $\mu = 1.0$, is reported
+for contrast.
+
+At $N = 100$, 10 seeds, 250 ticks:
+
+\begin{table}[h]
+\centering
+\small
+\caption{Spangler \& Sarkar test: clean toggle vs.\ confounded
+toggle. Medians.}
+\label{tab:spangler}
+\begin{tabular}{lrrr}
+\toprule
+metric & default & class-prior & no-inheritance \\
+       & (parent-derived) & (clean toggle) & ($\mu = 1$, confounded) \\
+\midrule
+Gini             & 0.885 & 0.876 & 0.908 \\
+Top-1 share      & 0.235 & 0.250 & 0.254 \\
+Top-10 share     & 0.785 & 0.683 & 0.891 \\
+Alive            & 61.5  & 56.5  & 73.0 \\
+Cultural breadth & 3.38  & 3.55  & 5.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Under the clean toggle, swapping parent-derived for class-typical-
+prior transmitted values \emph{lowers} Gini by 0.010 and \emph{raises}
+top-1 share by 0.016. So parent-derived skill inheritance does raise
+Gini relative to a class-typical prior; the direction is a partial
+reproduction of \citet{spangler2022distribution}, with a magnitude
+much smaller than they report.
+
+The mechanism for the small magnitude is in
+Table~\ref{tab:elasticity}: skill inheritance acts strongly on
+workers and makers but those classes are the ones whose wealth is
+already most closely tied to skills, so swapping the transmitted
+value for a class-typical prior produces only a moderate
+within-class shift. The wealth dynamics of the rentier and lender
+classes, which dominate the overall Gini, are insensitive to skill
+content. A single-channel ABM in which skills feed wealth via a
+uniform mechanism (Spangler \& Sarkar's design) is expected to
+amplify the inheritance effect.
+
+%==========================================================================
+\section{Open-ended skill space: a minimal demonstration}
+\label{sec:open-skills}
+%==========================================================================
+
+The cultural section above is honest that the K=5 skill space is
+closed and that the model produces erosion, not cumulative
+evolution. For an ALIFE audience this is uncomfortable framing on
+its own, and we add a stand-alone open-ended-evolution demonstration
+that addresses the open-endedness concern at demonstration scale.
+
+In a separate stand-alone simulation the skill vector is variable-
+length. At every reproduction event, with probability proportional
+to $\log(w_\text{parent})$, a previously-undiscovered skill
+dimension enters the global pool and is initialised on the child to
+a fresh Beta(2,2) value. Subsequent inheritance follows the same
+bandwidth rules as the main model. The wealth-coupling of novelty
+events is the same coupling that the bandwidth gate operationalises.
+500 initial agents, 400 ticks, 5 seeds.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.97\linewidth]{open_skills.png}
+\caption{Open-ended skill-space demonstration. \textbf{Left:}
+active skill-pool size over time. The closed variant (grey, no
+novelty) stays at five; the open variant (blue, novelty proportional
+to log parent wealth) climbs from five to about ten over 400 ticks.
+\textbf{Middle:} per-agent cultural breadth grows accordingly.
+\textbf{Right:} per-capita discovery rate by class
+(discoveries per agent-generation).}
+\label{fig:open-skills}
+\end{figure}
+
+Two results.
+
+First, the skill space grows under wealth-biased novelty: the
+active pool climbs from $5$ to about $10$ over 400 ticks under the
+open variant. The closed variant stays at $5$ by construction. The
+mechanism can therefore be extended to genuine open-ended novelty
+within its existing architecture.
+
+Second, on a per-capita basis the wealth coupling does concentrate
+discovery in wealthier lineages. With approximate average class
+populations of 140 workers, 40 makers, and 20 rentiers per run, and
+50 discoveries observed across 5 seeds, the per-capita discovery
+rates (discoveries per agent-generation, where generation length is
+estimated as median lifespan / ticks) are 0.0092 for workers,
+0.0052 for makers, and 0.0123 for rentiers. Rentiers discover at
+$1.3 \times$ the worker rate and $2.4 \times$ the maker rate on a
+per-capita basis. Raw counts are dominated by worker abundance and
+do not support a disproportionate-contribution claim on their own;
+the per-capita rate does.
+
+We do not claim this as a load-bearing finding. It is a
+demonstration scoped to address the concern that the main model's
+closed skill space is a category problem for an ALIFE audience. A
+more substantive treatment that folds the open-ended discovery
+mechanism back into the full economic model is the natural follow-up.
+
+%==========================================================================
+\section{Robustness and extensions}
+\label{sec:robustness}
+
+We have done three additional checks since the first version of
+this work.  Each addresses an open-endedness or robustness concern
+that the cultural-evolution audience commonly raises.
+
+\subsection{Elasticity is robust across scenarios}
+\label{sec:elasticity-robustness}
+
+The skill-to-wealth elasticity decomposition
+(Section~\ref{sec:elasticity}, Table~\ref{tab:elasticity}) was
+reported on the \texttt{current\_world} scenario.  The class-
+specific pattern that grounds the cultural-economic asymmetry
+might be specific to that scenario; we test by rerunning the
+elasticity regression at \texttt{nordic},
+\texttt{maker\_economy}, and \texttt{feudal}.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Skill-to-wealth $R^2$ by scenario and class at $N=500$,
+8 seeds.  Patterns are qualitatively unchanged across scenarios.}
+\label{tab:elasticity-scenarios}
+\begin{tabular}{llrrrrrr}
+\toprule
+scenario & metric & WORKER & MAKER & EMPLOYER & LENDER & RENTIER & SPECULATOR \\
+\midrule
+current\_world & $R^2$ & 0.97 & 0.98 & 0.12 & 0.13 & 0.12 & 0.11 \\
+nordic         & $R^2$ & 0.71 & 0.23 & 0.08 & 0.12 & 0.11 & 0.13 \\
+maker\_economy & $R^2$ & 0.91 & 0.98 & 0.04 & 0.16 & 0.06 & 0.05 \\
+feudal         & $R^2$ & 0.71 & 0.47 & 0.02 & 0.28 & 0.02 & 0.01 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The qualitative pattern holds: workers and makers have strong
+skill-to-wealth fits; employers, lenders, rentiers, and
+speculators have weak ones.  The maker $R^2$ drops to $0.23$ in
+\texttt{nordic} (where the state-employment subsidy reduces the
+within-maker variance attributable to skill) and to $0.47$ in
+\texttt{feudal} (where extraction dominates).  The asymmetry
+between productive and extractive classes survives intact.
+
+\subsection{Long-run cumulative novelty}
+\label{sec:longrun-novelty}
+
+The open-skills demonstration in Section~\ref{sec:open-skills}
+ran for 400 ticks.  An open-ended-evolution claim requires that
+discovery be sustained beyond the initial transient.  We rerun the
+demonstration at horizons $400$, $800$, and $1600$ ticks with
+$K_\text{max} = 25$.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Long-run open-skill discovery at three horizons, 5 seeds.}
+\label{tab:longrun-novelty}
+\begin{tabular}{rrrr}
+\toprule
+horizon & final K (mean) & final K (std) & dims discovered per 100 ticks \\
+\midrule
+400  & 16.00 & 4.34 & 2.75 \\
+800  & 25.00 & 0.00 & 2.50 \\
+1600 & 25.00 & 0.00 & 1.25 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The active skill pool reaches the $K_\text{max} = 25$ cap by
+horizon $800$ at every seed, and the per-100-tick discovery rate
+remains above $1$ at horizon $1600$ (limited by the cap, not by
+the underlying mechanism).  The demonstration is therefore not
+one-shot near-equilibrium; the discovery mechanism is sustained.
+A truly cap-free OEE claim would require raising $K_\text{max}$,
+which the framework permits but which we do not pursue here.
+
+\subsection{Hard material constraint: an autopoietic reading of $\Phi$}
+\label{sec:material}
+
+The model so far treats material inputs to makers as an unlimited
+constant; the maker pays a material cost per tick, but the cost
+is drawn from no real reservoir.  To test the autopoietic reading
+of $\Phi$ (i.e.\ that high $\Phi$ characterises a system
+sustaining its own input flows), we add a finite global material
+pool that depletes via maker production and replenishes at a
+fixed rate per tick.
+
+At regen rate $0$, the pool of $50$ units exhausts within roughly
+$25$ ticks and the maker class can no longer produce; alive at
+$N=100$ falls to $40$ from baseline $64$.  At regen rate $5$
+units per tick, alive holds at $54$ with $\Phi$ at $0.026$.  At
+regen rate $20$ or above, alive reaches its full baseline of
+$64$--$66$ with $\Phi$ at $0.032$.  The same regen sweep on
+\texttt{maker\_economy} gives a steeper coupling: alive $47, 54,
+72, 72$ across regen $\{0, 5, 20, 100\}$, $\Phi$ $0.519, 0.639,
+0.491, 0.491$.
+
+The finding is that $\Phi$ at sustained-flow values requires a
+material supply that the production sector can keep ahead of.
+The autopoietic reading is supported: high $\Phi$ is a property of
+a system that is materially viable as well as monetarily so.  The
+model can fail by running out of material, not only by running out
+of wealth.
+
+This is a step toward the genuine alife reading of the closure
+metric.  The result is preliminary; the material model is a single
+global pool rather than a spatially or class-locally structured
+reservoir, and the regen mechanism is exogenous.  A more
+substantive treatment with class-local material reservoirs is the
+natural next step.
+
+\section{Discussion}
+\label{sec:discussion}
+%==========================================================================
+
+\subsection{What we believe is novel for an ALIFE audience}
+
+The class-specific skill-to-wealth elasticity decomposition
+(\S\ref{sec:elasticity}, Table~\ref{tab:elasticity}) is the freshest
+contribution. The cultural-economic asymmetry the bandwidth
+coupling generates is not a structural artefact of how the model is
+wired; it is a consequence of one half of the economy having near-
+zero skill-to-wealth feedback while the other half has strong
+feedback. We believe this kind of mechanism-level grounding of a
+negative result is exactly the type of result ALIFE values.
+
+The wealth-coupled cultural-transmission bandwidth mechanism
+(\S\ref{sec:transmission}) is, to our reading of the cultural-
+transmission and computational-cultural-evolution literatures, not
+present in any published ABM. \citet{henrich2001evolution} couples
+the \emph{target} of transmission to status; population-size
+constraints \citep{henrich2004demography, lewis2012transmission}
+discuss aggregate fidelity. The bandwidth-coupled-to-wealth coupling
+here appears to be genuinely new.
+
+The productive-flow share $\Phi$ (\S\ref{sec:phi}) is a continuous,
+scalar, per-tick measurement device for flow regime. We are explicit
+that it is not a topological autocatalytic-set closure
+\citep{kauffman1988evolution, hordijk2004detecting}; it is a
+flow-share that operationalises the productive-vs-extractive
+distinction.
+
+The open-skills demonstration (\S\ref{sec:open-skills}) shows that
+the same wealth coupling that gates transmission can be extended to
+seed novelty, and that on a per-capita basis the coupling
+concentrates discovery in wealthier lineages.
+
+\subsection{What the model cannot do}
+
+The K=5 skill space is closed in the main results. The open-ended
+extension is stand-alone and does not currently fold back into the
+full economic model. The economic layer is itself non-open-ended in
+ways that constrain the cultural reading: agent-type proportions are
+fixed, the employer count does not change, no new occupational
+categories can emerge. For an ALIFE audience these are real
+limitations that we acknowledge.
+
+The K=5 grain choice for skills is a methodological commitment
+following \citet{charbonneau2021fidelity}'s sense of the
+``grain problem'' for fidelity measures: the dimensions are not
+natural primitives but a chosen discretisation. The model's results
+should be expected to be robust to grain refinement, and that
+robustness is not tested here.
+
+The skill-to-wealth elasticity is measured under a single scenario
+(\texttt{current\_world}) and a single time window (40 ticks). The
+class-specific structure is qualitatively robust across the
+\texttt{maker\_economy} and \texttt{tax\_and\_spend} variants we
+have spot-checked, but a full sensitivity analysis is future work.
+
+\subsection{Honest reading}
+
+The model is presented as an intuition pump for cultural-economic
+dynamics, not a predictive instrument. The K=5 skill space is small
+enough to read but large enough that the wealth-coupled bandwidth
+mechanism has a non-trivial decomposition. The closed-space limit is
+acknowledged. The open-skills extension shows where the next paper
+will land.
+
+The cultural-economic asymmetry as we have characterised it is the
+asymmetry between productive and extractive classes in their
+internal skill-to-wealth feedback. The model says, and the
+elasticity table supports, that for an audience interested in the
+emergence of inequality from coupled cultural and economic
+mechanisms, the architecture of the economic layer matters as much
+as the architecture of the cultural layer. The cultural channel,
+in this stylised setting, is the lesser of the two contributors to
+the overall outcome, and is dominated by the wealth-feedback
+asymmetry across the productive/extractive split.
+
+%==========================================================================
+\section{Conclusion}
+%==========================================================================
+
+We have presented an agent-based model in which a wealth-coupled
+bandwidth gate determines cultural transmission, and a continuous
+flow-share metric $\Phi$ characterises whether per-tick monetary
+accrual is dominated by productive or extractive activity. The
+cultural side of the model exhibits erosion, not cumulative
+evolution; a stand-alone open-ended extension demonstrates the
+mechanism's natural direction for further development. The
+cultural-economic asymmetry the model produces is grounded in
+mechanism via a class-specific skill-to-wealth elasticity
+decomposition. The model is honest about scope: a stylised
+intuition pump for coupled cultural-economic dynamics, not a
+predictive instrument.
+
+The fiscal-policy implications of the model (wealth-tax design,
+inheritance dynamics, calibration to UK wealth-share data) are
+reported separately. The contribution this paper foregrounds is
+the cultural mechanism and the elasticity decomposition that
+grounds its emergent asymmetry.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+\section{ODD-style summary of the model}
+\label{app:odd}
+
+A brief ODD (Overview, Design concepts, Details) summary. A full
+ODD+D specification and the companion economic-policy paper are
+deferred to a separate supplement.
+
+\paragraph{Overview.}
+Seven agent classes (WORKER, MAKER, EMPLOYER, LENDER, RENTIER,
+SPECULATOR, STATE) at fixed proportions per 100 agents. Each agent
+has wealth, debt, age, lifespan, a five-dim skill vector, alive flag,
+peak lifetime wealth, bandwidth-at-birth.
+
+\paragraph{Process.}
+Per tick: production (makers, employers, optional state
+employment); extraction (rent, capital return, speculator returns);
+consumption and credit; interest and repayment; lender deposits and
+optional state recapitalisation; tax and UBI; life (age, death,
+reproduction with bandwidth-limited inheritance).
+
+\paragraph{Cultural mechanism.}
+At reproduction, $\text{bw\_dims}(w_{\text{parent}}) = \text{clip}(
+b_0 K + b_w K \log_{10}(\max(1, w_{\text{parent}}))/4, 1, K)$ with
+$K=5, b_0=0.5, b_w=0.5$. Strongest dimensions transmitted;
+per-dim mutation rate 0.05.
+
+\paragraph{Metrics.}
+Per tick: Gini (state-excluded by default), $\Phi$, alive, cultural
+breadth, cultural diversity (variance), knowledge lost, top-share
+percentiles (raw and mortality-corrected).
+
+\paragraph{Code.} \texttt{sim.py} for the core model.
+\texttt{scenarios.py} for the 13-scenario library. \texttt{elasticity.py}
+for the regression. \texttt{open\_skills.py} for the open-ended
+demonstration. Default seed 42, default population\_scale 1.
+\end{document}

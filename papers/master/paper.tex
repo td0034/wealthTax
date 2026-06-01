@@ -1,0 +1,1890 @@
+% Compile with:
+%   pdflatex paper && bibtex paper && pdflatex paper && pdflatex paper
+\documentclass[11pt]{article}
+
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+\usepackage[final,protrusion=true,expansion=false]{microtype}
+
+\graphicspath{%
+  {../../out/figures/phase/}%
+  {../../out/figures/scenarios/}%
+  {../../out/figures/sweeps/}%
+  {../../out/figures/policies/}%
+  {../../out/figures/wealth_tax/}%
+  {../../out/figures/scale_up/}%
+}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+}
+
+\title{Unequal Agents:\\
+\large An autocatalytic-closure agent-based model of wealth inequality,\\
+cultural transmission, and the design of progressive wealth taxes}
+
+\author{[Author]\\
+\small (with supervision and acknowledgements TBD)}
+\date{Working paper, draft of \today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We present an agent-based model of wealth inequality in which seven
+occupationally heterogeneous agent classes (workers, makers, employers,
+lenders, rentiers, speculators, and a state) interact through production,
+extraction, credit, taxation, inheritance, and a bandwidth-limited
+cultural-transmission channel coupled to parent wealth.
+
+The model supports two methodological contributions.  We introduce a
+per-tick scalar \emph{productive-flow share}
+$\Phi_t = F^\text{prod}_t / (F^\text{prod}_t + F^\text{ext}_t)$, defined
+symmetrically across productive (wages, state transfers, maker
+value-add, employer markup) and extractive (rent, interest, capital
+return) accrual, and we explicitly distinguish
+$\Phi$ from the topological autocatalytic-set closure of
+\citet{kauffman1988evolution} and \citet{hordijk2004detecting} which it
+takes its conceptual lineage from. We then couple cultural-transmission
+\emph{bandwidth} to wealth on a log scale, so the wealth coupling stays
+graded across orders of magnitude rather than saturating at the
+upper-middle threshold as in a prior version of the model.
+
+Across thirteen scenarios, five parameter sweeps, a clean
+(tax $\times$ spending $\times$ inheritance) factorial, and a focused
+suite of eleven real-world wealth-tax proposals (Zucman 2024, Piketty,
+Warren, Sanders, Norway, Spain, UK 2010--2024 baseline, a Reform-flavour
+deregulatory prospectus), we report eight findings.
+
+(i) Three regimes (\emph{viable autocatalytic}, \emph{extractive
+equilibrium}, \emph{collapse}) emerge robustly under k-means clustering
+with silhouette 0.55. (ii) Spending and tax design and inheritance
+taxation play distinct roles when factorialised: spending raises alive
+counts by 40\% without moving $\Phi$; tax schedule compresses
+household-sector inequality; inheritance taxation is the single most
+$\Phi$-effective lever. (iii) Cultural transmission alone does not
+equalise wealth even when fully equalised at birth, but a class-wise
+skill-to-wealth elasticity regression shows the asymmetry is partly
+mechanism: workers and makers have $R^2 \approx 0.9$ skill-to-wealth
+fits, rentiers and lenders have $R^2 \leq 0.35$.  (iv) Inheritance
+reform produces population collapse unless paired with a safety net.
+(v) Zucman's flat 2\% above \pounds10M is not separable from a
+progressive 2/4/8\% form at 10 seeds at $N=10{,}000$, and an analytical
+fixed-point derivation $w^* = \tau \theta / (\tau - r)$ explains why:
+the lower bracket sets the post-tax cap before higher tiers can fire.
+(vi) The original draft's ``regressive trap'' headline is retracted:
+under state-excluded top-share metrics top-1\% share decreases
+monotonically with the wealth-tax rate at every threshold; the
+inverted-monotonicity finding was entirely a state-contamination
+artefact, and the genuine policy claim is the opposite: a wealth tax
+at the \pounds10M threshold compresses top-1\% share by a factor of
+4.4 in our $N=10{,}000$ runs.
+(vii) At $N=10{,}000$ the UK Tory baseline produces 19 billionaires; the
+Reform-flavour prospectus produces 97; every wealth-tax policy collapses
+the count to 1, robustly across 10 seeds. (viii) A partial calibration
+to the UK Sunday Times Rich List Pareto slope of $-0.706$ is achievable
+with $r=0.06$, rent share 0.50, inheritance tax 0.40 (slope $-0.673$);
+the levels of the model's tail remain too flat at the very top and too
+fat at the lower-billionaire band by about an order of magnitude in
+either direction, identifying a calibration target for follow-up work.
+
+We also include a minimal open-ended-evolution demonstration of skill
+discovery to address the related concern that the model's closed K=5
+skill space is incompatible with the spirit of the alife literature.
+
+This version of the paper substantially revises four claims from the
+earlier draft following referee criticism, which the lead author asked
+this revision to confront head-on: the State agent is now excluded from
+all percentile and Gini statistics; $\Phi$ is defined symmetrically
+across productive and extractive accrual; the regressive-trap claim is
+fully retracted under state-exclusion; and the top-tier-does-not-bind
+result is now derived analytically rather than reported as an empirical
+equivalence.
+\end{abstract}
+
+%==========================================================================
+\section{Introduction}
+%==========================================================================
+
+The empirical case that wealth concentration drives, rather than reflects,
+economic dysfunction has sharpened over the past decade. The wealth-tax
+proposal advanced by \citet{zucman2024global} for the G20 frames this
+explicitly: existing tax instruments do not capture the very rich, and
+the existing distribution is therefore self-reinforcing. Stevenson's
+public articulation of the same claim, that inequality is a driver,
+not a symptom, gives a political register but the same underlying
+intuition.
+
+We approach this question with a stylised agent-based simulation. The
+model is not predictive. It is a stock-flow accounting machine populated
+by occupationally heterogeneous agents whose interactions can be steered
+by a panel of policy ``dials''. The point is to make visible, in motion,
+the qualitative consequences of fiscal designs, and to identify where
+they fail in unintuitive ways.
+
+We organise the contribution around two ideas. The first is a
+quantitative one. We define an \emph{autocatalytic closure} ratio
+$\Phi_t \in [0,1]$ which is the share of total monetary flow at time $t$
+that occurs between productive agent classes (workers, makers,
+employers), versus between productive and extractive classes (rentiers,
+lenders, speculators). The metric operationalises in a continuous,
+per-tick form the productive-vs-extractive distinction that runs through
+\citet{kauffman1988evolution}, \citet{mazzucato2018value}, and, less
+formally, the entire heterodox tradition.
+\citet{hordijk2023emergence} use a topological detection of autocatalytic
+structure in a production-function graph; our $\Phi_t$ is a flow-based
+sibling, and we believe it has not previously been operationalised in
+this scalar form for an ongoing simulated economy.
+
+The second contribution is mechanical. We give every agent a $K=5$
+dimensional skill vector. When an agent dies and is replaced by a
+child of the same occupational type, the child inherits a number of
+skill dimensions that scales with the parent's terminal wealth. Cultural
+transmission is therefore \emph{bandwidth-limited} in a way that depends
+on economic position, a wealth-coupled fidelity mechanism that, to
+our reading of the literature \citep{cavallisforza1981cultural,
+henrich2004demography, lewis2012transmission, henrich2001evolution}, has
+not been articulated in this form in any published agent-based model.
+
+The remainder of the paper proceeds as follows. Section~\ref{sec:related}
+positions the work. Section~\ref{sec:model} specifies the agents,
+mechanics, metrics, and the wealth-tax instrument. Section~\ref{sec:method}
+describes scenarios, parameter sweeps, and the eleven real-world policies
+modelled. Section~\ref{sec:results} reports findings in order of
+political-economic salience, including a scale-up to $N=10{,}000$ agents
+where the billionaire class first becomes statistically representable.
+Section~\ref{sec:discussion} discusses limitations, venue positioning,
+and what we cannot model.
+
+%==========================================================================
+\section{Related work}
+\label{sec:related}
+%==========================================================================
+
+The closest single paper to ours is \citet{spangler2022distribution},
+which couples estate taxation, skill inheritance, and a Carnegie
+effect within an ABM, finding that skill inheritance raises inequality
+while the Carnegie effect lowers everyone's wealth. Our model differs
+in three respects: (i) we add explicit extractive channels (rent,
+capital return, interest) alongside the inheritance mechanism;
+(ii) we couple skill-transmission \emph{bandwidth} (not target choice
+or binary skill carry-over) to wealth; and (iii) we measure system
+viability via the autocatalytic-closure ratio rather than terminal-period
+Gini alone.
+
+\citet{cardoso2025wealth}, recently published, makes a thematically
+close point in a yard-sale-style kinetic ABM: \emph{social protection}
+parameters dominate growth-driven redistribution. We recover an analogous
+finding for state spending versus state revenue (\S\ref{sec:state-spending}),
+and our wealth-tax sweeps (\S\ref{sec:threshold-rate}) further
+disaggregate the social-protection result into a threshold-vs-rate
+factorisation that, to our knowledge, is novel.
+
+Within the econophysics tradition, the closest theoretical neighbours
+are \citet{bouchaud2000wealth} on multiplicative wealth condensation,
+\citet{yakovenko2009colloquium} on the two-class distribution, and
+\citet{boghosian2017oligarchy} on the yard-sale model. These provide
+the formal backdrop against which our extraction-channel mechanism
+operates; we add a state, a credit sector, and a wealth-coupled
+transmission layer.
+
+\citet{piketty2014capital} provides the empirical and theoretical case
+for $r > g$ dynamics, which the model recovers as an emergent property
+under realistic-looking parameter settings (Figure~\ref{fig:phase}).
+\citet{piketty2013theory} on optimal inheritance taxation is the
+analytical version of our inheritance-trapdoor finding
+(\S\ref{sec:inheritance}). \citet{berman2016modeling} present a related
+ABM of US wealth concentration since 1980; \citet{pagliarini2017agent}
+shows the JEIC venue's openness to calibrated wealth-distribution ABMs.
+
+In cultural evolution, the bandwidth idea sits adjacent to
+\citet{boyd1985culture}, \citet{henrich2015secret}, and especially
+\citet{lewis2012transmission}'s ``fidelity is the key'' result. Where
+\citet{henrich2004demography} ties cumulative culture to population
+size, and \citet{henrich2001evolution} couples transmission target to
+prestige, we couple transmission \emph{bandwidth} to wealth. We have
+not found published precedent for that specific coupling.
+
+%==========================================================================
+\section{The model}
+\label{sec:model}
+%==========================================================================
+
+\subsection{Agent types and population}
+
+We model seven agent classes with fixed proportions per 100 agents:
+72~workers, 9~makers, 7~employers, 5~lenders, 3~rentiers, 3~speculators,
+and 1~state. The proportions are calibrated by hand to current
+advanced-economy occupational structure, not from any one data source.
+
+Each agent carries: wealth $w$, debt $d$, age $a$, lifespan
+$\ell$ drawn at birth from $\mathcal{N}(70,12)$ truncated to $[20,120]$,
+and a length-5 skill vector
+$\mathbf{s} \in \mathbb{R}^5$ with dimensions interpreted as
+\emph{technical}, \emph{organisational}, \emph{social}, \emph{financial},
+\emph{generative}. The class of an agent biases its initial skill
+distribution: makers receive a boost on generative and technical;
+employers on organisational and financial; rentiers/lenders/speculators
+on financial only; workers on social and technical.
+
+For the scale-up experiments (\S\ref{sec:scale-up}) we introduce a
+\emph{population\_scale} multiplier that scales agent counts and initial
+wealth totals linearly while keeping the state a singleton and absolute
+spending dials proportional to scale. Per-capita wealth statistics are
+invariant under this scaling.
+
+\subsection{Per-tick mechanics}
+
+A single tick (one stylised year) runs the following phases in order.
+
+\paragraph{Production.} Workers are sorted by skill and assigned to
+makers and employers in greedy order until hiring capacities are
+exhausted. Makers transform a material input plus paid labour into
+output of value
+$(\text{inputs}) \cdot M (0.7 + 0.6 s_5^{\text{maker}})$
+where $M$ is the maker multiplier dial and $s_5$ is the maker's
+generative skill. Employers pay wages and capture a markup
+$(1 + \mu)$ on their workers' produced value. The
+state optionally hires a configurable fraction of remaining unemployed
+workers and purchases a budgeted volume of maker output, both
+parameterised through dials.
+
+\paragraph{Extraction.} Each worker pays a fixed rent
+$\rho \cdot W$ which is distributed across rentiers in proportion to
+rentier wealth. Each rentier earns a capital return $r$ on its existing
+wealth. Each speculator's wealth evolves geometrically with drift
+$\mu_s$ and volatility $\sigma_s$.
+
+\paragraph{Consumption and credit.} Every non-state agent pays
+subsistence $\sigma$ per tick. Agents with insufficient wealth borrow
+from the aggregate lender pool, with the borrowed amount allocated to
+lenders proportionally to their available capacity. If aggregate
+capacity is exhausted the agent dies (``starves'').
+
+\paragraph{Interest, repayment, write-off.} Indebted agents pay interest
+at rate $i$ when liquid; otherwise interest is capitalised. Agents
+beyond a configurable debt ceiling are written off; the loss is
+distributed across lenders proportionally to wealth.
+
+\paragraph{Lender deposits and recapitalisation.} A fixed fraction of
+surplus wealth held by rentiers, employers, and makers is deposited
+into the lender pool, modelling the macro-flow of financial savings.
+The state optionally backstops the lender pool to a configurable floor.
+
+\paragraph{Tax and UBI.} Every non-state living agent with positive
+wealth pays
+\begin{equation}
+T(w) \;=\; \tau_0 w \;+\; \tau_1 \max(0, w - \theta_0)
+       \;+\; \sum_{k=1}^{K} \tau^\text{tier}_k \max(0, w - \theta^\text{tier}_k)
+\end{equation}
+where $\tau_0$ is the flat rate, $\tau_1$ is the single-tier
+progressive rate above threshold $\theta_0$, and the tiered marginal
+rates $\tau^\text{tier}_k$ apply above their thresholds in a
+\emph{stacked} form: a rate above a high threshold adds to (rather
+than replacing) the rates above the lower thresholds. The state
+collects $T$ and disburses universal basic income $U$ per agent to
+the extent the state's accumulated wealth allows.
+
+\paragraph{Reproduction and transmission.} Agents whose age exceeds
+their lifespan die a natural death. A child of the same class is
+created. Wealth passes after an inheritance tax $\iota$ and is capped
+at $\bar{w}_{\text{inh}}$; revenue above the cap accrues to the state.
+The child's skill vector is initialised by selecting the
+\textsc{bandwidth} most-skilled dimensions of the parent's vector,
+where the bandwidth in dimensions is
+\begin{equation}
+B \;=\; \min\!\Big( K,\; \max\!\big(1,\; \lfloor b_0 K + b_w \cdot
+(w_{\text{parent}}/100) \rfloor\big)\Big)
+\end{equation}
+with $b_0$ a base proportion and $b_w$ a wealth-coupling slope.
+\emph{Knowledge loss} is recorded as the sum of skill mass present in
+the parent but not transmitted.
+
+\subsection{The autocatalytic closure metric}
+\label{sec:phi}
+
+During each tick we accumulate two flows treated symmetrically as
+\emph{productive-class accrual} and \emph{extractive-class accrual}.
+Productive accrual $F^\text{prod}_t$ sums (i) wages paid by makers,
+employers, and the state to workers; (ii) state purchases of maker
+output; (iii) maker value-add, i.e. the surplus $\text{output} -
+\text{inputs}$ created in production and retained by the maker; and
+(iv) the share of worker output captured by employers as markup that
+contributes to the metabolic rate. Of the gross employer markup
+($\text{worker\_output} \cdot \text{employer\_markup}$), a fraction
+$0.4$ is treated as productive value-add (the organisational
+contribution of the employer that creates the markup) and the
+remaining $0.6$ as zero-sum capture from worker output; this
+split is a modelling choice and we report sensitivity to it in
+the dial documentation (Appendix~\ref{app:dials}).
+Extractive accrual $F^\text{ext}_t$
+sums rent paid by workers to rentiers, interest paid by debtors to
+lenders, capital returns accruing to rentier stocks, and positive
+speculator returns (the negative speculator returns are not
+counted, on the same convention by which rent and interest do not
+have negative counterparts). Both sums
+mix inter-class transfers with intra-class value creation in the same
+manner: a maker creating $0.6$ units of value per tick contributes to
+$F^\text{prod}$ exactly as a rentier compounding at $r=0.04$ on its
+existing stock contributes to $F^\text{ext}$. The autocatalytic
+closure is
+\begin{equation}
+\Phi_t \;=\; \frac{F^\text{prod}_t}{F^\text{prod}_t + F^\text{ext}_t} \in [0,1].
+\end{equation}
+A value near 1 indicates that monetary accrual at time $t$ is
+predominantly going to or being created by productive-class agents; a
+value near 0 indicates that accrual is dominated by extractive
+channels.
+
+A point of nomenclature. $\Phi_t$ is
+\emph{not} an autocatalytic-set closure in the technical sense of
+\citet{kauffman1988evolution} or \citet{hordijk2004detecting}, who
+detect a topological RAF property of a chemical or production graph.
+$\Phi_t$ is a continuous, scalar, per-tick \emph{flow-share} measure
+which operationalises in measurable form the
+productive-vs-extractive distinction that runs through
+\citet{kauffman1988evolution}, \citet{mazzucato2018value}, and the
+classical political-economic tradition. We have retained the
+``autocatalytic'' adjective because the original conceptual lineage is
+the one we engage with; readers wanting a strictly graph-theoretic
+quantity should consult Hordijk and colleagues instead. An alternative
+name we considered, ``productive-flow share,'' is more honest about
+what is measured and we use the two interchangeably where it aids
+reading.
+
+\subsection{Wealth-tax instrument}
+
+For the policy experiments in \S\ref{sec:policy} we add the tiered
+wealth-tax mechanism described above and adopt the convention that
+\emph{one model wealth unit corresponds to \pounds100{,}000} of real
+wealth. Reference thresholds in model units are: 100 ($=\pounds$10M,
+Zucman's lower bracket), 500 ($=\pounds$50M, Warren), 1000
+($=\pounds$100M), 10000 ($=\pounds$1B, the billionaire threshold).
+This mapping is a convenience for labelling and not a calibration;
+no parameter has been fitted to data.
+
+\subsection{Scale}
+
+We run all 100-agent experiments at \emph{population\_scale} = 1 and
+the scale-up experiments at \emph{population\_scale} = 100, yielding
+$N=10{,}000$. The implementation refactors four hot loops from
+$O(N^2)$ to $O(N)$ by accumulating per-class totals and distributing
+in single passes, and prunes dead agents from the agent list every
+ten ticks. On seven processor cores a 200-tick run at $N=10{,}000$
+completes in approximately 25 seconds; a full eight-policy comparison
+with three seeds and a $7\times 7$ wealth-tax sweep with two seeds
+completes in approximately ten minutes.
+
+%==========================================================================
+\section{Method}
+\label{sec:method}
+%==========================================================================
+
+\subsection{Scenarios}
+
+We define thirteen named scenarios at $N=100$, each a particular setting
+of the dial panel. \texttt{current\_world} is the baseline; the others
+span: an extreme-extraction regime (\texttt{stevenson\_world}); a
+production-heavy regime (\texttt{maker\_economy}); two state-spending
+regimes (\texttt{tax\_and\_spend}, \texttt{nordic}); two memory-mechanism
+contrasts (\texttt{memory\_equalised}, \texttt{memory\_starved}); two
+inheritance-reform regimes (\texttt{inheritance\_break},
+\texttt{inheritance\_break\_ubi}); and four pathological or
+policy-limit regimes (\texttt{feudal}, \texttt{creditless},
+\texttt{pure\_speculation}, \texttt{socialist}). Each scenario is run
+for 250 ticks with eight random seeds; we report mean trajectories
+and inter-quartile ribbons.
+
+\subsection{Parameter sweeps}
+
+We perform five two-dimensional sweeps at $N=100$ on $9\times9$ grids
+with three seeds each: \texttt{rent\_vs\_r}, \texttt{tax\_vs\_ubi},
+\texttt{memory}, \texttt{state\_action}, and
+\texttt{inheritance\_x\_ubi}. Each sweep varies two dials over the
+ranges listed in Appendix~\ref{app:sweeps} while holding all others at
+defaults. Three additional wealth-tax-specific sweeps (Sweep~A: single
+tier with threshold $\times$ rate; Sweep~B: stacked-marginal lower-rate
+$\times$ top-rate; the scale-up sweep at $N=10{,}000$) are introduced
+in \S\ref{sec:threshold-rate} and \S\ref{sec:scale-up}.
+
+\subsection{Policy scenarios}
+\label{sec:policy-defs}
+
+For the wealth-tax analysis we encode eleven real-world or
+contemporaneous-political wealth-tax proposals. Each policy combines a
+tax schedule with the spending package its political project advances,
+because as our state-spending finding makes clear (\S\ref{sec:state-spending}),
+the two cannot be evaluated in isolation. Policy specifications are
+listed in Appendix~\ref{app:policies}. Effective-rate curves across
+policies are shown in Figure~\ref{fig:erc}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.9\linewidth]{effective_rate_curves.png}
+\caption{Effective annual wealth-tax rate as a function of wealth, by
+policy. Vertical lines mark the \pounds10M, \pounds100M, and \pounds1B
+thresholds. Most policies' progressive structures are visible as
+piecewise-linear segments on the log-wealth axis. Zucman's flat
+2\% above \pounds10M and his progressive 2/4/8\% version differ only
+above \pounds100M, where the marginal additions stack.}
+\label{fig:erc}
+\end{figure}
+
+%==========================================================================
+\section{Results}
+\label{sec:results}
+%==========================================================================
+
+We report results in increasing political-economic salience, ending
+with the scale-up to $N=10{,}000$ where the billionaire class first
+becomes representable.
+
+\subsection{Regimes: a phase portrait}
+\label{sec:phase}
+
+Across the thirteen scenarios at $N=100$, scenarios cluster into three
+clearly separated regions of the three-dimensional state space
+(Gini, $\Phi_t$, alive). Figure~\ref{fig:phase} shows the trajectories
+and Table~\ref{tab:regimes} summarises endpoint coordinates.
+
+\begin{figure}[t]
+\centering
+\begin{subfigure}{0.55\linewidth}
+\includegraphics[width=\linewidth]{phase3d_trajectories.png}
+\end{subfigure}\hfill
+\begin{subfigure}{0.42\linewidth}
+\includegraphics[width=\linewidth]{phase3d_shadows.png}
+\end{subfigure}
+\caption{Phase portrait of all scenarios in the three-dimensional state
+space (Gini, autocatalytic closure $\Phi$, alive). Three regions are
+visible: viable autocatalytic ($\Phi > 0.4$, alive $> 65$); extractive
+equilibrium ($\Phi \approx 0$, alive 40--75); collapse ($\Phi = 0$,
+alive $< 20$).}
+\label{fig:phase}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Endpoint coordinates by scenario at $N=100$, 250 ticks, mean
+across 8 seeds, with the State agent \emph{excluded} from Gini and
+share statistics (revision per cross-cutting review note). Regime
+assignment is by k-means with $k=3$ on z-normalised
+$(\text{Gini}, \Phi, \text{alive})$, silhouette score 0.55. Cluster
+labels follow the centroid coordinates: viable (centroid $\Phi=0.75$,
+alive 85), extractive equilibrium ($\Phi=0.01$, alive 62), collapse
+($\Phi=0.00$, alive 12).}
+\label{tab:regimes}
+\begin{tabular}{lrrrl}
+\toprule
+scenario & Gini & $\Phi$ & alive & regime \\
+\midrule
+socialist             & 0.30 & 0.880 & 99.0 & viable autocatalytic \\
+nordic                & 0.30 & 0.701 & 89.9 & viable autocatalytic \\
+inheritance\_break\_ubi & 0.57 & 0.667 & 85.9 & viable autocatalytic \\
+maker\_economy        & 0.77 & 0.586 & 68.8 & viable autocatalytic \\
+tax\_and\_spend       & 0.43 & 0.567 & 83.6 & viable autocatalytic \\
+memory\_equalised     & 0.92 & 0.015 & 76.9 & extractive equilibrium \\
+creditless            & 0.87 & 0.013 & 55.2 & extractive equilibrium \\
+current\_world        & 0.89 & 0.011 & 63.1 & extractive equilibrium \\
+memory\_starved       & 0.87 & 0.011 & 55.5 & extractive equilibrium \\
+pure\_speculation     & 0.92 & 0.001 & 57.9 & extractive equilibrium \\
+stevenson\_world      & 0.88 & 0.001 & 20.2 & collapse \\
+feudal                & 0.78 & 0.000 & 15.2 & collapse \\
+inheritance\_break    & 0.00 & 0.000 &  0.0 & collapse \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{State exclusion changes the picture.} The two largest
+Gini and top-share changes between this revision and the original
+draft are for the spending-heavy scenarios: \texttt{nordic}'s Gini
+falls from 0.79 (with State) to 0.29 (without), \texttt{socialist}'s
+from 0.81 to 0.30. The State was the single richest agent in those
+runs; it accumulated tax revenue without dispersing it back to the
+household sector and so dominated the percentile statistics. The
+corrected numbers make the qualitative claim sharper: viable
+state-spending regimes do not merely contain Gini, they actively
+reduce household-sector inequality below 0.3, comparable to lived
+Scandinavian distributions.
+
+The $k=3$ clustering replaces an earlier ``by inspection'' regime
+labelling. Silhouette scores are 0.55 for $k=2$, 0.55 for $k=3$,
+0.42 for $k=4$, and 0.32 for $k=5$. The data does not statistically
+prefer $k=3$ over $k=2$; the choice of three regimes is a
+theoretical/interpretive decision motivated by the distinction
+between extractive equilibrium and collapse, which we view as
+meaningfully different policy outcomes even where the data only
+weakly separates them. With 13 scenario points, any clustering
+claim is fragile. The regimes are interpretable as three rather
+than dictated as three, with the collapse-vs-extractive boundary
+the least sharp. The viable regime is autocatalytic in the
+productive-flow share sense defined in \S\ref{sec:phi} and is
+reached by any of three policy mixes: heavy state spending, high
+inheritance taxation, or elevating maker productivity.
+
+\subsection{What state spending actually does: a clean factorial}
+\label{sec:state-spending}
+
+State purchases of maker output enter $F^\text{prod}$
+directly (see \S\ref{sec:phi}), so toggling them on raises $\Phi$
+by construction. To separate the definitional contribution from
+the policy-relevant one, we run a clean factorial over three policy
+levers (tax schedule, spending package, inheritance taxation),
+reporting how each one moves the four headline metrics separately.
+
+The factorial varies the tax schedule (none, Zucman flat 2\% above
+threshold $\theta_1$, Zucman progressive 2/4/8\%), the spending
+package (off, on at UBI 0.4 + state employment 0.3 + state purchases
+at scaled rate 5), and the inheritance-tax rate ($\iota \in \{0,
+0.4, 0.8\}$). Eighteen cells, six seeds, 200 ticks.
+Table~\ref{tab:factorial} reports marginal means across each
+factor.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Marginal effects from the (tax $\times$ spending $\times$
+inheritance) factorial, $N=100$, 6 seeds, 200 ticks. Each row
+averages the median of the four marginalised cells.}
+\label{tab:factorial}
+\begin{tabular}{llrrrr}
+\toprule
+factor & level & alive & Gini & $\Phi$ & top-10 \\
+\midrule
+tax schedule & none                   & 66.5 & 0.85 & 0.186 & 0.77 \\
+             & Zucman flat 2\%        & 67.8 & 0.68 & 0.449 & 0.56 \\
+             & Zucman prog 2/4/8\%    & 67.8 & 0.67 & 0.465 & 0.55 \\
+\midrule
+spending     & off                    & 56.1 & 0.79 & 0.369 & 0.63 \\
+             & on                     & 78.6 & 0.71 & 0.364 & 0.62 \\
+\midrule
+inheritance  & $\iota = 0.0$          & 68.8 & 0.74 & 0.234 & 0.65 \\
+             & $\iota = 0.4$          & 67.5 & 0.74 & 0.337 & 0.66 \\
+             & $\iota = 0.8$          & 65.8 & 0.74 & 0.529 & 0.56 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three findings drop out cleanly.
+
+\paragraph{Spending saves lives but barely moves $\Phi$.} Turning the
+spending package on raises alive from 56 to 79 (a 40\% increase) but
+moves $\Phi$ by less than $0.005$ in either direction (0.369 vs
+0.364). Under the symmetric $\Phi$ definition, the wage flow added by
+state spending is offset, in share terms, by the reduced rentier
+extraction; spending's headline effect is on mortality, not on the
+flow composition. The original draft conflated these by counting
+state transfers in the numerator without crediting maker value-add,
+which artificially inflated the spending effect on $\Phi$. The
+honest claim, restated, is that spending is a life-saving instrument
+that operates orthogonally to $\Phi$.
+
+\paragraph{Tax schedule reduces inequality and raises $\Phi$.} The
+Zucman 2\% bracket above threshold $\theta_1$ moves Gini from 0.85 to
+0.68 and top-10 share from 0.77 to 0.56. It raises $\Phi$ from 0.186
+to 0.449, because the tax shrinks rentier stocks and therefore the
+capital-return component of $F^\text{ext}$. The Zucman progressive
+schedule adds nothing detectable on top of the flat 2\% in this
+factorial, consistent with \S\ref{sec:top-tier-no-bind}.
+
+\paragraph{Inheritance tax is the most $\Phi$-effective single
+lever.} Going from $\iota = 0$ to $\iota = 0.8$ raises $\Phi$ from
+0.23 to 0.53 (a $+0.30$ swing) while moving Gini only modestly. The
+mechanism is the same as for the wealth tax: estate taxation
+truncates dynastic wealth accumulation, shrinking the rentier stocks
+that drive capital-return extraction. \citet{piketty2013theory}'s
+analytical case for inheritance taxation is recovered as the
+single most $\Phi$-effective single-lever intervention in our model.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{tax_vs_ubi.png}
+\caption{The \texttt{tax\_vs\_ubi} sweep. Eight outcome metrics on the
+(flat\_tax\_rate, UBI) plane, with a state-spending baseline.
+Re-reading post-revision: the alive surface (top left) shows the
+genuine life-saving effect of UBI; $\Phi$ (top right) is dominated by
+the tax-progressivity axis rather than by UBI, consistent with
+Table~\ref{tab:factorial}.}
+\label{fig:taxubi}
+\end{figure}
+
+So the revised summary of \S\ref{sec:state-spending} is that
+\emph{three} levers each do something different and they should not
+be sold as a single policy stance: spending keeps people alive, tax
+schedules compress household inequality, and inheritance taxes raise
+the productive-flow share. The original draft's ``spending flips the
+regime'' headline conflated these and overclaimed what spending does
+on its own.
+
+\subsection{Visualising the flow regime: Sankey of steady-state flows}
+\label{sec:sankey}
+
+Figure~\ref{fig:sankey} shows mean per-tick wealth flows in steady
+state for three policies, rendered as ribbon Sankey diagrams. Each
+ribbon's width is proportional to the per-tick flow magnitude from a
+source class to a destination class; node-box height is proportional to
+total outflow (left) or inflow (right) of that class.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{sankey_flows.png}
+\caption{Steady-state wealth flows for three policies at $N=10{,}000$,
+mean across 3 seeds, ticks 80--180. \textbf{Left (uk\_tory\_2010\_24):}
+44\% of total flow is the RENTIER--LENDER deposit loop; productive
+wage flow (MAKER+EMPLOYER to WORKER) is 11\%. The low $\Phi = 0.05$
+is visible as the small share of edges landing on WORKER.
+\textbf{Middle (zucman\_2pct\_spend):} the
+RENTIER--LENDER loop has shrunk to 14\%; wealth-tax revenue
+(MAKER, RENTIER, LENDER to STATE) is 40\% of total flow; STATE to
+WORKER appears at 7\%. \textbf{Right (socialist):}
+WORKER--STATE--WORKER is the dominant circulation, accounting for
+40\% of total flow; the RENTIER--LENDER loop has effectively
+disappeared. Socialist $\Phi$ measured here is 0.88
+(Table~\ref{tab:regimes}).}
+\label{fig:sankey}
+\end{figure}
+
+The figure makes the productive-flow-share metric visible as a
+diagram rather than a scalar. The Tory panel's low $\Phi$ is the
+visual fact that most ribbons connect non-productive classes; the
+Socialist panel's high $\Phi$ is the fact that almost every ribbon
+ends at WORKER or MAKER. This Sankey is the cleanest single image
+for explaining the project's central metric to a non-technical
+audience.
+
+A secondary observation worth noting. Total flow per tick under
+\texttt{zucman\_2pct\_spend} (32{,}760 units) is slightly lower than
+under \texttt{uk\_tory\_2010\_24} (35{,}788 units) and
+\texttt{socialist} (35{,}203 units). The Zucman policy reduces total
+monetary throughput while shifting its composition strongly toward
+productive flows, a result consistent with the cardoso et al.\
+\citeyearpar{cardoso2025wealth} finding that social-protection
+parameters dominate growth-driven redistribution in kinetic-tax ABMs.
+
+\subsection{Inheritance reform as a conditional trapdoor}
+\label{sec:inheritance}
+
+Figure~\ref{fig:inh} shows the \texttt{inheritance\_x\_ubi} sweep. At
+the corner $(\iota=1, U=0)$, 100\% inheritance tax with no safety
+net, only 2 of 100 agents survive 200 ticks. Children are born with
+zero wealth and starve. At $(\iota=0.875, U=1.5)$, nearly equal
+inheritance reform combined with strong UBI, 95 of 100 survive.
+The two dials are not substitutes; inheritance reform is conditional
+on the existence of an alternative wealth floor.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{inheritance_x_ubi.png}
+\caption{The \texttt{inheritance\_x\_ubi} sweep. The alive surface
+(top-left) shows the trapdoor at $(\iota=1, U=0)$. The Gini surface
+(top-right) shows the mortality-blindness paradox: lowest Gini
+coincides with lowest alive.}
+\label{fig:inh}
+\end{figure}
+
+The same plot also shows our \emph{mortality-blind Gini} paradox.
+Lowest measured Gini sits in the corner where mortality is highest:
+extreme extraction kills the bottom of the distribution, leaving a
+homogeneous surviving population that registers as ``equal''. In
+\texttt{rent\_vs\_r} (Figure~\ref{fig:rentr}) the same pattern
+appears: highest Gini is at moderate rent and high $r$, while the
+extreme-rent corner shows a falsely lower Gini. We compute
+mortality-corrected Gini and top-share metrics that credit recent
+deaths' peak lifetime wealth back into the denominator
+(\S\ref{sec:phi}, \S\ref{sec:regressive-trap}).
+
+Figure~\ref{fig:survival} shows the temporal shape of the
+mortality dynamics behind these endpoint numbers.
+\texttt{inheritance\_break} loses its population within the first
+30 ticks; \texttt{feudal} and \texttt{stevenson\_world} follow
+shortly after. \texttt{nordic} and \texttt{socialist} hold near
+full population indefinitely; \texttt{inheritance\_break\_ubi}
+maintains the bulk of the population once the UBI starts catching
+the orphans.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{survival_scenarios.png}
+\caption{Survival curves for eight illustrative scenarios at
+$N=100$, 6 seeds. \textbf{Left:} alive over time (count).
+\textbf{Right:} cumulative excess mortality (starvation + debt
+write-off) as fraction of initial population. Collapse scenarios
+finish within 100 ticks of the start; viable scenarios hold a
+near-stationary alive count throughout.}
+\label{fig:survival}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{rent_vs_r.png}
+\caption{The \texttt{rent\_vs\_r} sweep. Alive (top-left) drops
+sharply with extraction; closure (bottom-left) is highest in the
+gentle corner; Gini (top-right) is non-monotone in extraction because
+of the mortality bias.}
+\label{fig:rentr}
+\end{figure}
+
+\subsection{Cultural erosion under economic pressure}
+\label{sec:culture}
+
+The model exhibits cultural \emph{erosion} rather than cumulative
+cultural evolution. The K=5 skill space is closed by construction:
+mutation can reset a dimension to a fresh draw but no genuinely new
+skill dimension can appear. The \citet{henrich2015secret}
+``cumulative culture'' framing therefore does not strictly apply;
+what the model demonstrates is the \emph{loss} of cultural breadth
+under wealth concentration, in the spirit of the demographic model
+of \citet{henrich2004demography}. \citet{vaesen2016cumulative}
+critique the Tasmanian inference in that paper by arguing that the
+relevant population sizes were not as different as Henrich's model
+required, weakening the population-size-explains-loss conclusion;
+our model assumes the loss mechanism (wealth-coupled bandwidth)
+rather than testing it. A genuinely open-ended treatment of cultural
+novelty, in the adjacent-possible spirit of
+\citet{hordijk2023emergence}, is demonstrated separately in
+\S\ref{sec:open-skills}.
+
+\paragraph{Bandwidth coupling.} The bandwidth coupling
+\begin{equation}
+\text{bw\_dims} \;=\; b_0 K + b_w K \log_{10}\!\big(\max(1, w_{\text{parent}})\big) / 4
+\end{equation}
+clipped to $[1, K]$ stays graded across orders of magnitude of
+wealth rather than saturating at the upper-middle threshold (as a
+prior linear formulation did).
+Figure~\ref{fig:bandwidth} decomposes the \texttt{memory} sweep
+breadth response into the marginal effect of $b_0$ and of $b_w$. The
+$b_0$ axis dominates (range 2.99) with the wealth-coupling
+$b_w$ contributing a graded response (range 0.87) across the
+full wealth distribution. The wealth coupling is a real, secondary
+channel rather than a saturating step function.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{bandwidth_decomp.png}
+\caption{Decomposition of the \texttt{memory} sweep. \textbf{Left:}
+cultural breadth on the $(b_0, b_w)$ plane. \textbf{Middle:}
+marginal effect of $b_0$ (avg over $b_w$) and of $b_w$ (avg over
+$b_0$); base bandwidth dominates, wealth coupling adds a graded
+correction. \textbf{Right:} realised distribution of
+$\text{bw\_dims}$ at birth by class under \texttt{current\_world}.
+Higher-wealth classes (rentier, employer) routinely inherit 4--5
+dimensions; workers cluster at 2--3.}
+\label{fig:bandwidth}
+\end{figure}
+
+\paragraph{The asymmetry result, with the skill-wealth channel
+quantified.} The original draft's negative result, that equalising
+cultural transmission at birth does not equalise wealth, recurs
+under the redesigned coupling. The \texttt{memory} sweep moves
+cultural breadth between 1.3 and 5.0 (a fourfold range) while Gini
+(now with State excluded) moves between 0.84 and 0.92, a 10\%
+range. \texttt{memory\_equalised} gives the highest non-extractive
+Gini (0.93); cultural equality alone does not move wealth concentration.
+
+To distinguish structural from emergent asymmetry we quantify the
+skill$\to$wealth channel directly.
+Table~\ref{tab:elasticity} reports per-class OLS coefficients and
+normalised elasticities for the regression of 40-tick wealth gain
+on the skill vector, with $n=809$ agent-windows across 8 seeds at
+$N=500$.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Skill$\to$wealth normalised elasticities by class. Wealth
+gain over 40 ticks regressed on the five-dim skill vector at
+$N=500$. Normalised elasticity =
+$\text{coef}\cdot\sigma_{\text{skill}}/|\overline{\text{gain}}|$.}
+\label{tab:elasticity}
+\begin{tabular}{lrrrrrrl}
+\toprule
+class & tech & org & social & fin & gen & $R^2$ & n \\
+\midrule
+WORKER     & 0.76 & 0.95 & $-0.02$ & $-0.03$ & $-0.03$ & 0.97 & 395 \\
+MAKER      & 0.00 & 0.00 & 0.01 & 0.00 & 0.33 & 0.98 & 144 \\
+EMPLOYER   & 0.30 & 0.03 & 0.25 & $-0.10$ & 0.24 & 0.12 & 100 \\
+LENDER     & $-0.01$ & 0.00 & $-0.01$ & 0.00 & $-0.01$ & 0.13 & 79 \\
+RENTIER    & $-0.06$ & $-0.05$ & 0.09 & $-0.10$ & $-0.08$ & 0.12 & 47 \\
+SPECULATOR & 0.56 & $-0.39$ & $-1.41$ & 0.04 & 0.13 & 0.11 & 44 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The channel is class-specific. Workers and makers have strong
+class-typed skill$\to$wealth elasticities (worker:
+technical~0.76, organisational~0.95, $R^2$~0.97; maker:
+generative~0.33, $R^2$~0.98). Employers have moderate
+elasticities ($R^2$~0.12) concentrated on technical and social.
+Lenders, rentiers, and speculators all have $R^2 \in [0.11, 0.13]$
+and small normalised elasticities ($|\eta| \leq 0.10$ for lenders
+and rentiers). The asymmetry is therefore partly structural: in
+the rentier and lender layers, capital-return and interest dynamics
+dominate and skills contribute almost nothing. But in the productive
+layers, skills do real work, and improving them raises per-tick
+wealth gain. The cultural-economic asymmetry visible in the
+\texttt{memory} sweep is the consequence of one half of the economy
+(extractive classes) having weak internal skill-wealth feedback while
+the other half (productive classes) has strong feedback.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{memory.png}
+\caption{The \texttt{memory} sweep. Cultural breadth (top middle)
+varies by $4\times$; Gini (top left) varies by 10\%. Cultural
+concentration responds to the bandwidth coupling but wealth
+concentration is anchored by the extractive-channel dynamics.}
+\label{fig:mem}
+\end{figure}
+
+\paragraph{Comparison to Spangler \& Sarkar.} The closest
+ABM precedent, \citet{spangler2022distribution}, find that skill
+inheritance raises wealth inequality. We can test that mechanism
+directly in our model. A clean toggle holds the bandwidth-gating
+mechanism and class-bias prior intact, and swaps only whether the
+transmitted skill values come from the parent (the default) or from
+a fresh class-typical Beta draw (the comparison arm); a coarser
+toggle, which destroys the bandwidth mechanism along with parental
+transmission by setting the mutation rate $\mu = 1.0$, is reported
+for contrast. At $N=100$, 10 seeds, 250 ticks:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrr}
+\toprule
+metric & default & class-prior & no-inheritance \\
+       & (parent-derived) & (clean toggle) & ($\mu=1$, confounded) \\
+\midrule
+Gini median   & 0.885 & 0.876 & 0.908 \\
+Top-1 median  & 0.235 & 0.250 & 0.254 \\
+Top-10 median & 0.785 & 0.683 & 0.891 \\
+Alive median  & 61.5  & 56.5  & 73.0 \\
+Breadth       & 3.38  & 3.55  & 5.00 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Under the clean toggle, switching transmitted values from
+parent-derived to class-typical-prior \emph{lowers} Gini by 0.010
+and \emph{raises} top-1 share by 0.016. So parent-derived skill
+inheritance does raise Gini relative to a class-typical prior. The
+direction is a partial reproduction of Spangler \& Sarkar; the
+magnitude is small. The coarser $\mu = 1$ arm gives the opposite
+Gini direction (0.908 vs 0.885) because it simultaneously removes
+the bandwidth gate and the class-bias persistence that the clean
+toggle preserves.
+
+The elasticity result (Table~\ref{tab:elasticity}) explains the
+small magnitude. Workers and makers have strong skill-to-wealth
+fits and their inherited skills do feed wealth; rentiers and
+lenders have weak fits and their inherited skills are not the
+binding constraint on their wealth dynamics. The Spangler effect
+should therefore be smaller in a multi-channel ABM than in their
+single-channel design.
+
+\subsection{Wealth-tax policies in steady state}
+\label{sec:policy}
+
+Table~\ref{tab:policies-100} reports steady-state outcomes for the
+eleven policy scenarios at $N=100$, 6 seeds, 250 ticks; trajectories
+are shown in Figure~\ref{fig:policies-compare}.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Eleven real-world wealth-tax proposals in steady state.
+$N=100$, 6 seeds, 250 ticks. The Reform-flavour row is included as a
+near-future political scenario rather than a present policy.}
+\label{tab:policies-100}
+\begin{tabular}{lrrrrrr}
+\toprule
+policy & alive & $\Phi$ & top10 & state $w$ & Gini & metabolic \\
+\midrule
+uk\_tory\_2010\_24            & 57 & 0.050 & 0.85 & 36{,}541 & 0.90 & 39.0 \\
+uk\_labour\_2024              & 57 & 0.230 & 0.75 & 28{,}455 & 0.85 & 39.5 \\
+zucman\_2pct\_hoard           & 51 & 0.418 & 0.59 & 17{,}943 & 0.75 & 39.1 \\
+zucman\_2pct\_spend           & 80 & 0.412 & 0.54 & 25{,}215 & 0.58 & 43.1 \\
+zucman\_progressive\_2\_4\_8 & 80 & 0.420 & 0.54 & 24{,}949 & 0.58 & 43.1 \\
+warren\_2020                  & 77 & 0.264 & 0.66 & 34{,}155 & 0.73 & 43.2 \\
+sanders\_2020                 & 79 & 0.259 & 0.75 & 33{,}411 & 0.76 & 42.9 \\
+piketty\_book                 & 78 & 0.413 & 0.66 & 27{,}550 & 0.72 & 42.9 \\
+norway\_actual                & 64 & 0.091 & 0.75 & 40{,}979 & 0.88 & 40.7 \\
+spain\_solidarity             & 77 & 0.365 & 0.65 & 28{,}331 & 0.71 & 41.5 \\
+reform\_uk\_flavour           & 45 & 0.019 & 0.79 & 28{,}952 & 0.89 & 38.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Values reflect the State-excluded percentile statistics
+(\S\ref{sec:phi}) and the symmetric $\Phi$ definition. For
+\texttt{zucman\_2pct\_spend}, top-10 share is 0.54 and Gini 0.58.
+The household-sector inequality reductions are strong: the median
+spend-policy halves household Gini relative to baseline Tory.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{policies_compare.png}
+\caption{Policy comparison trajectories at $N=100$. Six metrics, mean
+across 6 seeds. Spending-package policies cluster in the upper half
+of \emph{alive} from tick~50; Reform-flavour visibly collapses.}
+\label{fig:policies-compare}
+\end{figure}
+
+Three observations.
+
+First, \texttt{zucman\_2pct\_spend} (flat 2\% above \pounds10M with a
+spending package) and \texttt{zucman\_progressive\_2\_4\_8} (the same
+spending package but with the stacked 2/4/8\% schedule across
+\pounds10M / \pounds100M / \pounds1B) are not separable at $N=100$:
+median alive ($80$ vs $80$), top-10 share ($0.54$ vs $0.54$), and
+metabolic rate ($43.1$ vs $43.1$) all agree to two decimal places.
+$\Phi$ differs by 0.008 (0.412 vs 0.420), within seed noise. At
+default parameters the progressive structure adds nothing detectable
+above the flat 2\% bracket. We investigate the mechanism in
+\S\ref{sec:top-tier-no-bind} and revisit at calibrated parameters
+in \S\ref{sec:calibrated-policies}.
+
+Second, \texttt{zucman\_2pct\_hoard}, the same wealth tax with no
+spending package, gives 51 alive vs \texttt{uk\_tory\_2010\_24}'s
+57. The Zucman proposal evaluated as a revenue-only instrument
+costs roughly six lives per hundred at this scale relative to no
+policy, while raising $\Phi$ substantially (0.418 vs 0.050) by
+shrinking rentier stocks. The pattern is consistent: taxing without
+spending does extract from the rentier class but does not buy a life
+the way the spending package does.
+
+Third, the \texttt{reform\_uk\_flavour} prospectus (lower taxes, no
+state spending in the productive sector, higher rent extraction)
+produces the lowest alive count (45) and lowest closure (0.019).
+This is a near-future political scenario in the UK context and
+serves as the model's most extreme present-day policy projection.
+
+\subsection{Threshold dominates rate}
+\label{sec:threshold-rate}
+
+To isolate the effect of wealth-tax design from spending, we run two
+sweeps holding the spending package fixed at the
+\texttt{zucman\_2pct\_spend} configuration:
+
+\begin{description}
+\item[Sweep A] (Figure~\ref{fig:sweepA}). A single-tier wealth tax with
+threshold $\theta \in \{1, 3, 10, 30, 100, 300, 1000, 3000, 10000\}$
+units and rate $\tau \in [0, 0.08]$. $9\times 9$ grid, 3 seeds.
+\item[Sweep B] (Figure~\ref{fig:sweepB}). A three-tier wealth tax with
+fixed thresholds at $\pounds$10M, $\pounds$100M, $\pounds$1B,
+varying the bottom-tier rate $\tau_b \in [0, 0.05]$ and the top-tier
+marginal addition $\tau_t \in [0, 0.10]$. $9\times 9$ grid, 3 seeds.
+\end{description}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{sweep_A_heatmaps.png}
+\caption{Wealth-tax Sweep~A at $N=100$. Threshold (horizontal axis,
+log-spaced) versus rate (vertical). Autocatalytic closure
+(top-right) plateaus from threshold $\pounds$10M down to
+$\pounds$100K; above $\pounds$100M the policy loses traction.}
+\label{fig:sweepA}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{sweep_B_heatmaps.png}
+\caption{Wealth-tax Sweep~B at $N=100$. Bottom-tier rate (horizontal)
+versus top-tier rate (vertical). Both the alive and closure surfaces
+are column-identical: the top-tier rate has no effect on outcomes
+because, once the bottom tier is active, no agent reaches the
+$\pounds$1B threshold.}
+\label{fig:sweepB}
+\end{figure}
+
+Sweep~A shows a clean monotone effect of \emph{threshold}: closure at
+4\% rate falls from $\Phi = 0.59$ at threshold $\pounds$10M to
+$\Phi = 0.10$ at threshold $\pounds$1B. The Zucman threshold of
+$\pounds$10M is approximately the highest threshold that still
+delivers a viable steady state.
+
+\subsection{The top tier does not bind: an analytical fixed point}
+\label{sec:top-tier-no-bind}
+
+Sweep~B's ``column-identical alive/closure surfaces'' is a
+tautology conditional on the post-tax wealth ceiling: any tier whose
+threshold exceeds the maximum agent wealth contributes
+exactly zero by construction. The economically interesting question
+is \emph{where} the post-tax wealth ceiling sits, as a function of
+the lower-bracket rate $\tau$ and the capital-return rate $r$.
+\citet{benhabib2011distribution} provide the rigorous analytical
+treatment of this question in heterogeneous-agent macro with
+bequests; we recover their qualitative structure below within
+the ABM. The empirical UK wealth-share targets in
+\S\ref{sec:pareto} are from the WID database, in the tradition of
+\citet{saez2016wealth}.
+
+For a single rentier with wealth $w \geq \theta$, the dynamics under
+capital return $r$ and a flat marginal wealth tax $\tau$ above
+threshold $\theta$ are
+\begin{equation}
+w_{t+1} \;=\; w_t + r w_t \;-\; \tau (w_t - \theta).
+\end{equation}
+The fixed point $w^*$ satisfies $r w^* = \tau (w^* - \theta)$, i.e.\
+\begin{equation}
+w^* \;=\; \frac{\tau\, \theta}{\tau - r}
+\qquad \text{when } \tau > r,
+\end{equation}
+and the dynamics diverge when $\tau \leq r$. Wealth tax must exceed
+the rate of capital return to produce a finite stationary cap. Below
+that point, agent wealth grows without analytical bound; the
+empirical cap is set elsewhere, by mortality, lifespan, and the
+deposit pool's drain on rentier surplus.
+
+Figure~\ref{fig:fixed-point} compares this prediction to simulated
+top wealth across the $(\tau, \theta)$ plane at $N=1000$. The
+analytical prediction $w^* = \tau \theta / (\tau - r)$ tracks the
+simulated top wealth quantitatively for $\tau > r$ at $\theta =
+\pounds 10M$ (predicted 300, observed 308 at $\tau=0.06$;
+predicted 200, observed 246 at $\tau=0.08$); at $\theta = \pounds 100M$
+the simulated tops sit \emph{below} the analytical prediction
+because secondary sinks (deposit pool, subsistence, inheritance tax)
+act as an additional effective tax that the simple two-term dynamic
+ignores. For $\tau < r$, the simulated tops are bounded only by
+mortality, decreasing in $\tau$ but never reaching a finite analytical
+fixed point.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{fixed_point.png}
+\caption{Analytical fixed point $w^* = \tau \theta / (\tau - r)$ vs
+observed top wealth across $(\tau, \theta)$, $N=1000$, $r=0.04$,
+4 seeds. The dashed line is the analytical prediction (defined only
+for $\tau > r$); the solid line is the observed top-wealth median
+with IQR. Secondary sinks (deposits, subsistence, inheritance)
+pull the observed top below the simple analytical prediction at
+high threshold.}
+\label{fig:fixed-point}
+\end{figure}
+
+\paragraph{Reading.} For the wealth-tax policies modelled,
+Zucman's 2\% above \pounds10M has $\tau < r = 0.04$ in our default
+calibration. The simple analytical model therefore predicts
+unbounded top wealth, and the simulation's observed cap
+($\approx \pounds 270$M under Zucman) is set by mortality and
+secondary sinks rather than by the tax-vs-compounding fixed point.
+The higher Zucman tier (4\% above \pounds 100M) crosses the
+$\tau > r$ threshold (the tier is inactive when $\tau = r$).
+Were the simulated population ever to reach the \pounds 100M
+tier, the stacked $\tau = 0.06$ above \pounds 100M would cap
+them at $w^* = 0.06 \cdot \pounds 100\text{M} / (0.06 - 0.04)
+= \pounds 300\text{M}$ at $r = 0.04$. At default parameters
+they do not reach it, because the \pounds 10M bracket plus
+secondary sinks has already held them at \pounds 270M. The
+higher bracket is idle not by
+tautology but because the lower bracket plus background dynamics
+have already enforced a cap below it. The empirical flat-vs-
+progressive equivalence at default parameters is a constructive
+consequence of $\tau$-vs-$r$ competition rather than a counting
+artefact, and the equivalence breaks at calibrated parameters
+where the upper tiers actively bind (\S\ref{sec:calibrated-policies}).
+
+A practical policy implication: a wealth-tax design with all tiers
+at rates $\tau < r$ relies entirely on mortality and secondary
+sinks to cap top wealth, which is a fragile basis. Schemes whose
+\emph{lowest} tier rate exceeds the capital-return rate are
+structurally robust because they cap the top analytically rather
+than by accident of background dynamics. By that test the Zucman
+proposal at 2\% is too low; Warren's 2\% and 6\% are also too low at
+the lower thresholds and only the highest tier crosses $r$. Sanders'
+top tier at 8\% comfortably exceeds typical $r$ values but its
+lowest tier at 1\% does not. None of the modelled policies pass
+the $\tau > r$ test at their lowest bracket; the model recovers
+the long-standing concern that nominal wealth taxes are typically
+below the rate of return.
+
+\subsection{Scaling to \texorpdfstring{$N=10{,}000$}{N=10,000}: the billionaire class}
+\label{sec:scale-up}
+
+The $N=100$ analysis is open to the objection that the billionaire
+class cannot statistically express itself in a 100-agent population.
+We therefore scaled the model to $N=10{,}000$ for a focused subset of
+eight policies. Table~\ref{tab:policies-10k} reports the
+billionaire-tier wealth counts, alive, and closure. Figure
+\ref{fig:billions} visualises the counts above the $\pounds$10M,
+$\pounds$100M, and $\pounds$1B thresholds.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Wealth-tier counts at $N=10{,}000$, \textbf{10 seeds}, 180
+ticks (revision: previously 3 seeds). State agent excluded from
+top-share statistics (cross-cutting fix). Counts are mean number of
+agents whose terminal wealth (in $\pounds$) exceeds the column
+threshold.}
+\label{tab:policies-10k}
+\begin{tabular}{lrrrrrr}
+\toprule
+policy & alive & $\Phi$ & top-1 share & $\geq \pounds$10M & $\geq \pounds$100M & $\geq \pounds$1B \\
+\midrule
+uk\_tory\_2010\_24            & 6{,}268 & 0.118 & 0.183 & 1{,}540 & 796 & \textbf{19} \\
+uk\_labour\_2024              & 6{,}235 & 0.288 & 0.167 & 1{,}435 & 453 & 1 \\
+zucman\_2pct\_hoard           & 6{,}103 & 0.438 & 0.106 & 1{,}440 & 27  & 1 \\
+zucman\_2pct\_spend           & 8{,}053 & 0.440 & 0.095 & 1{,}762 & 69  & 1 \\
+zucman\_progressive\_2\_4\_8 & 8{,}059 & 0.446 & 0.087 & 1{,}761 & 64  & 1 \\
+warren\_2020                  & 7{,}699 & 0.310 & 0.103 & 1{,}749 & 704 & 1 \\
+piketty\_book                 & 7{,}777 & 0.432 & 0.135 & 1{,}456 & 108 & 1 \\
+reform\_uk\_flavour           & 5{,}334 & 0.060 & 0.172 & 1{,}632 & 768 & \textbf{97} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Tory generates 19 billionaires in a 10{,}000-agent economy
+(roughly the UK ratio of approximately 50 billionaires per 67
+million population); Reform generates 97 and kills nearly half the
+population. Every wealth-tax policy at default parameters collapses
+the billionaire count to one. Top-1 share at \texttt{zucman\_2pct\_spend}
+is 0.10, household-sector inequality compressed substantially relative
+to Tory's 0.18.
+
+\paragraph{Equivalence claim, properly tested.} The flat versus
+progressive Zucman comparison at 10 seeds is
+$(\text{alive}, \Phi)$ = $(8053, 0.440)$ vs $(8059, 0.446)$,
+which falls within seed noise (IQRs overlap completely). The
+two schedules are not separable at this scale and at default
+parameters; at calibrated parameters they separate cleanly
+(\S\ref{sec:calibrated-policies}, Table~\ref{tab:policies-calibrated}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{billionaire_count_n10k.png}
+\caption{Counts of agents above wealth thresholds at $N=10{,}000$,
+mean across 10 seeds. The $\geq\pounds$1B count varies from 1 under
+any wealth-tax policy to 19 under the Tory baseline to 97 under the
+Reform prospectus.}
+\label{fig:billions}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{top_wealth_distribution_n10k.png}
+\caption{Wealth of the top 200 agents by policy, log--log scale,
+$N=10{,}000$. Reform-flavour and Tory baseline both show fat tails
+extending past $\pounds$1B; wealth-tax policies bring the tail
+sharply downward at the $\pounds$10M--$\pounds$100M region.}
+\label{fig:top200}
+\end{figure}
+
+The qualitative findings of \S\ref{sec:policy} and
+\S\ref{sec:top-tier-no-bind} survive scaling. The Tory baseline
+generates 19 billionaires in a 10{,}000-agent economy, a rough match
+to the observed UK ratio of around 50 resident billionaires per
+67 million population. The Reform prospectus generates 97
+billionaires and kills 47\% of the population. Every modelled
+wealth-tax policy, Zucman flat, Zucman progressive, Warren,
+Piketty, collapses the billionaire count to 1.
+
+The Zucman flat-vs-progressive equivalence is not separable at 10
+seeds:
+$(\text{alive}, \Phi, \geq\pounds 100\text{M count})$ for the two
+schedules are $(8053, 0.457, 69)$ vs $(8059, 0.464, 64)$. The
+$\Phi$ difference of 0.007 sits well within seed noise. At default
+parameters the top tier does not bind, for the analytical reasons
+derived in \S\ref{sec:top-tier-no-bind}. At calibrated parameters
+the conclusion changes; see \S\ref{sec:calibrated-policies}.
+
+\subsection{Calibration check: the Pareto tail}
+\label{sec:pareto}
+
+Figure~\ref{fig:pareto} plots the top-200 wealth of each policy at
+$N=10{,}000$ on log--log axes, with an approximate power-law fit to
+the UK Sunday Times Rich List 2024 overlaid as a dashed reference.
+The UK fit is $W(\text{rank}) \approx 37 \cdot \text{rank}^{-0.706}$
+billion pounds, anchored to a top wealth of roughly $\pounds$37B and
+approximately 165 sterling billionaires.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{pareto_with_uk_overlay.png}
+\caption{Top-200 wealth by rank for each policy at $N=10{,}000$, 3
+seeds, terminal tick 180. Dashed black: approximate UK Sunday Times
+Rich List 2024 power-law fit (anchored to 165 billionaires and a top
+wealth of roughly $\pounds$37B). The model under-fattens the
+extreme top tail relative to UK reality but produces a much higher
+per-capita billionaire density. See discussion in
+\S\ref{sec:pareto}.}
+\label{fig:pareto}
+\end{figure}
+
+The figure makes three calibration facts visible.
+
+First, all policy lines are shallower than the UK fit. Linear fits of
+$\log W$ on $\log \text{rank}$ for the top 50 agents give Pareto
+slopes around $-0.07$ to $-0.26$, compared to the UK fit slope of
+$-0.706$. The model's top tail is markedly flatter than the empirical
+distribution: many similar-wealth agents at the top rather than a few
+extreme outliers.
+
+Second, the maximum wealth in the Tory baseline is approximately
+$\pounds$4 to $\pounds$6B at the median seed, compared to roughly
+$\pounds$37B in the UK list. The model under-produces the very-top
+fortunes by approximately one order of magnitude.
+
+Third, and weighing against the first two, the model
+\emph{over-produces} the lower-billionaire region: 19 billionaires per
+$10{,}000$ agents under Tory is about $2500\times$ the UK per-capita
+rate of around 50 billionaires per 67 million. We have too
+many billionaires per capita, but each one is too poor.
+
+This combination, a flatter and lower top tail with too many
+people in the billionaire band, points to a small number of model
+features that are jointly responsible. Capital return at 4\% per tick
+likely undershoots the genuine compounding of top dynastic wealth.
+Rentier proportion fixed at 3\% of the population is plausibly an
+order of magnitude too high for the strict billionaire class but
+fine for the broader $\pounds$10M$+$ class. The bandwidth-coupled
+inheritance mechanism may also redistribute too much knowledge between
+generations to allow the kind of multi-generation dynastic
+concentration the empirical tail reflects.
+
+A partial calibration over capital return $r \in \{0.04, 0.06, 0.08,
+0.10\}$, rent share $\in \{0.20, 0.35, 0.50\}$, and inheritance tax
+$\iota \in \{0.0, 0.2, 0.4\}$ (180 cells, 5 seeds at $N=1000$),
+fitting to UK \citep{saez2016wealth} WID targets of top-1\% share
+0.30, top-10\% share 0.57, top-0.1\% share 0.13, and Pareto slope
+$-0.706$, returns the best L2 fit at $r=0.06$, rent share 0.50,
+inheritance tax 0.40, yielding observed top-1\% 0.15, top-10\% 0.65,
+top-0.1\% 0.06, Pareto slope $-0.673$. The slope matches the UK
+Rich List slope almost exactly; the absolute levels remain too low
+by roughly a factor of two at top-1\% and top-0.1\%. The slope match
+is illustrative rather than a fully validated calibration; this
+configuration keeps only 26\% of the population alive at terminal
+tick, well below UK reality. There is a Pareto frontier here between
+matching empirical tail steepness and empirical mortality, and we
+have not found a setting that hits both. The fact that the slope is
+reachable indicates the model can produce realistic-tail behaviour
+in some configuration; \S\ref{sec:calibrated-policies} reports how
+much the policy conclusions move when the policy suite is rerun at
+the calibrated configuration. Future work should free the population
+proportions (the rentier share is hard-coded at 3\%, plausibly too
+high for the strict billionaire class) and fit jointly.
+
+\subsection{Policy results at calibrated parameters}
+\label{sec:calibrated-policies}
+
+The partial calibration in \S\ref{sec:pareto} matched the UK Pareto
+slope at $r = 0.06$, rent share $0.50$, inheritance tax $0.40$. The
+policy results reported in \S\ref{sec:policy} and \S\ref{sec:scale-up}
+are at the default $r = 0.04$, rent share $0.35$. The
+configuration that earns the \pounds\ axis is not the one in which
+the policy comparisons were made. This section corrects that by
+rerunning the policy suite with $r = 0.06$ and rent share $0.50$
+held fixed across policies, leaving each policy's other dial
+settings unchanged. Table~\ref{tab:policies-calibrated} reports
+$N=10{,}000$, 6 seeds, 180 ticks.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Policy results at calibrated parameters ($r=0.06$, rent
+share $=0.50$), $N=10{,}000$, 6 seeds, 180 ticks. State excluded
+from top-1 share. Compare to Table~\ref{tab:policies-10k}
+(default parameters). Wealth thresholds in \pounds.}
+\label{tab:policies-calibrated}
+\begin{tabular}{lrrrrrr}
+\toprule
+policy & alive & top-1 share & $\geq$\pounds10M & $\geq$\pounds100M & $\geq$\pounds1B & max wealth \\
+\midrule
+uk\_tory\_2010\_24 & 2{,}230 & 0.198 & 866 & 309 & \textbf{300} & \pounds48B \\
+uk\_labour\_2024 & 3{,}029 & 0.157 & 1{,}360 & 800 & 262 & \pounds12B \\
+zucman\_2pct\_hoard & 2{,}532 & 0.262 & 910 & 306 & 10 & \pounds4.1B \\
+zucman\_2pct\_spend & 7{,}734 & 0.233 & 1{,}746 & 801 & 46 & \pounds2.4B \\
+zucman\_progressive\_2\_4\_8 & 7{,}744 & 0.143 & 1{,}750 & 720 & \textbf{0} & \pounds0.4B \\
+warren\_2020 & 7{,}234 & 0.179 & 1{,}740 & 804 & 140 & \pounds1.5B \\
+piketty\_book & 7{,}363 & 0.230 & 1{,}441 & 800 & 20 & \pounds1.7B \\
+reform\_uk\_flavour & 2{,}526 & 0.181 & 1{,}010 & 341 & \textbf{324} & \pounds77B \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three things move materially. First, billionaire counts grow under
+every policy except the progressive Zucman: Tory now produces 300
+billionaires (vs 19 at default), Reform produces 324 (vs 97), and
+even Zucman 2\% flat with spending leaves 46 (vs 1). The model at
+calibrated parameters is much closer to the UK Rich List
+distribution (Tory max wealth \pounds48B vs the UK Rich List top of
+roughly \pounds37B) but the per-capita billionaire density now
+\emph{over}-shoots in the other direction.
+
+Second, mortality is much higher in non-spend policies under
+calibrated parameters: Tory keeps 22\% of the population alive at
+$r=0.06$, vs 63\% at $r=0.04$. The combination of higher capital
+return and higher rent share extracts faster than the population
+can replace itself absent a spending package. This is the
+``calibrated config kills three-quarters'' problem the previous
+section flagged, now made concrete across all policies.
+
+Third, and most importantly,
+\textbf{Zucman progressive now binds the top tier and Zucman flat
+does not}. Under calibrated parameters Zucman progressive produces
+\emph{zero} billionaires while Zucman flat leaves 46, a clean
+separation that did not exist at default $r=0.04$. Top-1 share
+also separates clearly: 0.143 progressive vs 0.233 flat. The
+prior draft's ``top tier does not bind'' result was specific to
+the default-parameter regime where wealth never reaches the
+\pounds1B bracket; once $r$ is raised to the calibration target, the
+upper tier becomes the decisive instrument.
+
+\paragraph{Implications for the analytical fixed point.} At
+calibrated $r = 0.06$, none of the policy lowest-tier rates exceed
+$r$ (Zucman 2\%, Warren 2\%, Piketty 1\% at lower brackets, Sanders
+1\%). The cap-by-mortality regime identified in
+\S\ref{sec:top-tier-no-bind} now bites harder, which we observe as
+the high mortality of the non-spend cells. The Zucman progressive
+top tier of 4\% above \pounds100M (stacking to 8\% above \pounds1B)
+is the one rate among the modelled policies that exceeds the
+calibrated capital return, and it is the one policy that eliminates
+billionaires. The \pounds1B tier is no longer a tautology; it is the
+mechanism by which the policy succeeds in this regime. The
+$\tau$-vs-$r$ design test is preserved at calibrated parameters
+and becomes more rather than less significant.
+
+\paragraph{Implications for the policy contribution.} A practical
+political reading. The Zucman headline of ``2\% on the
+ultra-wealthy'' is robust as a household-inequality compressor
+under either parameter regime, but it does not eliminate
+billionaires under realistic capital-return dynamics; only the
+progressive form does. The political case for the upper tiers
+(currently presented in Zucman's proposal as a sign of seriousness
+rather than as the load-bearing instrument) is, under our
+calibration, the central mechanism. Conversely, if the genuine
+capital return is closer to the default $r=0.04$ than to the
+calibration target $r=0.06$, the lower tier alone suffices and the
+progressive structure is symbolic. Either way the \pounds10M
+threshold is doing real work.
+
+\subsection{Open-ended skill space: a minimal demonstration}
+\label{sec:open-skills}
+
+The cultural model presented above operates in a fixed K=5 skill space.
+No skill dimension that did not exist at $t=0$ can ever appear, which
+is a category limitation relative to the open-ended-evolution
+tradition \citep{taylor2019evolutionary, banzhaf2016defining}. We
+address this with a minimal demonstration extension. In a stand-alone
+simulation the skill vector
+is variable-length: at every reproduction event, with probability
+proportional to $\log(w_{\text{parent}})$, a previously-undiscovered
+skill dimension enters the global pool and is initialised on the child
+to a fresh Beta(2,2) value (subsequent inheritance follows the same
+bandwidth rules as the main model).  Five hundred initial agents, 400
+ticks, five seeds.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{open_skills.png}
+\caption{Open-ended skill space demonstration. \textbf{Left:} active
+skill-pool size over time. The closed variant (grey, novelty
+rate 0) stays at five; the open variant (blue, novelty
+proportional to $\log(\text{parent wealth})$) climbs from five to
+about ten.  \textbf{Middle:} per-agent breadth grows accordingly.
+\textbf{Right:} the discoverers of new skills: most novelty events
+fire on worker parents (because workers are the most numerous class),
+but the upper tail of the discoverer-wealth distribution sits at
+$10^{4}$ in model units, indicating that high-wealth parents do
+contribute to skill discovery disproportionately to their numbers.}
+\label{fig:open-skills}
+\end{figure}
+
+The extension does not feed back into the policy results of the main
+paper, and we do not claim it as a load-bearing finding. It exists to
+show that the model's core mechanism can be extended in a TAP-style
+adjacent-possible direction \citep{hordijk2023emergence} without
+fundamental redesign, and to demonstrate that the wealth-coupled
+discovery channel concentrates novelty production in wealthier
+lineages on a per-capita basis. The per-capita discovery rate (right
+panel) is 0.012 per agent-generation for RENTIER, 0.009 for WORKER,
+and 0.005 for MAKER; rentiers discover at $1.3\times$ the worker rate
+and $2.4\times$ the maker rate, despite being far less numerous in
+absolute terms. The wealth-coupled discovery channel does concentrate
+novelty in wealthier lineages on a per-capita basis as well as in
+absolute count.
+
+A more substantive treatment, with open-ended novelty integrated
+into the full economic model and the policy results re-run under
+endogenous skill discovery, is the natural follow-up paper; we cite
+\citet{taylor2019evolutionary} and \citet{banzhaf2016defining} as
+the standard references for that direction.
+
+\subsection{The regressive trap was state contamination}
+\label{sec:regressive-trap}
+
+An earlier version of this analysis reported that at $N=10{,}000$
+with a fixed spending package, top-1\% share \emph{increases} from
+$0.37$ to $0.84$ as the wealth-tax rate rises from zero to 8\% at
+threshold \pounds 1M. That finding included the State agent in the
+wealth distribution, so as the wealth tax shifted revenue from
+private households to the State, the State's growing share dominated
+the percentile statistics. With the State excluded and a
+mortality-corrected variant computed alongside, the picture changes
+materially. We report top-1\% share over the rate axis for the seven
+threshold levels (thresholds in model units, where 1 unit =
+\pounds 100k):
+
+\begin{table}[t]
+\centering
+\small
+\caption{Top-1\% share at $N=10{,}000$, 2 seeds, 150 ticks, State
+excluded. Each row is a fixed threshold; each column a rate from 0
+to 0.08. The mortality-corrected and raw values agree to within
+0.005 throughout; we report raw values here.}
+\label{tab:taxsweep10k}
+\begin{tabular}{rrrrrrrr}
+\toprule
+$\theta$ (\pounds) & $\tau=0$ & 0.013 & 0.027 & 0.040 & 0.053 & 0.067 & 0.080 \\
+\midrule
+1M    & 0.18 & 0.14 & 0.11 & 0.09 & 0.07 & 0.06 & 0.06 \\
+3M    & 0.18 & 0.13 & 0.09 & 0.07 & 0.05 & 0.04 & 0.04 \\
+10M   & 0.18 & 0.12 & 0.08 & 0.06 & 0.05 & 0.04 & \textbf{0.04} \\
+30M   & 0.18 & 0.11 & 0.08 & 0.07 & 0.06 & 0.05 & 0.05 \\
+100M  & 0.18 & 0.12 & 0.10 & 0.09 & 0.08 & 0.08 & 0.08 \\
+300M  & 0.18 & 0.16 & 0.14 & 0.14 & 0.13 & 0.13 & 0.12 \\
+1B    & 0.18 & 0.18 & 0.18 & 0.18 & 0.18 & 0.17 & 0.17 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{tax_sweep_n10k.png}
+\caption{Wealth-tax sweep at $N=10{,}000$, State excluded. Threshold
+on horizontal log-spaced axis (\pounds 1M to \pounds 1B); rate on
+vertical. The top-1\% share surface is monotone decreasing in rate
+at every threshold; the apparent ``regressive trap'' of an earlier
+analysis was a state-contamination artefact and disappears under
+the corrected metric.}
+\label{fig:taxsweepN10k}
+\end{figure}
+
+There is no regressive trap in this model once the State is
+excluded from the wealth distribution. Top-1\% share decreases
+monotonically with the tax rate at every threshold; the strongest
+compression is at the \pounds10M Zucman threshold (top-1\% falls
+from 0.18 to 0.04, a $4.4\times$ reduction). The mortality
+correction itself moves the metric by less than 0.005 across the
+entire grid, indicating that excluding the State (rather than
+correcting for excess mortality) is what changes the answer.
+
+\paragraph{The substantive finding that does survive.} The threshold
+ranking holds: top-1\% reduction is most aggressive at intermediate
+thresholds (\pounds 10M to \pounds 30M) and tapers off at higher
+thresholds. The Zucman \pounds10M threshold turns out to compress
+the top quintile most efficiently of any threshold we tested. At
+\pounds 1B threshold, the tax effectively does nothing (the
+threshold catches almost no agents). This is the genuine
+\emph{progressive} finding the original draft mis-stated as
+``regressive''; corrected, it points the same direction the
+political case for Zucman points.
+
+%==========================================================================
+\section{Discussion}
+\label{sec:discussion}
+%==========================================================================
+
+\subsection{What we believe is novel}
+
+The class-specific skill-to-wealth elasticity decomposition
+(\S\ref{sec:culture}, Table~\ref{tab:elasticity}) is the freshest
+contribution. The cultural-economic asymmetry the bandwidth
+coupling generates is not a structural artefact of how the model is
+wired; it is a consequence of one half of the economy (extractive
+classes) having near-zero skill-to-wealth feedback while the other
+half (productive classes) has strong feedback, which a regression on
+40-tick wealth gain shows directly.
+
+The analytical $w^* = \tau \theta / (\tau - r)$ fixed-point
+characterisation (\S\ref{sec:top-tier-no-bind}) re-frames the
+top-tier-does-not-bind result from a tautology conditional on the
+post-tax ceiling
+into a derivable consequence of tax-vs-compounding competition.
+\citet{benhabib2011distribution} provide the rigorous heterogeneous-
+agent macro treatment of bequest dynamics and wealth-distribution
+tails; we recover the qualitative $\tau$-vs-$r$ structure in the
+ABM setting.
+
+The (tax $\times$ spending $\times$ inheritance) clean factorial
+(\S\ref{sec:state-spending}, Table~\ref{tab:factorial}) disaggregates
+three policy levers. Spending raises alive counts without
+moving $\Phi$; tax-rate schedules compress household-sector
+inequality; inheritance taxation is the most $\Phi$-effective
+single lever.
+
+The wealth-coupled cultural-transmission bandwidth mechanism
+\citep{henrich2001evolution, henrich2004demography,
+spangler2022distribution} is exercised across the relevant wealth
+range under the log-wealth coupling (\S\ref{sec:culture}).
+
+The $\Phi$ flow-share metric (\S\ref{sec:phi}) is defined
+symmetrically across productive and extractive accrual. We do not
+claim it is an autocatalytic-set property in the
+\citet{hordijk2004detecting} RAF sense; it is a per-tick flow ratio
+operationalising the productive-vs-extractive distinction without
+implementing the topological RAF property.
+
+\subsection{Honest accounting of where the model still falls short}
+
+The household-sector inequality reductions under spend policies are
+robust across all metrics we report, but several quantitative claims
+remain conditional on parameter choices. The ``top tier does not
+bind'' result holds at default parameters; at calibrated parameters
+(\S\ref{sec:calibrated-policies}) the top tier binds clearly and the
+progressive Zucman schedule outperforms the flat. Which result
+should be considered the headline depends on whether the calibrated
+configuration is judged a fair representation of UK conditions; we
+present both and discuss the trade-off rather than picking one.
+
+The original analysis reported a ``regressive trap'' (top-1\% share
+rising with the tax rate at low thresholds) that was the result of
+including the State agent in the wealth distribution; it does not
+survive State exclusion. We retract that finding.
+
+The Pareto-tail calibration is partial. The slope is reachable at
+$r=0.06$, rent share 0.50, inheritance tax 0.40, but at the cost of
+mortality that the model cannot reproduce on UK demographic
+benchmarks. We do not yet have a fitted scenario that matches both
+slope and level and survival simultaneously.
+
+\subsection{What the model cannot do}
+
+The most consequential remaining limitations: no spatial structure;
+no firm formation; no fiscal-crisis dynamics; toy speculator
+dynamics that do not produce bubbles; a closed K=5 skill space in
+the main results (a minimal open-skills demonstration in
+\S\ref{sec:open-skills} shows how the mechanism extends to
+open-ended skill discovery but does not fold back into the policy
+analysis); a single lender pool with no shadow-banking.
+\citet{charbonneau2021fidelity}'s ``grain problem'' for fidelity
+measures applies to our K=5 skill discretisation and we acknowledge
+it as a methodological choice rather than a natural quantity.
+
+\subsection{Positioning for publication}
+
+\begin{description}
+\item[JASSS] (Journal of Artificial Societies and Social Simulation).
+Lead with (i) the productive-flow-share metric $\Phi$ and the
+Sankey visualisation (Figure~\ref{fig:sankey}), which is the
+single best artefact for explaining the metric to a non-technical
+audience; (ii) the phase portrait under state-excluded Gini
+(Figure~\ref{fig:phase}, Table~\ref{tab:regimes}); and (iii) the
+clean (tax $\times$ spending $\times$ inheritance) factorial
+(\S\ref{sec:state-spending}, Table~\ref{tab:factorial}), which
+shows that alive, Gini, and $\Phi$ are three distinct policy
+targets answering to three distinct levers. The political framing
+reads natively in JASSS. For an ALIFE submission a more conservative
+title, e.g.\ replacing ``autocatalytic-closure'' with
+``productive-flow share,'' would reduce friction with the
+RAF-literate audience while preserving the conceptual lineage.
+
+\item[JEIC] (Journal of Economic Interaction and Coordination).
+Lead with the analytical $\tau$-vs-$r$ fixed point
+(\S\ref{sec:top-tier-no-bind}), the wealth-tax design factorisation
+under both default and calibrated parameters
+(\S\ref{sec:calibrated-policies}), and the calibration-vs-policy
+sensitivity result. Direct engagement with
+\citet{spangler2022distribution} and \citet{cardoso2025wealth}
+positions the paper; \citet{benhabib2011distribution} is the
+analytical neighbour to engage on the fixed-point side.
+
+\item[Artificial Life / ALIFE]. Lead with the class-specific
+skill-to-wealth elasticity decomposition (Table~\ref{tab:elasticity}),
+the open-skill-space demonstration (\S\ref{sec:open-skills}) with
+per-capita discovery rate, and the bandwidth decomposition
+(Figure~\ref{fig:bandwidth}). The framing is cultural erosion under
+economic pressure rather than cumulative cultural evolution. We
+would retitle around ``productive-flow share'' here.
+\end{description}
+
+\subsection{Honest reading}
+
+The four findings the model produces that we did not anticipate are:
+the analytical $\tau$-vs-$r$ fixed point that determines the
+post-tax wealth cap (\S\ref{sec:top-tier-no-bind}); the class-specific
+skill-to-wealth elasticity decomposition that grounds the
+cultural-economic asymmetry in mechanism rather than architecture
+(\S\ref{sec:culture}); the dis-conflation of the spending,
+tax-schedule, and inheritance levers in the clean factorial; and the
+result that at calibrated capital return $r=0.06$ the Zucman
+progressive schedule sharply outperforms the flat schedule (zero
+billionaires vs 46), reversing the default-parameter equivalence
+(\S\ref{sec:calibrated-policies}).
+
+The two known-in-spirit findings are: state spending keeps people
+alive (a kinetic-ABM result, attributable to
+\citet{bertotti2018modanese} and \citet{cardoso2025wealth}); and
+inheritance reform requires redistribution
+(\citealp{piketty2013theory} in analytical form).
+
+If the work has a thesis it is: \emph{the productive-flow share
+$\Phi$, the household-sector Gini, and the population-alive count
+are three distinct policy targets that respond to distinct policy
+levers; any political framing of a wealth-tax design as ``the
+wealth tax'' lumps together effects that should be evaluated
+separately.} Inheritance taxation raises $\Phi$; tax-rate schedules
+compress household inequality; spending keeps people alive.
+Quantitative policy claims expressed in \pounds are partially
+supported by the calibration in \S\ref{sec:pareto} but rest on a
+configuration that does not simultaneously match the empirical
+mortality; threshold-comparison results are also reported in
+dimensionless terms (fraction of the wealth-distribution
+median) wherever the pound label was load-bearing, with the partial
+calibration result in \S\ref{sec:pareto} backing the
+\pounds10M anchor in particular.
+
+%==========================================================================
+\section{Conclusion}
+%==========================================================================
+
+We have presented an agent-based model of wealth inequality whose
+distinguishing contributions are a productive-flow share metric
+for flow-based system viability and a wealth-coupled bandwidth
+mechanism for skill transmission. Across thirteen stylised
+scenarios, eleven real-world wealth-tax policy specifications, a
+clean three-factor factorial, and a partial calibration to the UK
+Sunday Times Rich List Pareto slope, we have identified the eight
+findings enumerated in the abstract: three robust regimes;
+three-distinct-levers factorisation of policy effects; class-specific
+skill-to-wealth elasticities; inheritance trapdoor; non-separability
+of flat-vs-progressive Zucman at default parameters with clean
+separation at calibrated parameters; full retraction of the
+``regressive trap'' as state contamination; billionaire counts at
+$N=10{,}000$; and the calibration partial fit.
+
+The model's most consequential political claim, post-revision, is
+that wealth-tax design is not a single choice but a triple of
+choices, each addressing a different metric. State spending raises
+alive counts; tax-rate schedules compress household-sector inequality;
+inheritance taxation raises the productive-flow share. Within the
+wealth-tax-rate choice itself, the relationship between the
+marginal rate $\tau$ above the lowest threshold and the rate of
+capital return $r$ determines whether the policy analytically caps
+top wealth (when $\tau > r$) or leaves the cap to be set by
+secondary dynamics (mortality, lifespan, deposit drain). None of
+the eleven real-world proposals modelled have $\tau > r$ at their
+lowest tier under default $r=0.04$, which puts them all in the
+``cap-by-mortality'' regime that the regressive-trap section
+quantifies. A wealth-tax design with its lowest rate above the
+capital-return rate is structurally robust; designs with lower rates
+rely on mortality to cap accumulation, which is a fragile basis.
+
+Code and data are available at the project repository; reproduction
+requires Python 3.12 with NumPy and Matplotlib.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+%==========================================================================
+\appendix
+%==========================================================================
+
+\section{ODD-style summary}
+\label{app:odd}
+
+A brief ODD (Overview, Design concepts, Details) summary follows;
+a full ODD+D specification is deferred to a separate online supplement.
+
+\paragraph{Overview.}
+\textbf{Purpose.} Make qualitative wealth-inequality dynamics
+visible under a panel of policy levers, including a metric for the
+productive-vs-extractive accrual balance.
+\textbf{Entities.} Seven agent classes
+(WORKER, MAKER, EMPLOYER, LENDER, RENTIER, SPECULATOR, STATE) at
+fixed proportions per 100 agents (72/9/7/5/3/3/1).
+\textbf{State variables.} Each agent has wealth, debt, age,
+lifespan, a five-dimensional skill vector, alive flag, peak
+lifetime wealth, bandwidth dimensions at birth.
+\textbf{Scales.} One tick is one stylised year. The base run is
+$N=100$ agents at 250 ticks. Scale-up to $N=10{,}000$ uses
+population\_scale = 100 (state stays singleton; per-capita stays
+invariant). One model wealth unit corresponds to \pounds100k.
+
+\paragraph{Process overview and scheduling.} Per tick, in fixed
+order: (1) Production --- makers and employers hire workers from a
+skill-sorted queue and pay wages; makers produce output at multiplier
+$M$; employers capture markup; the state optionally hires
+unemployed workers and purchases maker output;
+(2) Extraction --- workers pay rent to rentiers in proportion to
+rentier wealth; rentiers earn capital return $r$; speculators
+update by Brownian increment with drift and volatility;
+(3) Consumption and credit --- every non-state agent pays
+subsistence; shortfalls are borrowed from the lender pool, with
+allocation proportional to lender capacity; death by starvation
+if no capacity remains;
+(4) Interest and repayment --- debtors pay interest and (when
+liquid) repay principal; debt written off above ceiling;
+(5) Lender deposits --- a fraction of surplus wealth from rentier,
+maker, employer agents is deposited with lenders; optional state
+recapitalisation to a configured floor;
+(6) Tax and UBI --- progressive flat-plus-tiered wealth tax to
+state; UBI dispersed to non-state agents from state wealth;
+(7) Life --- agents whose age exceeds lifespan die naturally; a
+child of the same class is born with inherited wealth (after
+inheritance tax and cap) and bandwidth-limited inherited skills;
+(8) Bookkeeping --- update peak-wealth, recent-deaths log,
+metrics; prune dead agents every ten ticks.
+
+\paragraph{Design concepts.}
+\emph{Emergence.} Wealth distribution, regime classification, and
+cultural-breadth distribution emerge from the dial settings.
+\emph{Adaptation.} Agents do not adapt within their lifetime;
+class-typical behaviour is hard-coded; behavioural variability
+comes from class-typical skill biases and stochastic lifespans.
+\emph{Sensing.} Limited; workers do not choose employers; agents
+do not perceive prices or expectations.
+\emph{Interaction.} Mediated through queues (hiring),
+proportional shares (lender pool, rentier pool), and the state.
+\emph{Stochasticity.} Per-agent lifespan, debt at birth (for
+workers), speculator returns, skill mutation, and seed-controlled
+initialisation are stochastic.
+\emph{Collectives.} Implicit only --- agents do not form groups
+beyond their class label.
+\emph{Observation.} The metrics reported per tick: Gini (default
+state-excluded), $\Phi$, alive, total wealth, total debt,
+cultural breadth and diversity, knowledge lost, births and deaths
+counters, top-1 and top-10 shares (raw and mortality-corrected),
+state wealth, wealth by type.
+
+\paragraph{Details.}
+\emph{Initialisation.} Class shares lognormally distributed within
+class; ages staggered uniformly across lifespans; workers given
+random small debt with probability 0.18.
+\emph{Input data.} None. All parameters are dials.
+\emph{Submodels.} See \S\ref{sec:model} for production, extraction,
+credit, taxation, transmission. Dials documented in
+Table~\ref{tab:dials}.
+
+\section{Dial reference}
+\label{app:dials}
+
+Default values for the dial panel are listed in Table~\ref{tab:dials}.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Dial panel and default values. Tax thresholds are in model
+units; one unit corresponds to $\pounds$100{,}000.}
+\label{tab:dials}
+\begin{tabular}{lrl}
+\toprule
+dial & default & group \\
+\midrule
+wage                          & 1.0 & production \\
+maker\_multiplier             & 1.6 & production \\
+employer\_markup              & 0.4 & production \\
+workers\_per\_maker           & 2   & production \\
+workers\_per\_employer        & 6   & production \\
+capital\_return ($r$)         & 0.04 & capital \\
+rent\_share\_of\_wage         & 0.35 & capital \\
+interest\_rate ($i$)          & 0.06 & capital \\
+spec\_drift / spec\_vol       & 0.015 / 0.12 & capital \\
+flat\_tax\_rate               & 0.0 & state \\
+tax\_progressivity            & 0.0 & state \\
+wealth\_tax\_threshold        & 50 ($=\pounds$5M) & state \\
+wealth\_tax\_tiers            & ()  & state \\
+ubi                           & 0.0 & state \\
+state\_employs\_fraction      & 0.0 & state \\
+state\_employs\_wage          & 1.0 & state \\
+state\_buys\_maker\_output    & 0.0 & state \\
+state\_recap\_lenders         & 0.0 & state \\
+subsistence ($\sigma$)        & 0.6 & life \\
+debt\_ceiling                 & 25  & life \\
+lifespan\_mean / std          & 70 / 12 & life \\
+starvation\_lifespan\_penalty & 20  & life \\
+inheritance\_cap              & $\infty$ & transmission \\
+inheritance\_tax\_rate        & 0.0 & transmission \\
+memory\_bandwidth\_base ($b_0$) & 0.5 & transmission \\
+memory\_bandwidth\_wealth\_scale ($b_w$) & 0.5 & transmission \\
+skill\_mutation\_rate         & 0.05 & transmission \\
+population\_scale             & 1 & logistics \\
+seed                          & 42 & logistics \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Scenario specifications}
+\label{app:scenarios}
+
+The thirteen scenarios at $N=100$ are obtained from
+\texttt{current\_world} (all dials at defaults) by overriding the
+non-default dials specified in \texttt{scenarios.py} in the project
+repository. Distinctive non-default settings include:
+\texttt{stevenson\_world} (rent\_share = 0.55, $r$ = 0.05, $i$ = 0.09,
+markup = 0.55); \texttt{maker\_economy} ($M$ = 2.2, rent = 0.15,
+$r$ = 0.01, markup = 0.2); \texttt{nordic} (UBI = 0.6, state employs
+0.6, state buys 10, inheritance tax 0.4, inheritance cap 500, rent
+0.25); \texttt{socialist} (UBI 0.8, state employs 0.9, state buys 15,
+inheritance tax 0.8, rent 0.10); \texttt{feudal} (rent 0.6, $r$ 0.06,
+markup 0.5, no inheritance tax, $b_0$ 0.2, $b_w$ 1.0).
+
+\section{Wealth-tax policy specifications}
+\label{app:policies}
+
+The eleven policies are specified in \texttt{policies.py}. Tax tiers
+are stacked-marginal form $(\theta, \tau)$ tuples, with threshold in
+model units (one unit = $\pounds$100{,}000).
+
+\begin{itemize}
+\item \texttt{uk\_tory\_2010\_24}: no wealth tax; inheritance tax 0.4.
+\item \texttt{uk\_labour\_2024}: flat tax 0.002, progressivity 0.005;
+inheritance tax 0.5; state employs 0.1.
+\item \texttt{zucman\_2pct\_hoard}: tiers (100, 0.02); inheritance
+tax 0.4; no spending package.
+\item \texttt{zucman\_2pct\_spend}: tiers (100, 0.02); inheritance
+tax 0.4; UBI 0.4, state employs 0.3, state buys 5.0.
+\item \texttt{zucman\_progressive\_2\_4\_8}: tiers (100, 0.02),
+(1000, 0.02), (10000, 0.04); spending package as above.
+\item \texttt{warren\_2020}: tiers (500, 0.02), (10000, 0.04);
+spending package.
+\item \texttt{sanders\_2020}: tiers (320, 0.01), (3200, 0.02),
+(32000, 0.05); spending package.
+\item \texttt{piketty\_book}: tiers (10, 0.001), (50, 0.009),
+(1000, 0.01); inheritance 0.6; spending package.
+\item \texttt{norway\_actual}: tiers (1.3, 0.01); no inheritance tax;
+state employs 0.4, state buys 4, lender backstop 200.
+\item \texttt{spain\_solidarity}: tiers (7, 0.002), (30, 0.005),
+(100, 0.01), (1000, 0.015); inheritance 0.3; spending package.
+\item \texttt{reform\_uk\_flavour}: no wealth tax; inheritance 0.2;
+no spending package; rent 0.4.
+\end{itemize}
+
+\section{Sweep specifications}
+\label{app:sweeps}
+
+The five $N=100$ scenario sweeps were performed on $9\times 9$ grids
+with three seeds each over the ranges:
+
+\begin{itemize}
+\item \texttt{rent\_vs\_r}: rent $\in [0.05, 0.65]$, $r \in [0.005, 0.06]$.
+\item \texttt{tax\_vs\_ubi}: flat tax $\in [0, 0.025]$, UBI $\in [0, 1.5]$.
+\item \texttt{memory}: $b_0 \in [0.2, 1.0]$, $b_w \in [0, 1]$.
+\item \texttt{state\_action}: state\_employs\_fraction $\in [0, 1]$,
+state\_buys\_maker\_output $\in [0, 20]$.
+\item \texttt{inheritance\_x\_ubi}: $\iota \in [0, 1]$, UBI $\in [0, 1.5]$.
+\end{itemize}
+
+The two wealth-tax sweeps at $N=100$ used thresholds
+$\{1, 3, 10, 30, 100, 300, 1000, 3000, 10000\}$ (single-tier) and
+fixed thresholds $(100, 1000, 10000)$ (three-tier), with rates over
+$[0, 0.08]$ and $[0, 0.10]$ respectively.
+
+The scale-up wealth-tax sweep at $N=10{,}000$ used a $7\times 7$ grid
+of thresholds $\{10, 30, 100, 300, 1000, 3000, 10000\}$ and rates
+$[0, 0.08]$ with two seeds each, 150 ticks.
+
+\end{document}

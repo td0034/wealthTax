@@ -1,0 +1,222 @@
+{
+  "cap_only": [
+    {
+      "cap": "10",
+      "cap_gbp": "\u00a31M",
+      "alive_rate": 0.7957575757575758,
+      "billionaires": 0.0,
+      "centi_millionaires": 27.0,
+      "deci_millionaires": 996.5,
+      "max_wealth_gbp": 744426364.1270628,
+      "top1_share": 0.18894721165904693,
+      "top10_share": 0.5463857403225633,
+      "pareto_slope": -0.6983817820371316
+    },
+    {
+      "cap": "50",
+      "cap_gbp": "\u00a35M",
+      "alive_rate": 0.8261111111111111,
+      "billionaires": 0.0,
+      "centi_millionaires": 208.5,
+      "deci_millionaires": 1424.5,
+      "max_wealth_gbp": 887315331.1528697,
+      "top1_share": 0.1984709696438917,
+      "top10_share": 0.5620449126569012,
+      "pareto_slope": -0.45523895656444935
+    },
+    {
+      "cap": "100",
+      "cap_gbp": "\u00a310M",
+      "alive_rate": 0.8280808080808081,
+      "billionaires": 5.5,
+      "centi_millionaires": 403.0,
+      "deci_millionaires": 4015.5,
+      "max_wealth_gbp": 1513369972.5829873,
+      "top1_share": 0.22152817145317547,
+      "top10_share": 0.6132276544385273,
+      "pareto_slope": -0.454439891989181
+    },
+    {
+      "cap": "500",
+      "cap_gbp": "\u00a350M",
+      "alive_rate": 0.8282323232323232,
+      "billionaires": 86.0,
+      "centi_millionaires": 721.0,
+      "deci_millionaires": 4084.0,
+      "max_wealth_gbp": 6501696612.664845,
+      "top1_share": 0.32257256622965064,
+      "top10_share": 0.8519474902611301,
+      "pareto_slope": -0.4431961371909257
+    },
+    {
+      "cap": "1000",
+      "cap_gbp": "\u00a3100M",
+      "alive_rate": 0.8282323232323232,
+      "billionaires": 317.5,
+      "centi_millionaires": 840.0,
+      "deci_millionaires": 4084.0,
+      "max_wealth_gbp": 12734608140.266895,
+      "top1_share": 0.35172636752998043,
+      "top10_share": 0.9157165854203482,
+      "pareto_slope": -0.44166164626463256
+    },
+    {
+      "cap": "5000",
+      "cap_gbp": "\u00a3500M",
+      "alive_rate": 0.8282323232323232,
+      "billionaires": 700.0,
+      "centi_millionaires": 848.5,
+      "deci_millionaires": 4084.0,
+      "max_wealth_gbp": 62620144395.259384,
+      "top1_share": 0.39076636277438437,
+      "top10_share": 0.980446302797649,
+      "pareto_slope": -0.4404989206872636
+    },
+    {
+      "cap": "10000",
+      "cap_gbp": "\u00a31000M",
+      "alive_rate": 0.8282323232323232,
+      "billionaires": 803.0,
+      "centi_millionaires": 848.5,
+      "deci_millionaires": 4084.0,
+      "max_wealth_gbp": 124979771409.19308,
+      "top1_share": 0.4052163627405779,
+      "top10_share": 0.9898465009913113,
+      "pareto_slope": -0.44034313686113175
+    },
+    {
+      "cap": "50000",
+      "cap_gbp": "\u00a35000M",
+      "alive_rate": 0.8282323232323232,
+      "billionaires": 803.5,
+      "centi_millionaires": 848.5,
+      "deci_millionaires": 4084.0,
+      "max_wealth_gbp": 590280406041.5366,
+      "top1_share": 0.44660853520687716,
+      "top10_share": 0.9976377368990719,
+      "pareto_slope": -0.4038019399771524
+    },
+    {
+      "cap": "inf",
+      "cap_gbp": "no cap",
+      "alive_rate": 0.8282323232323232,
+      "billionaires": 803.5,
+      "centi_millionaires": 848.5,
+      "deci_millionaires": 4084.0,
+      "max_wealth_gbp": 2369423402851.0005,
+      "top1_share": 0.3265503362198311,
+      "top10_share": 0.9996242967469762,
+      "pareto_slope": -0.25970097647064205
+    }
+  ],
+  "cap_plus_zucman": [
+    {
+      "cap": "10",
+      "cap_gbp": "\u00a31M",
+      "alive_rate": 0.7957575757575758,
+      "billionaires": 0.0,
+      "centi_millionaires": 15.5,
+      "deci_millionaires": 980.0,
+      "max_wealth_gbp": 352842528.15222806,
+      "top1_share": 0.14550091345860203,
+      "top10_share": 0.47003642829391656,
+      "pareto_slope": -0.5400220535349389
+    },
+    {
+      "cap": "50",
+      "cap_gbp": "\u00a35M",
+      "alive_rate": 0.825959595959596,
+      "billionaires": 0.0,
+      "centi_millionaires": 62.0,
+      "deci_millionaires": 1414.5,
+      "max_wealth_gbp": 352171086.1126662,
+      "top1_share": 0.13544229415976455,
+      "top10_share": 0.41905587962046476,
+      "pareto_slope": -0.3332463892000971
+    },
+    {
+      "cap": "100",
+      "cap_gbp": "\u00a310M",
+      "alive_rate": 0.827929292929293,
+      "billionaires": 0.0,
+      "centi_millionaires": 98.5,
+      "deci_millionaires": 3997.5,
+      "max_wealth_gbp": 477612009.8999958,
+      "top1_share": 0.14013408977083602,
+      "top10_share": 0.43043971796884767,
+      "pareto_slope": -0.3213687814358467
+    },
+    {
+      "cap": "500",
+      "cap_gbp": "\u00a350M",
+      "alive_rate": 0.828080808080808,
+      "billionaires": 5.5,
+      "centi_millionaires": 593.0,
+      "deci_millionaires": 4057.0,
+      "max_wealth_gbp": 1378424352.9229975,
+      "top1_share": 0.2297056582314285,
+      "top10_share": 0.6773963009483923,
+      "pareto_slope": -0.29587752035640447
+    },
+    {
+      "cap": "1000",
+      "cap_gbp": "\u00a3100M",
+      "alive_rate": 0.828080808080808,
+      "billionaires": 44.0,
+      "centi_millionaires": 804.0,
+      "deci_millionaires": 4057.0,
+      "max_wealth_gbp": 2501850404.6328797,
+      "top1_share": 0.27186559559617407,
+      "top10_share": 0.7919405055650124,
+      "pareto_slope": -0.29103877805519585
+    },
+    {
+      "cap": "5000",
+      "cap_gbp": "\u00a3500M",
+      "alive_rate": 0.828080808080808,
+      "billionaires": 497.0,
+      "centi_millionaires": 804.0,
+      "deci_millionaires": 4057.0,
+      "max_wealth_gbp": 11511871638.727032,
+      "top1_share": 0.3345872563374993,
+      "top10_share": 0.9447788293330988,
+      "pareto_slope": -0.28203552606787624
+    },
+    {
+      "cap": "10000",
+      "cap_gbp": "\u00a31000M",
+      "alive_rate": 0.828080808080808,
+      "billionaires": 800.0,
+      "centi_millionaires": 804.0,
+      "deci_millionaires": 4057.0,
+      "max_wealth_gbp": 21976229958.93904,
+      "top1_share": 0.3533331491405801,
+      "top10_share": 0.9698633285404601,
+      "pareto_slope": -0.2629140822468181
+    },
+    {
+      "cap": "50000",
+      "cap_gbp": "\u00a35000M",
+      "alive_rate": 0.828080808080808,
+      "billionaires": 800.0,
+      "centi_millionaires": 804.0,
+      "deci_millionaires": 4057.0,
+      "max_wealth_gbp": 47824323142.774055,
+      "top1_share": 0.30891472959854854,
+      "top10_share": 0.9887781269113343,
+      "pareto_slope": -0.20232845280145142
+    },
+    {
+      "cap": "inf",
+      "cap_gbp": "no cap",
+      "alive_rate": 0.828080808080808,
+      "billionaires": 800.0,
+      "centi_millionaires": 804.0,
+      "deci_millionaires": 4057.0,
+      "max_wealth_gbp": 75235368636.9805,
+      "top1_share": 0.29331198624679833,
+      "top10_share": 0.9917607558102355,
+      "pareto_slope": -0.22620514169699102
+    }
+  ]
+}

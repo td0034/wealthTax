@@ -1,0 +1,137 @@
+{
+  "silhouettes": {
+    "2": 0.5486339418121589,
+    "3": 0.5504760315067906,
+    "4": 0.42348661319886305,
+    "5": 0.3158106609607683
+  },
+  "k3_silhouette": 0.5504760315067906,
+  "centroids_raw": [
+    [
+      0.5512932721609621,
+      0.00019999359994593569,
+      11.833333333333329
+    ],
+    [
+      0.895094111285722,
+      0.010605072005097638,
+      61.725
+    ],
+    [
+      0.4709273568178456,
+      0.7538052836613086,
+      85.425
+    ]
+  ],
+  "regime_for_cluster": {
+    "2": "viable autocatalytic",
+    "1": "extractive equilibrium",
+    "0": "collapse"
+  },
+  "assignments": [
+    {
+      "name": "current_world",
+      "cluster": 1,
+      "regime": "extractive equilibrium",
+      "gini": 0.8924656021756846,
+      "phi": 0.012723944494355044,
+      "alive": 63.125
+    },
+    {
+      "name": "stevenson_world",
+      "cluster": 0,
+      "regime": "collapse",
+      "gini": 0.8757788665238517,
+      "phi": 0.0005777530471696689,
+      "alive": 20.25
+    },
+    {
+      "name": "maker_economy",
+      "cluster": 2,
+      "regime": "viable autocatalytic",
+      "gini": 0.7684139835986413,
+      "phi": 0.8890896781100766,
+      "alive": 68.75
+    },
+    {
+      "name": "tax_and_spend",
+      "cluster": 2,
+      "regime": "viable autocatalytic",
+      "gini": 0.4251075056975436,
+      "phi": 0.5976203361872603,
+      "alive": 83.625
+    },
+    {
+      "name": "nordic",
+      "cluster": 2,
+      "regime": "viable autocatalytic",
+      "gini": 0.29831022219314585,
+      "phi": 0.7155929132748349,
+      "alive": 89.875
+    },
+    {
+      "name": "inheritance_break",
+      "cluster": 0,
+      "regime": "collapse",
+      "gini": 0.0,
+      "phi": 0.0,
+      "alive": 0.0
+    },
+    {
+      "name": "memory_equalised",
+      "cluster": 1,
+      "regime": "extractive equilibrium",
+      "gini": 0.9244169740559216,
+      "phi": 0.014834231634737929,
+      "alive": 76.875
+    },
+    {
+      "name": "memory_starved",
+      "cluster": 1,
+      "regime": "extractive equilibrium",
+      "gini": 0.8711146941020008,
+      "phi": 0.011390723073267762,
+      "alive": 55.5
+    },
+    {
+      "name": "inheritance_break_ubi",
+      "cluster": 2,
+      "regime": "viable autocatalytic",
+      "gini": 0.5677959108365973,
+      "phi": 0.6780932773226036,
+      "alive": 85.875
+    },
+    {
+      "name": "feudal",
+      "cluster": 0,
+      "regime": "collapse",
+      "gini": 0.7781009499590348,
+      "phi": 2.2227752668072503e-05,
+      "alive": 15.25
+    },
+    {
+      "name": "creditless",
+      "cluster": 1,
+      "regime": "extractive equilibrium",
+      "gini": 0.8677885042742188,
+      "phi": 0.013236112681074875,
+      "alive": 55.25
+    },
+    {
+      "name": "pure_speculation",
+      "cluster": 1,
+      "regime": "extractive equilibrium",
+      "gini": 0.9196847818207841,
+      "phi": 0.000840348142052407,
+      "alive": 57.875
+    },
+    {
+      "name": "socialist",
+      "cluster": 2,
+      "regime": "viable autocatalytic",
+      "gini": 0.29500916176329994,
+      "phi": 0.8886302134117676,
+      "alive": 99.0
+    }
+  ]
+}

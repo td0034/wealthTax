@@ -1,0 +1,66 @@
+{
+  "uk_tory_2010_24": {
+    "alive_median": 2229.5,
+    "billionaires_median": 300.5,
+    "centi_median": 309.0,
+    "deci_median": 866.0,
+    "top1_share_median": 0.1976066936852135,
+    "max_wealth_gbp_median": 47585486805.06822
+  },
+  "uk_labour_2024": {
+    "alive_median": 3029.0,
+    "billionaires_median": 262.0,
+    "centi_median": 800.5,
+    "deci_median": 1359.5,
+    "top1_share_median": 0.1567051343779553,
+    "max_wealth_gbp_median": 11613824129.028795
+  },
+  "zucman_2pct_hoard": {
+    "alive_median": 2531.5,
+    "billionaires_median": 10.5,
+    "centi_median": 305.5,
+    "deci_median": 910.0,
+    "top1_share_median": 0.2617136891693206,
+    "max_wealth_gbp_median": 4100193598.6194096
+  },
+  "zucman_2pct_spend": {
+    "alive_median": 7734.0,
+    "billionaires_median": 46.5,
+    "centi_median": 801.0,
+    "deci_median": 1746.5,
+    "top1_share_median": 0.23330816395243392,
+    "max_wealth_gbp_median": 2356317584.5601425
+  },
+  "zucman_progressive_2_4_8": {
+    "alive_median": 7744.5,
+    "billionaires_median": 0.0,
+    "centi_median": 719.5,
+    "deci_median": 1750.0,
+    "top1_share_median": 0.14271429683360237,
+    "max_wealth_gbp_median": 389196426.0448648
+  },
+  "warren_2020": {
+    "alive_median": 7233.5,
+    "billionaires_median": 140.5,
+    "centi_median": 804.5,
+    "deci_median": 1740.0,
+    "top1_share_median": 0.17939830453427658,
+    "max_wealth_gbp_median": 1498310964.6538363
+  },
+  "piketty_book": {
+    "alive_median": 7363.0,
+    "billionaires_median": 20.0,
+    "centi_median": 800.0,
+    "deci_median": 1441.0,
+    "top1_share_median": 0.22953613825250802,
+    "max_wealth_gbp_median": 1737094007.7872057
+  },
+  "reform_uk_flavour": {
+    "alive_median": 2526.5,
+    "billionaires_median": 323.5,
+    "centi_median": 341.0,
+    "deci_median": 1010.0,
+    "top1_share_median": 0.1810822363135044,
+    "max_wealth_gbp_median": 77354615074.3035
+  }
+}

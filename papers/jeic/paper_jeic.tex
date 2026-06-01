@@ -1,0 +1,864 @@
+% Compile with:
+%   pdflatex paper_jeic && bibtex paper_jeic && pdflatex paper_jeic && pdflatex paper_jeic
+\documentclass[11pt]{article}
+
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage[final,protrusion=true,expansion=false]{microtype}
+
+\graphicspath{%
+  {../../out/figures/phase/}%
+  {../../out/figures/scenarios/}%
+  {../../out/figures/sweeps/}%
+  {../../out/figures/policies/}%
+  {../../out/figures/wealth_tax/}%
+  {../../out/figures/scale_up/}%
+}
+
+\title{The lowest bracket sets the cap:\\
+\large an analytical fixed point for top wealth under a progressive
+wealth tax, with calibration to UK Sunday Times Rich List data}
+
+\author{[Author]\\
+\small (supervision and acknowledgements TBD)}
+\date{Draft of \today\ for JEIC}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We present an agent-based model of an economy with seven occupationally
+heterogeneous agent classes and use it to derive an analytical
+characterisation of how the rates and thresholds of a progressive
+wealth tax interact with the capital-return rate $r$ to determine
+top wealth in equilibrium.  For a single rentier with wealth above a
+threshold $\theta$, the fixed-point of the wealth dynamics under
+capital return $r$ and marginal wealth-tax rate $\tau$ is
+$w^* = \tau \theta / (\tau - r)$, defined for $\tau > r$ and
+diverging for $\tau \leq r$.  We validate this prediction against
+simulation and show that the empirical top wealth tracks the
+analytical fixed point quantitatively for $\tau > r$ at the lowest
+active threshold, with deviations attributable to secondary sinks
+(deposit pool, subsistence, inheritance tax) acting as an effective
+additional tax.
+
+We then use the model to address the practical question of how
+much the conclusions of a wealth-tax design analysis depend on the
+assumed value of $r$.  A partial calibration to the UK Sunday Times
+Rich List 2024 Pareto slope of $-0.706$ returns a best fit at
+$r = 0.06$, rent share $0.50$, inheritance tax $0.40$; the slope is
+reachable but the configuration produces approximately 26\% population
+survival, well below UK reality.  We document the Pareto frontier
+between matching the empirical tail and matching empirical mortality.
+
+The principal substantive result is that the policy conclusions of
+the wealth-tax-design analysis depend critically on which $r$ is
+adopted.  At default $r = 0.04$ the Zucman flat 2\% and Zucman
+progressive 2/4/8\% schedules are not separable at $N = 10{,}000$,
+because no agent reaches the upper-tier thresholds.  At calibrated
+$r = 0.06$ they separate cleanly: Zucman progressive produces zero
+billionaires while Zucman flat leaves 46.  The upper tiers of a
+progressive schedule are mechanically idle at one parameter setting
+and load-bearing at the other.  We report both, side by side, and
+discuss which conclusion should be considered the headline as a
+function of the assumed capital-return rate.
+
+We engage \citet{spangler2022distribution} as the closest published
+neighbour with a clean-toggle reproduction that holds bandwidth and
+class-bias intact and swaps only whether transmitted skill values
+are parent-derived or class-typical: parent-derived transmission
+raises Gini by 0.010 in our setting, a partial reproduction of
+their direction with a much smaller magnitude.  We engage
+\citet{benhabib2011distribution} as the analytical neighbour for the
+fixed-point derivation.
+
+A further result, which we believe is the contribution most likely
+to be policy-relevant, is that the wealth tax and an absolute cap
+on inheritance are \emph{complementary instruments serving
+different goals}.  The wealth tax raises substantial state revenue
+(Zucman 2\% above \pounds 10M produces approximately \pounds 56B
+per year at simulated UK scale).  The cap raises far less revenue
+but redistributes ownership directly: the wealth share held by the
+bottom 50\% of the population rises from 0.0\% under status quo to
+19.2\% under a \pounds 5M cap, and to 25.3\% under cap-plus-tax.
+The two instruments compete for the upper-end tax base but
+otherwise stack cleanly.  The choice between cap-alone, tax-alone,
+and the combination is a choice between three different policy
+objectives, not between three policies aimed at the same one.
+Cultural-mechanism results are reported separately in a companion
+submission targeting Artificial Life; the regime-classification
+and Sankey results are reported in a companion submission
+targeting JASSS; the policy-discourse implications of the cap
+result are reported in a companion submission targeting Fiscal
+Studies.
+\end{abstract}
+
+%==========================================================================
+\section{Introduction}
+%==========================================================================
+
+The wealth-tax debate has been refreshed by the 2024
+\citet{zucman2024global} G20 proposal of a 2\% minimum effective tax
+on the assets of ultra-high-net-worth individuals.  Within the
+existing literature the question of which structural feature of a
+wealth tax does the work (the threshold, the rate, the progressivity,
+the spending package, the inheritance regime) is partially answered
+by analytical optimal-tax theory \citep{piketty2013theory,
+benhabib2011distribution} and by kinetic-tax ABMs
+\citep{bertotti2018modanese, cardoso2025wealth}.  This paper
+contributes to that conversation by deriving a simple analytical
+fixed-point characterisation of the top wealth under a flat marginal
+wealth tax, validating it against an agent-based simulation, and
+showing that the policy conclusions of the simulation depend
+sensitively on the assumed value of the capital-return rate $r$.
+
+We use a stylised stock-flow ABM with seven occupationally typed
+agents (workers, makers, employers, lenders, rentiers, speculators,
+and a single state).  The model is documented in detail in our
+JASSS companion submission and in the project repository; we recap
+the essentials in Section~\ref{sec:model}.  The contribution this
+paper foregrounds is the wealth-tax-design analysis, the analytical
+fixed point, and the calibration sensitivity.
+
+We organise the paper around four results.
+
+First, the analytical fixed-point characterisation
+(Section~\ref{sec:fixedpoint}).  For a rentier with wealth above a
+threshold $\theta$, accruing capital return $r$ and paying a
+marginal wealth tax $\tau$, the dynamics have a finite fixed point
+$w^* = \tau \theta / (\tau - r)$ when $\tau > r$ and diverge when
+$\tau \leq r$.  This is a first-order rigorous statement that puts a
+sharp condition on the relationship between the rate of capital
+return and the lowest active tax bracket.
+
+Second, validation against simulation.  At $N = 1000$, the observed
+top wealth tracks the analytical prediction quantitatively for
+$\tau > r$ at $\theta = \pounds 10\text{M}$, and the deviations at
+$\theta = \pounds 100\text{M}$ are attributable to additional drains
+(deposit pool, subsistence, inheritance tax) acting as effective
+extra tax.  For $\tau \leq r$ the simulated top is bounded only by
+mortality and lifespan; the empirical cap is set by demographic
+churn, not by the tax.
+
+Third, calibration to UK data and the calibration sensitivity.  A
+grid search over $r$, rent share, and inheritance tax returns the
+UK Sunday Times Rich List Pareto slope at $r = 0.06$, rent share
+$0.50$, inheritance tax $0.40$; the slope is reachable but the
+configuration produces approximately 26\% survival at terminal tick,
+well below UK reality.  The model cannot currently match Pareto
+slope and demographic survival simultaneously.
+
+Fourth, the policy results at default and calibrated parameters,
+side by side.  At default $r = 0.04$ the Zucman progressive
+schedule is not separable from the flat $2\%$ above \pounds 10M at
+$N = 10{,}000$.  At calibrated $r = 0.06$ they separate cleanly:
+progressive produces zero billionaires, flat leaves 46.  Whether the
+upper-tier rates of a progressive schedule are mechanically idle or
+load-bearing is a function of the assumed capital-return rate.
+
+\section{Related work}
+\label{sec:related}
+
+The closest analytical neighbour is \citet{benhabib2011distribution},
+who derive the distribution of wealth under finitely-lived agents with
+bequests and characterise the tail behaviour analytically; our
+single-agent fixed-point in Section~\ref{sec:fixedpoint} is a
+first-order ABM-recovery of their qualitative structure.
+\citet{piketty2013theory} provide the optimal-inheritance-taxation
+treatment that contextualises our inheritance-trapdoor result.
+\citet{piketty2014capital} is the empirical neighbour on $r > g$
+dynamics, which our model recovers as an emergent property.
+
+The closest ABM neighbour is \citet{spangler2022distribution}, who
+couple estate taxation with binary skill inheritance in a JEIC paper.
+We engage with them directly via a clean-toggle reproduction
+(Section~\ref{sec:spangler}).  \citet{cardoso2025wealth} make the
+related point in a kinetic-ABM that social protection (i.e.\ how
+revenue is spent) matters more than the headline tax rate; our
+factorial-decomposition result in the JASSS companion makes that
+sharper.
+
+For the calibration target we use UK WID estimates of top-share
+wealth distribution \citep{saez2016wealth}.
+
+\section{The model}
+\label{sec:model}
+
+We recap the model in summary form; full documentation is in the
+project repository and in the JASSS companion submission.
+
+\subsection{Agent types and per-tick mechanics}
+
+Seven agent classes at fixed proportions per 100 agents: 72 workers,
+9 makers, 7 employers, 5 lenders, 3 rentiers, 3 speculators, 1
+state.  Each agent has wealth, debt, age, lifespan, a five-dim
+skill vector, peak lifetime wealth, and a bandwidth-at-birth
+record.  Per tick: production (makers and employers hire from a
+skill-sorted worker queue; makers transform inputs at multiplier $M$;
+employers capture a markup); extraction (workers pay rent to
+rentiers; rentiers earn capital return $r$; speculators evolve
+geometrically); consumption and credit; interest, repayment, and
+debt write-off; lender deposits and optional state recapitalisation;
+tax and UBI; life (age, death, reproduction).
+
+The relevant dials for this paper are $r$ (capital return,
+default $0.04$), the rent share of wages ($\rho$, default $0.35$),
+the inheritance tax rate ($\iota$, default $0.0$), and the
+stacked-marginal wealth tax with threshold and rate per bracket.
+
+\subsection{Population scaling}
+
+A \texttt{population\_scale} multiplier scales agent counts and
+initial wealth totals linearly, keeping the State a singleton.
+Per-capita statistics are scale-invariant.  Most results in this
+paper are at $N = 1000$ (population\_scale $= 10$) for the fixed-
+point validation and $N = 10{,}000$ (population\_scale $= 100$) for
+the policy comparisons.
+
+\subsection{The productive-flow share}
+
+We use the productive-flow share
+$\Phi_t = F^\text{prod}_t / (F^\text{prod}_t + F^\text{ext}_t) \in
+[0,1]$ as a regime indicator, summarised here.  Full discussion in
+the JASSS companion.  $\Phi$ is symmetric across productive and
+extractive accrual and is not an autocatalytic-set closure in the
+\citet{hordijk2004detecting} RAF sense.
+
+\section{The analytical fixed point}
+\label{sec:fixedpoint}
+
+For a rentier with wealth $w \geq \theta$, accruing capital return
+$r$ per tick and paying a flat marginal wealth tax $\tau$ on the
+amount above $\theta$, the discrete-time dynamics are
+\begin{equation}
+w_{t+1} \;=\; w_t \;+\; r w_t \;-\; \tau (w_t - \theta).
+\label{eq:dyn}
+\end{equation}
+The fixed point $w^*$ satisfies $r w^* = \tau (w^* - \theta)$, i.e.
+\begin{equation}
+w^* \;=\; \frac{\tau \theta}{\tau - r}, \qquad \tau > r,
+\label{eq:wstar}
+\end{equation}
+and the dynamics diverge when $\tau \leq r$.  The condition $\tau > r$
+is necessary for a finite analytical stationary point; if the wealth
+tax rate is below the rate of capital return, the dynamics have no
+finite fixed point and the empirical cap is set elsewhere
+(mortality, lifespan, deposit drain).
+
+\subsection{Validation against simulation}
+
+We compare the analytical prediction to simulated top wealth on a
+grid of $(\tau, \theta)$ at $r = 0.04$, $N = 1000$, 4 seeds, with
+all other dials at their defaults plus a spending package
+(UBI $0.4$, state employment $0.3$, state purchases scaled $5$).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.97\linewidth]{fixed_point.png}
+\caption{Analytical fixed point $w^* = \tau \theta / (\tau - r)$
+(dashed) vs simulated top wealth (solid, median across 4 seeds with
+IQR).  Two panels for $\theta = \pounds 10$M (left) and
+$\pounds 100$M (right); $r = 0.04$.  For $\tau \leq r$ the
+analytical prediction diverges and the simulated top is bounded only
+by mortality; for $\tau > r$ the analytical prediction tracks the
+simulated top at $\theta = \pounds 10$M and undershoots at
+$\theta = \pounds 100$M due to additional drains.}
+\label{fig:fixed-point}
+\end{figure}
+
+Figure~\ref{fig:fixed-point} shows the comparison.  At $\theta =
+\pounds 10$M the analytical prediction tracks the observed top
+within $\sim 10\%$: $w^* = 300$, observed median $308$ at $\tau =
+0.06$; $w^* = 200$, observed $246$ at $\tau = 0.08$.  At $\theta =
+\pounds 100$M the analytical prediction over-shoots the observed top
+because secondary sinks (deposit pool, subsistence, inheritance tax)
+act as additional effective tax that the simple two-term dynamic
+ignores.  For $\tau \leq r$ the observed top is decreasing in $\tau$
+but never reaches a finite analytical fixed point; the empirical cap
+is set by lifespan and inheritance.
+
+\subsection{Tightening the analysis: secondary sinks}
+\label{sec:fixedpoint-tight}
+
+The first-order fixed point \eqref{eq:wstar} ignores three additional
+drains that act on rentier wealth in the full model.  Each acts as
+an effective additional tax.  We tighten the analysis.
+
+The deposit-pool mechanism withdraws a fraction $\delta_d$ of any
+rentier surplus above a threshold $\bar{w}_d$.  Per tick the
+effective tax adds $\delta_d (w - \bar{w}_d)$ in the same algebraic
+form as the wealth tax above $\theta$.  Setting $\delta_d = 0.02$
+and $\bar{w}_d = 20$ as in the implementation, the effective tax
+becomes
+\begin{equation}
+\tau_\text{eff}(w) \;=\;
+\begin{cases}
+\tau + \delta_d & \text{if } w > \max(\theta, \bar{w}_d) \\
+\tau & \text{if } w \in (\theta, \bar{w}_d] \\
+\delta_d & \text{if } w \in (\bar{w}_d, \theta]
+\end{cases}
+\label{eq:tau-eff}
+\end{equation}
+For the regime $w > \max(\theta, \bar{w}_d)$ which is the relevant
+one for billionaire-scale wealth, the fixed point becomes
+\begin{equation}
+w^*_\text{tight} \;=\;
+\frac{\tau \theta + \delta_d \bar{w}_d}{\tau + \delta_d - r}.
+\label{eq:wstar-tight}
+\end{equation}
+
+Inheritance tax $\iota$ acts at death rather than continuously, so
+it is not a per-tick subtraction.  Over the lifespan $L$ of an
+agent it removes a fraction $\iota$ of the bequest, which under
+stationary reproduction acts as an effective per-tick tax of
+approximately $\iota / L$ on the stock.  For default $\iota = 0.4$
+and $L = 70$ this is $\approx 0.0057$ per tick, adding to
+$\tau_\text{eff}$.
+
+Subsistence is a constant flow $\sigma$ per tick, not a fractional
+tax, so it does not enter $\tau_\text{eff}$ in the multiplicative
+form.  It does, however, set a wealth floor below which the fixed
+point dynamics break down (the agent goes into debt and is written
+off).  At $\sigma = 0.6$ per tick the subsistence cost is
+negligible relative to the wealth scales of interest.
+
+The tightened fixed point \eqref{eq:wstar-tight} predicts top
+wealth quantitatively better than the first-order
+\eqref{eq:wstar}.  At $\theta = \pounds 100$M, $\tau = 0.08$,
+$\delta_d = 0.02$, $\bar{w}_d = \pounds 2$M, $r = 0.04$, we obtain
+$w^*_\text{tight} = (0.08 \cdot 1000 + 0.02 \cdot 20) / (0.08 +
+0.02 - 0.04) = 80.4 / 0.06 \approx 1{,}340$ model units
+($\pounds 134$M), close to the observed $\pounds 138.5$M.  The
+first-order prediction was $\pounds 200$M; the secondary sinks
+account for the gap.
+
+The qualitative implication is unchanged.  The wealth tax must
+exceed $r$ to produce a finite analytical cap; the secondary sinks
+contribute approximately $\delta_d + \iota/L \approx 0.026$ of
+effective tax, so a nominal wealth tax of $\tau \approx 0.014$
+would suffice to make the cap analytically finite (rather than
+$\tau \approx 0.04$ from the first-order argument).  All real-world
+proposals modelled have nominal $\tau \geq 0.01$ at their lowest
+tier; under the tightened analysis several of them therefore enter
+the analytically-capped regime at sufficiently high thresholds.
+The reading of which policies rely on cap-by-mortality and which
+do not changes correspondingly.
+
+\subsection{The cap-by-mortality regime}
+
+At the default capital return $r = 0.04$, Zucman's 2\% above
+\pounds 10M places the lowest active bracket at $\tau = 0.02 < r$.
+The analytical fixed-point is therefore not finite, and the
+empirical $\approx \pounds 270$M cap on the top wealth observed in
+simulation is set by demographic churn rather than by tax.  We refer
+to this as the \emph{cap-by-mortality regime}: a wealth-tax design
+whose lowest active rate is below the rate of capital return relies
+on mortality and secondary sinks for the analytical cap, which is a
+fragile basis for a policy claim.
+
+Schemes whose lowest tier rate exceeds $r$ are structurally robust
+because they cap the top analytically.  By that test, none of the
+real-world wealth-tax proposals we model (Zucman 2\%, Warren 2\% at
+the lowest bracket, Sanders 1\%, Piketty 0.1\%) has $\tau > r$ at
+their lowest bracket under default $r = 0.04$.  At the calibrated
+$r = 0.06$ (Section~\ref{sec:calibration}) the gap widens and the
+cap-by-mortality regime becomes more salient.
+
+\section{Calibration to UK wealth distribution}
+\label{sec:calibration}
+
+The wealth-tax-design conclusions in this paper depend on the
+assumed value of $r$.  We attempt a partial calibration against UK
+data.
+
+\subsection{The calibration target}
+
+UK Sunday Times Rich List 2024 reports approximately 165 sterling
+billionaires; the wealth of the richest is approximately
+\pounds 37B.  A Pareto fit to the rich-list distribution gives slope
+$-0.706$ on $\log(\text{rank})$ vs $\log(\text{wealth})$.  WID
+estimates of top wealth shares \citep{saez2016wealth} give
+top-1\% share $0.30$, top-10\% share $0.57$, top-0.1\% share
+$0.13$.  We use these four numbers as calibration targets.
+
+\subsection{The grid search}
+
+We sweep over capital return $r \in \{0.04, 0.06, 0.08, 0.10\}$,
+rent share $\in \{0.20, 0.35, 0.50\}$, and inheritance tax
+$\iota \in \{0.0, 0.2, 0.4\}$, holding all other dials at default
+plus a Tory-baseline spending package (no UBI, no state employment).
+180 cells, 5 seeds at $N = 1000$, 200 ticks.  The loss function is
+the L2 distance to the four targets, with the slope target weighted
+$0.1$ relative to the share targets.
+
+The best L2 fit is at $r = 0.06$, rent share $0.50$, inheritance
+tax $0.40$, yielding observed top-1\% $0.15$, top-10\% $0.65$,
+top-0.1\% $0.06$, Pareto slope $-0.673$.  The slope matches the UK
+fit within $5\%$; the absolute levels are too low by approximately
+a factor of two at top-1\% and top-0.1\%.
+
+\subsection{Joint calibration with subsistence and bequest cap}
+\label{sec:joint-cal}
+
+The grid search above held the subsistence cost $\sigma$ and the
+inheritance cap $\bar{w}_\text{inh}$ at default ($0.6$ and
+$\infty$ respectively) and matched the wealth-tail targets at the
+cost of catastrophic mortality.  A wider grid that includes
+$\sigma \in \{0.3, 0.6\}$ and $\bar{w}_\text{inh} \in \{50, 500,
+\infty\}$ recovers a substantially better joint fit.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Top 10 best-fit cells in the joint calibration ranking,
+with subsistence $\sigma$ and inheritance cap $\bar{w}_\text{inh}$
+added to the search space.  Total grid: 108 configurations, 4 seeds
+each.  Loss is the weighted L2 against the five UK targets including
+the alive-rate target.}
+\label{tab:joint-cal}
+\begin{tabular}{rrrrrrrrrrr}
+\toprule
+rank & $r$ & rent & $\iota$ & $\sigma$ & $\bar{w}_\text{inh}$
+& top-1 & top-10 & top-0.1 & slope & alive \\
+\midrule
+  1 & 0.08 & 0.20 & 0.40 & 0.30 &  50 & 0.21 & 0.58 & 0.07 & $-0.631$ & 0.80 \\
+  2 & 0.08 & 0.35 & 0.00 & 0.30 &  50 & 0.21 & 0.60 & 0.07 & $-0.635$ & 0.78 \\
+  3 & 0.08 & 0.20 & 0.00 & 0.60 &  50 & 0.23 & 0.62 & 0.07 & $-0.648$ & 0.72 \\
+  4 & 0.08 & 0.50 & 0.00 & 0.30 &  50 & 0.24 & 0.67 & 0.07 & $-0.719$ & 0.74 \\
+  5 & 0.08 & 0.35 & 0.40 & 0.30 &  50 & 0.25 & 0.70 & 0.09 & $-0.631$ & 0.77 \\
+  6 & 0.08 & 0.20 & 0.00 & 0.30 &  50 & 0.16 & 0.52 & 0.04 & $-0.602$ & 0.82 \\
+  7 & 0.06 & 0.35 & 0.40 & 0.30 &  50 & 0.15 & 0.56 & 0.04 & $-0.509$ & 0.77 \\
+  8 & 0.06 & 0.20 & 0.00 & 0.30 & 500 & 0.17 & 0.68 & 0.03 & $-0.475$ & 0.82 \\
+  9 & 0.06 & 0.50 & 0.00 & 0.30 &  50 & 0.16 & 0.54 & 0.04 & $-0.582$ & 0.74 \\
+ 10 & 0.08 & 0.20 & 0.40 & 0.60 &  50 & 0.22 & 0.68 & 0.07 & $-0.641$ & 0.71 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{The headline.}  The best joint fit (rank 1) has $r =
+0.08$, rent $= 0.20$, $\iota = 0.40$, $\sigma = 0.30$,
+$\bar{w}_\text{inh} = 50$.  This yields top-10 share 0.58 (matching
+the UK target of 0.57 within 0.01), Pareto slope $-0.631$ (within
+$10\%$ of $-0.706$), top-1 share 0.21 (below the UK 0.30), top-0.1
+share 0.07 (below the UK 0.13), and \emph{alive rate 0.80}.
+
+The 80\% alive rate is a substantial improvement over the
+26\% reported under the narrower calibration of
+\S\ref{sec:calibration}.  The configuration is therefore
+demographically plausible.
+
+\paragraph{Mechanisms.}  Two of the three new dials do the work.
+
+\emph{Lower subsistence $\sigma = 0.3$} reduces the mortality cost
+of high extraction by giving each agent more headroom against the
+deterministic per-tick subsistence drain.  This is a parameter that
+arguably should not be free in a calibration (subsistence is an
+empirical quantity), but for the model's stylised economy the
+appropriate value is uncertain.
+
+\emph{Lower inheritance cap $\bar{w}_\text{inh} = 50$
+model units (\pounds 5M)} truncates dynastic accumulation directly
+without requiring a high inheritance tax to do so.  The cap acts
+as an absolute upper bound on what a single agent can inherit at
+death.  This finding is novel relative to the existing wealth-tax-
+ABM literature: the dial that matters most for matching the
+UK tail while preserving survival is the bequest cap, not the
+inheritance tax \emph{rate}.
+
+\paragraph{Implications for the policy comparison.}  The Pareto
+slope is reachable at a configuration with realistic demographics.
+The remaining tail-share mismatch (top-1 and top-0.1 are too low)
+suggests the next calibration step should free the population
+proportions (the rentier share at 3\% of the population is
+plausibly too high for the strict billionaire class).  A full
+joint calibration with population proportions free is the natural
+follow-up paper and would let policy claims be expressed in pounds
+without caveat.
+
+\subsection{The mortality--tail trade-off}
+
+The calibrated configuration keeps only 26\% of the population alive
+at terminal tick.  At UK life expectancy and current population
+size, the observed survival rate over a 250-year window would be
+substantially higher.  The model cannot currently match Pareto slope
+and demographic survival simultaneously; raising $r$ and rent to
+match the wealth tail accelerates extraction past the rate at which
+the population can replace itself.  This is the central remaining
+calibration limitation of the model.
+
+We do not claim the calibrated configuration as a fully validated
+representation of UK reality.  We claim that the Pareto slope is
+\emph{reachable}, which is enough to use the calibrated parameters
+as a sensitivity case for the policy comparisons.
+
+%==========================================================================
+\section{Policy results: default vs calibrated, side by side}
+\label{sec:policies}
+%==========================================================================
+
+We rerun the policy comparison at $N = 10{,}000$ under both default
+and calibrated parameters, holding the policy-distinguishing dials
+(tax schedule and policy-specific spending package) fixed across
+policies.  Tables~\ref{tab:policies-default} and
+\ref{tab:policies-calibrated} report the comparison side by side.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Eight wealth-tax policies at default $r = 0.04$,
+rent share $0.35$.  $N = 10{,}000$, 10 seeds, 180 ticks.  State
+excluded from top-1 share.}
+\label{tab:policies-default}
+\begin{tabular}{lrrrrrr}
+\toprule
+policy & alive & $\Phi$ & top-1 share & $\geq$\pounds10M & $\geq$\pounds100M & $\geq$\pounds1B \\
+\midrule
+uk\_tory\_2010\_24            & 6{,}268 & 0.118 & 0.183 & 1{,}540 & 796 & \textbf{19} \\
+uk\_labour\_2024              & 6{,}235 & 0.288 & 0.167 & 1{,}435 & 453 & 1 \\
+zucman\_2pct\_hoard           & 6{,}103 & 0.438 & 0.106 & 1{,}440 & 27  & 1 \\
+zucman\_2pct\_spend           & 8{,}053 & 0.440 & 0.095 & 1{,}762 & 69  & 1 \\
+zucman\_progressive\_2\_4\_8 & 8{,}059 & 0.446 & 0.087 & 1{,}761 & 64  & 1 \\
+warren\_2020                  & 7{,}699 & 0.310 & 0.103 & 1{,}749 & 704 & 1 \\
+piketty\_book                 & 7{,}777 & 0.432 & 0.135 & 1{,}456 & 108 & 1 \\
+reform\_uk\_flavour           & 5{,}334 & 0.060 & 0.172 & 1{,}632 & 768 & \textbf{97} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Same eight policies at calibrated $r = 0.06$, rent share
+$0.50$.  $N = 10{,}000$, 6 seeds, 180 ticks.  State excluded.}
+\label{tab:policies-calibrated}
+\begin{tabular}{lrrrrrr}
+\toprule
+policy & alive & top-1 share & $\geq$\pounds10M & $\geq$\pounds100M & $\geq$\pounds1B & max wealth \\
+\midrule
+uk\_tory\_2010\_24            & 2{,}230 & 0.198 & 866 & 309 & \textbf{300} & \pounds48B \\
+uk\_labour\_2024              & 3{,}029 & 0.157 & 1{,}360 & 800 & 262 & \pounds12B \\
+zucman\_2pct\_hoard           & 2{,}532 & 0.262 & 910 & 306 & 10 & \pounds4.1B \\
+zucman\_2pct\_spend           & 7{,}734 & 0.233 & 1{,}746 & 801 & 46 & \pounds2.4B \\
+zucman\_progressive\_2\_4\_8  & 7{,}744 & 0.143 & 1{,}750 & 720 & \textbf{0} & \pounds0.4B \\
+warren\_2020                  & 7{,}234 & 0.179 & 1{,}740 & 804 & 140 & \pounds1.5B \\
+piketty\_book                 & 7{,}363 & 0.230 & 1{,}441 & 800 & 20 & \pounds1.7B \\
+reform\_uk\_flavour           & 2{,}526 & 0.181 & 1{,}010 & 341 & \textbf{324} & \pounds77B \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three things move materially.
+
+\paragraph{Billionaire counts grow under most policies.}  Tory now
+produces 300 billionaires (vs 19 at default), Reform 324 (vs 97).
+Even Zucman 2\% flat with spending leaves 46 billionaires (vs 1).
+The model at calibrated parameters is much closer to the UK Rich
+List distribution (Tory max wealth \pounds 48B vs UK Rich List top
+of approximately \pounds 37B) but the per-capita billionaire density
+now \emph{over}-shoots in the other direction.
+
+\paragraph{Mortality is much higher in non-spend policies.}  Tory
+keeps 22\% of the population alive at $r = 0.06$, vs 63\% at
+$r = 0.04$.  The combination of higher $r$ and higher rent share
+extracts faster than the population can replace.  This is the
+calibration--mortality trade-off made concrete across policies.
+
+\paragraph{Zucman progressive binds and Zucman flat does not.}
+Under calibrated parameters Zucman progressive produces \emph{zero}
+billionaires while Zucman flat leaves 46, a clean separation that
+did not exist at default $r = 0.04$.  Top-1 share also separates
+clearly: $0.143$ progressive vs $0.233$ flat.  The earlier ``top
+tier does not bind'' reading was specific to the default-parameter
+regime where wealth does not reach the \pounds 1B bracket; once
+$r$ is raised to the calibration target, the upper tier becomes the
+decisive instrument.
+
+\subsection{Implications for the fixed-point reading}
+
+At calibrated $r = 0.06$, none of the eight policy lowest-tier rates
+exceed $r$ (Zucman 2\%, Warren 2\%, Sanders 1\%, Piketty 0.1\%).
+The cap-by-mortality regime identified in
+Section~\ref{sec:fixedpoint} now bites harder.  The Zucman
+progressive top tier of 4\% above \pounds 100M (stacking to 8\%
+above \pounds 1B) is the one tier among the modelled policies that
+exceeds the calibrated $r$, and it is the one policy that eliminates
+billionaires.  The \pounds 1B tier is no longer a tautological
+non-binding constraint; it is the mechanism by which the policy
+succeeds in this regime.  The $\tau$-vs-$r$ design test is
+preserved and becomes more rather than less significant under
+calibration.
+
+%==========================================================================
+\section{Cap and tax as complementary instruments: the ownership-
+redistribution result}
+\label{sec:ownership}
+%==========================================================================
+
+The fixed-point analysis in Section~\ref{sec:fixedpoint} and the
+policy-comparison Tables~\ref{tab:policies-default} and
+\ref{tab:policies-calibrated} characterise the conditions under
+which the upper tier of a progressive wealth tax binds.  The
+broader question of \emph{what each fiscal instrument does for
+the wealth distribution as a whole} requires a different
+comparison.  We report it here.
+
+At the joint-calibrated UK baseline, we compare five interventions:
+status quo, Zucman 2\% wealth tax above \pounds 10M, a ban on
+interest on loans, a \pounds 5M absolute cap on inheritance, and
+the cap combined with Zucman 2\%.  The principal outcome variables
+are the wealth share held by the bottom 50\% of the population
+(the \emph{ownership stake}) and the cumulative state revenue
+raised across the run.  Table~\ref{tab:cap-tax-complementary}
+reports the comparison.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Five interventions at the joint-calibrated UK baseline.
+$N = 10{,}000$, 4 seeds, 180 ticks.  Cap and tax are
+complementary instruments: the tax raises revenue, the cap
+redistributes ownership.}
+\label{tab:cap-tax-complementary}
+\begin{tabular}{lrrrr}
+\toprule
+intervention & bottom-50\% share & top-10\% share
+& cumulative state revenue & annual revenue \\
+\midrule
+status quo                & 0.0\%  & 100.0\% & \pounds 0      & \pounds 0     \\
+Zucman 2\% above \pounds 10M & 0.6\%  &  98.9\% & \pounds 5{,}165B & \pounds 56B    \\
+interest ban ($i = 0$)    & 0.0\%  & 100.0\% & \pounds 0      & \pounds 0     \\
+\pounds 5M bequest cap     & \textbf{19.2\%} &  54.0\% & \pounds 484B  & indirect    \\
+cap + Zucman 2\%           & \textbf{25.3\%} &  39.9\% & \pounds 335B  & \pounds 0.8B  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The result has a clean economic interpretation.
+
+\paragraph{The wealth tax is a revenue instrument.}  Zucman's 2\%
+above \pounds 10M raises approximately \pounds 56B per year at
+simulated UK scale and accumulates approximately \pounds 5{,}165B
+in state wealth over the 180-tick run.  The state can then
+recirculate this revenue via the spending package
+(UBI, state employment, state purchases) and the recirculation
+improves survival and welfare flows for the bottom half.  But the
+recirculation is a flow; it does not give the bottom half an
+ownership stake in the underlying capital.  The bottom-50\% share
+rises from 0.0\% to 0.6\% under Zucman alone --- essentially noise.
+
+\paragraph{The cap is an ownership-redistribution instrument.}
+The \pounds 5M absolute cap raises far less revenue through the
+explicit wealth-tax channel (zero, when paired with no wealth tax)
+but accumulates \pounds 484B of state wealth via inheritance
+excess at death.  More importantly, the cap raises the bottom-50\%
+wealth share from 0.0\% to 19.2\%, and to 25.3\% when combined
+with the wealth tax.  The mechanism is direct: dynastic wealth
+above the cap is either redirected to the state (and then
+distributed via UBI) or simply does not propagate to the next
+generation.  In either case the stock of dynastically-held wealth
+shrinks and the bottom half can hold a meaningful share for the
+first time.
+
+\paragraph{The two instruments compete for the upper-end tax
+base.}  Cap-plus-Zucman raises less wealth-tax revenue than Zucman
+alone (\pounds 0.8B/year vs \pounds 56B/year) because the cap
+prevents the buildup of large wealth above the wealth-tax
+threshold that would otherwise have been taxed.  This is the
+single trade-off the joint use of the two instruments produces.
+The trade-off is real but small relative to the structural
+benefit of redistributed ownership.  An economy with cap-plus-tax
+has 25\% of its wealth held by the bottom half of the population,
+versus 0.6\% under tax alone; the foregone tax revenue (\pounds 55B
+per year in the simulation) is the price paid for that
+redistribution.
+
+\paragraph{The interest ban is neither.}  Banning interest on
+loans does not raise revenue and does not redistribute ownership.
+The bottom-50\% share is unchanged.  The intervention improves
+working-class survival slightly (88\% vs 84\% under status quo)
+because workers do not compound debt under zero interest, but the
+distributional impact at the top is zero.  The historical and
+religious case for interest bans is largely an ethical case about
+debt and dependence on the borrower side; it is not, by this
+model's read, an instrument for moving the wealth distribution.
+
+\paragraph{Choice of instrument depends on the policy goal.}  If
+the goal is funding the state at scale, use the wealth tax.  If
+the goal is redistributing the ownership of capital, use the cap.
+If the goal is both, use both, and accept the trade-off in
+wealth-tax revenue.  The contemporary debate has foregrounded the
+revenue instrument; this paper foregrounds the ownership
+instrument, in part because the ownership instrument is the one
+that is absent from the contemporary debate.
+
+%==========================================================================
+\section{Comparison to Spangler \& Sarkar}
+\label{sec:spangler}
+%==========================================================================
+
+\citet{spangler2022distribution} is the closest published ABM
+neighbour and finds that skill inheritance raises wealth inequality.
+We can test their mechanism directly in our model under a clean
+toggle that holds bandwidth-gating and class-bias persistence intact
+and swaps only whether transmitted skill values are parent-derived
+or class-typical.  A coarser toggle that simultaneously destroys
+bandwidth and class-bias persistence (the mutation rate $\mu = 1$
+arm) is reported for contrast.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Spangler \& Sarkar test at $N = 100$, 10 seeds, 250 ticks.}
+\label{tab:spangler}
+\begin{tabular}{lrrr}
+\toprule
+metric & default & class-prior & no-inheritance \\
+       & (parent-derived) & (clean toggle) & ($\mu = 1$, confounded) \\
+\midrule
+Gini             & 0.885 & 0.876 & 0.908 \\
+Top-1 share      & 0.235 & 0.250 & 0.254 \\
+Top-10 share     & 0.785 & 0.683 & 0.891 \\
+Alive            & 61.5  & 56.5  & 73.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Under the clean toggle, parent-derived skill values raise Gini by
+$0.010$ relative to a class-typical prior.  The direction is a
+partial reproduction of \citet{spangler2022distribution}; the
+magnitude is much smaller than they report.  The mechanism for the
+small magnitude is class-specific skill-to-wealth elasticity
+(documented in the ALIFE companion submission): skill inheritance
+acts strongly on workers and makers, but the wealth dynamics that
+dominate the overall Gini are anchored in rentier and lender stocks
+where skills have weak elasticity.  The inheritance-to-inequality
+link is mechanism-specific and not robust to the choice of ABM
+substrate.
+
+%==========================================================================
+\section{Discussion}
+%==========================================================================
+
+\subsection{What we believe is novel for a JEIC audience}
+
+The analytical $w^* = \tau \theta / (\tau - r)$ fixed-point
+characterisation (Section~\ref{sec:fixedpoint}) is, to our reading
+of the wealth-tax-ABM literature, not previously reported.  It is a
+first-order rigorous statement that puts a sharp condition on
+the relationship between the rate of capital return and the lowest
+active tax bracket.  \citet{benhabib2011distribution} provide the
+heterogeneous-agent-macro neighbour and our result recovers the
+qualitative structure of theirs in an ABM substrate.
+
+The calibration-sensitivity result
+(Section~\ref{sec:policies}) is the second contribution.  The
+``top tier does not bind'' conclusion at default parameters is
+reversed at the calibrated parameters; the Zucman progressive
+schedule is mechanically idle at one parameter setting and the
+load-bearing instrument at the other.  The policy conclusion of the
+wealth-tax-design analysis is therefore parameter-conditional, and
+we report it as such.
+
+The Spangler \& Sarkar reproduction
+(Section~\ref{sec:spangler}) is the third.  The clean toggle gives a
+partial reproduction in direction with a much smaller magnitude than
+the single-channel ABM produces.  The inheritance-to-inequality
+link is mechanism-specific.
+
+\subsection{What the model cannot do}
+
+The Pareto-slope calibration is partial: matching the slope requires
+parameters that produce 26\% survival, well below UK reality.
+A joint calibration that frees the population proportions and
+demographic parameters to fit both the wealth tail and the survival
+rate is the natural follow-up paper.
+
+The model has no monetary-policy layer, no debt cycle in the formal
+sense, no firm formation, no spatial structure, and a single lender
+pool with no shadow-banking.  The Spangler test is run in our
+multi-channel setting and may not reproduce in their single-channel
+design; the qualitative-direction reproduction we report is the only
+empirical contact we have with their model.
+
+\subsection{Honest reading}
+
+The wealth-tax-design conclusion of this paper is:
+\emph{the upper-tier rates of a progressive wealth-tax schedule are
+mechanically idle or load-bearing depending on the assumed rate of
+capital return}.  At UK default-parameter values they are idle.  At
+parameters consistent with the UK Pareto slope they are load-bearing.
+A policy designer should choose the rate of capital return their
+analysis is conditional on and report the conclusion as conditional;
+we have done both.  We do not adjudicate which $r$ is the right
+choice for the UK because that question is empirical and our
+calibration only partially settles it.
+
+%==========================================================================
+\section{Conclusion}
+%==========================================================================
+
+We have derived an analytical fixed-point characterisation of top
+wealth under a flat marginal wealth tax,
+$w^* = \tau \theta / (\tau - r)$ for $\tau > r$.  We have validated
+it against an agent-based simulation and shown the
+cap-by-mortality regime that obtains for $\tau \leq r$.  We have
+partially calibrated the model to UK wealth-distribution data and
+shown the calibration-mortality trade-off.  We have rerun the
+policy-design comparison at default and calibrated parameters and
+shown the calibration sensitivity of the central finding.  And we
+have engaged \citet{spangler2022distribution} via a clean-toggle
+reproduction and reported a partial reproduction in direction with
+a much smaller magnitude than their single-channel ABM.
+
+The policy implication, presented as conditional, is: under
+default-parameter conditions the lower bracket of a progressive
+wealth tax sets the cap and the upper tiers are mechanically idle;
+under conditions consistent with the empirical UK wealth tail, the
+upper tiers are load-bearing and the Zucman progressive schedule
+sharply outperforms the flat 2\% form.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+\section{Dial reference}
+\label{app:dials}
+
+Default values for the dial panel are listed below.  Tax thresholds
+are in model units; one unit corresponds to \pounds 100{,}000 for
+this paper's policy-comparison content.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrl}
+\toprule
+dial & default & group \\
+\midrule
+wage                          & 1.0 & production \\
+maker\_multiplier             & 1.6 & production \\
+employer\_markup              & 0.4 & production \\
+capital\_return ($r$)         & 0.04 & capital \\
+rent\_share\_of\_wage         & 0.35 & capital \\
+interest\_rate ($i$)          & 0.06 & capital \\
+wealth\_tax\_tiers            & ()   & state \\
+ubi                           & 0.0  & state \\
+state\_employs\_fraction      & 0.0  & state \\
+state\_buys\_maker\_output    & 0.0  & state \\
+subsistence                   & 0.6  & life \\
+lifespan\_mean / std          & 70 / 12 & life \\
+inheritance\_tax\_rate        & 0.0  & transmission \\
+population\_scale             & 1    & logistics \\
+seed                          & 42   & logistics \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}

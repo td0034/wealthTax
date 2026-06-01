@@ -1,0 +1,90 @@
+{
+  "uk_tory_2010_24": {
+    "alive_median": 25.5,
+    "gini_median": 0.8874815274186061,
+    "closure_median": 0.0003010139187497866,
+    "top10_median": 0.6888009049392412,
+    "state_wealth_median": 605854.4804450937,
+    "meta_median": 28.886519627336632
+  },
+  "uk_labour_2024": {
+    "alive_median": 26.0,
+    "gini_median": 0.8518567551025165,
+    "closure_median": 0.002697678154080077,
+    "top10_median": 0.6067496035349984,
+    "state_wealth_median": 243958.42065764242,
+    "meta_median": 29.240670419043784
+  },
+  "zucman_2pct_hoard": {
+    "alive_median": 24.5,
+    "gini_median": 0.8528427689948392,
+    "closure_median": 0.02343743736494304,
+    "top10_median": 0.6752226107401897,
+    "state_wealth_median": 68362.39344998897,
+    "meta_median": 29.912754748543065
+  },
+  "zucman_2pct_spend": {
+    "alive_median": 78.0,
+    "gini_median": 0.8998319199268341,
+    "closure_median": 0.03132984708659188,
+    "top10_median": 0.8938455281503411,
+    "state_wealth_median": 158657.8384014651,
+    "meta_median": 42.79088193147564
+  },
+  "zucman_progressive_2_4_8": {
+    "alive_median": 78.0,
+    "gini_median": 0.7872099670145325,
+    "closure_median": 0.14614018419204935,
+    "top10_median": 0.7441086566042296,
+    "state_wealth_median": 81989.6757607309,
+    "meta_median": 42.79088193147564
+  },
+  "warren_2020": {
+    "alive_median": 72.5,
+    "gini_median": 0.8882370082103432,
+    "closure_median": 0.03725491184950471,
+    "top10_median": 0.8459179753869248,
+    "state_wealth_median": 215172.70387130487,
+    "meta_median": 42.04947219125809
+  },
+  "sanders_2020": {
+    "alive_median": 75.5,
+    "gini_median": 0.8923137153893874,
+    "closure_median": 0.03999024860473695,
+    "top10_median": 0.8889165807552969,
+    "state_wealth_median": 205916.25127280926,
+    "meta_median": 42.05821486780046
+  },
+  "piketty_book": {
+    "alive_median": 73.5,
+    "gini_median": 0.9035546006955189,
+    "closure_median": 0.047409155141900694,
+    "top10_median": 0.9065631415746711,
+    "state_wealth_median": 131637.77074153954,
+    "meta_median": 40.978837373772336
+  },
+  "norway_actual": {
+    "alive_median": 29.0,
+    "gini_median": 0.8100004478309397,
+    "closure_median": 0.0005359070178321233,
+    "top10_median": 0.6190835991983765,
+    "state_wealth_median": 838814.3089842391,
+    "meta_median": 29.49050236267532
+  },
+  "spain_solidarity": {
+    "alive_median": 69.5,
+    "gini_median": 0.8761071041193569,
+    "closure_median": 0.07394130735095582,
+    "top10_median": 0.8217614171265915,
+    "state_wealth_median": 120431.68023414758,
+    "meta_median": 37.70407371730656
+  },
+  "reform_uk_flavour": {
+    "alive_median": 26.5,
+    "gini_median": 0.8681592815329434,
+    "closure_median": 0.00011980284623424952,
+    "top10_median": 0.7122047494224721,
+    "state_wealth_median": 589234.4843215223,
+    "meta_median": 30.30471129851551
+  }
+}

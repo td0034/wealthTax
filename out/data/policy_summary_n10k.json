@@ -1,0 +1,98 @@
+{
+  "uk_tory_2010_24": {
+    "final_gini": 0.8752248916526837,
+    "final_alive": 6267.5,
+    "final_closure": 0.11787182939946268,
+    "final_top10": 0.8179669820393716,
+    "final_top1": 0.18300820768841988,
+    "final_state_wealth": 1533370.8937239489,
+    "mean_metabolic": 3868.963181982957,
+    "billionaire_count_mean": 18.9,
+    "centi_millionaire_count_mean": 796.5,
+    "decimillionaire_count_mean": 1540.3
+  },
+  "uk_labour_2024": {
+    "final_gini": 0.8421735618507549,
+    "final_alive": 6235.4,
+    "final_closure": 0.2879361906910919,
+    "final_top10": 0.7430789829017082,
+    "final_top1": 0.16674961586697704,
+    "final_state_wealth": 1646019.2379563316,
+    "mean_metabolic": 3887.7630250998036,
+    "billionaire_count_mean": 1.0,
+    "centi_millionaire_count_mean": 453.4,
+    "decimillionaire_count_mean": 1435.3
+  },
+  "zucman_2pct_hoard": {
+    "final_gini": 0.7643845854217555,
+    "final_alive": 6103.0,
+    "final_closure": 0.4381663588150758,
+    "final_top10": 0.6031308185745545,
+    "final_top1": 0.10636199425212516,
+    "final_state_wealth": 1425926.193873349,
+    "mean_metabolic": 3861.7648490233983,
+    "billionaire_count_mean": 1.0,
+    "centi_millionaire_count_mean": 27.1,
+    "decimillionaire_count_mean": 1440.4
+  },
+  "zucman_2pct_spend": {
+    "final_gini": 0.5985776072356191,
+    "final_alive": 8052.7,
+    "final_closure": 0.4397764393118665,
+    "final_top10": 0.5618033191957477,
+    "final_top1": 0.09503770761848494,
+    "final_state_wealth": 1429217.8805001965,
+    "mean_metabolic": 4284.5499062026,
+    "billionaire_count_mean": 1.0,
+    "centi_millionaire_count_mean": 69.0,
+    "decimillionaire_count_mean": 1762.3
+  },
+  "zucman_progressive_2_4_8": {
+    "final_gini": 0.5949756822520679,
+    "final_alive": 8059.2,
+    "final_closure": 0.4457975405798981,
+    "final_top10": 0.5574668503561757,
+    "final_top1": 0.0873937745884813,
+    "final_state_wealth": 1420248.0468987818,
+    "mean_metabolic": 4282.941146541723,
+    "billionaire_count_mean": 1.0,
+    "centi_millionaire_count_mean": 63.7,
+    "decimillionaire_count_mean": 1760.7
+  },
+  "warren_2020": {
+    "final_gini": 0.7313665048031912,
+    "final_alive": 7698.9,
+    "final_closure": 0.3103352964812637,
+    "final_top10": 0.6990098998782611,
+    "final_top1": 0.10317067734044458,
+    "final_state_wealth": 1718835.5376206324,
+    "mean_metabolic": 4176.3723909360815,
+    "billionaire_count_mean": 1.0,
+    "centi_millionaire_count_mean": 703.6,
+    "decimillionaire_count_mean": 1748.7
+  },
+  "piketty_book": {
+    "final_gini": 0.7106136863830341,
+    "final_alive": 7777.0,
+    "final_closure": 0.4321876993318547,
+    "final_top10": 0.6647821256112187,
+    "final_top1": 0.13466785976059154,
+    "final_state_wealth": 1566900.5001438984,
+    "mean_metabolic": 4260.205584846618,
+    "billionaire_count_mean": 1.0,
+    "centi_millionaire_count_mean": 108.0,
+    "decimillionaire_count_mean": 1456.1
+  },
+  "reform_uk_flavour": {
+    "final_gini": 0.870465953419101,
+    "final_alive": 5334.4,
+    "final_closure": 0.05963272874719312,
+    "final_top10": 0.76166584021303,
+    "final_top1": 0.1717347192525538,
+    "final_state_wealth": 1013447.1730487741,
+    "mean_metabolic": 3798.860688767438,
+    "billionaire_count_mean": 97.4,
+    "centi_millionaire_count_mean": 767.8,
+    "decimillionaire_count_mean": 1631.7
+  }
+}

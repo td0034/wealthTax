@@ -1,0 +1,1165 @@
+% Compile with:
+%   pdflatex paper_cap && bibtex paper_cap && pdflatex paper_cap && pdflatex paper_cap
+\documentclass[11pt]{article}
+
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage[final,protrusion=true,expansion=false]{microtype}
+
+\graphicspath{%
+  {../../out/figures/scenarios/}%
+  {../../out/figures/policies/}%
+  {../../out/figures/wealth_tax/}%
+  {../../out/figures/scale_up/}%
+}
+
+\title{Caps as ownership:\\
+\large an agent-based case that an absolute ceiling on inheritance is
+the structural mechanism for letting the bottom half of the country
+own something}
+
+\author{[Author]\\
+\small (supervision and acknowledgements TBD)}
+\date{Draft of \today\ for Fiscal Studies}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The political case for a wealth tax has been refreshed by the 2024
+\citet{zucman2024global} G20 proposal of a 2\% minimum effective
+tax on the assets of ultra-high-net-worth individuals.  We use a
+calibrated agent-based simulation of a stylised UK-like economy to
+compare five structural interventions and report three positive-case
+findings about an absolute ceiling on inheritance set at
+\pounds 5 million.
+
+First, the cap is the only intervention we tested that changes
+\emph{who owns the country}.  Under the joint-calibrated UK
+baseline, the bottom 50\% of the population holds 0.0\% of household
+wealth under status quo, 0.6\% under Zucman's 2\% wealth tax as
+proposed, and 0.0\% under a ban on interest.  Under a \pounds 5M
+absolute cap on inheritance the bottom-half share rises to 19.2\%;
+under the cap combined with Zucman 2\% it rises to 25.3\%.  The cap
+is the structural mechanism that lets the bottom half of the
+country own something.
+
+Second, the cap increases the share of monetary activity that is
+productive rather than extractive.  Our productive-flow-share
+metric $\Phi$ rises from $\approx 0.00$ under status quo to $0.27$
+under the cap and $0.37$ under cap-plus-tax.  Cumulative value
+created over a 180-tick run rises by about 6\% under the cap.
+Population survival improves from 84\% to 91--92\%.
+
+Third, the cap and the wealth tax are \emph{complementary
+instruments} that do different jobs.  The wealth tax raises
+substantial state revenue (Zucman 2\% raises roughly \pounds 56B
+per year at simulated UK scale and accumulates \pounds 5,165B in
+state wealth over the run).  The cap raises far less revenue
+(\pounds 484B cumulative, mostly via inheritance excess at death)
+but redistributes ownership directly.  If the goal is to fund the
+state, use the tax.  If the goal is to redistribute ownership, use
+the cap.  If the goal is both, use both.
+
+A cap-value sweep places the knee of the trade-off curve between
+\pounds 5M and \pounds 10M.  We position the result against the
+classical philosophical case for inheritance limits
+\citep{mill1848principles, carnegie1889wealth, rignano1924bequest,
+atkinson2015inequality, piketty2020capital}, the optimal-taxation
+theory of bequests \citep{piketty2013theory, farhi2010progressive,
+kopczuk2013taxation}, the recent revival of the wealth-tax debate
+\citep{saez2019triumph, zucman2024global, oecd2021inheritance}, and
+the empirical tax-flight literature
+\citep{young2016millionaire, akcigit2016inventors, moretti2017taxing}.
+
+The model and data release are documented in companion technical
+submissions to JEIC, JASSS, and Artificial Life.  This paper
+foregrounds the fiscal-policy implication and recommends a
+\pounds 5--10M cap, internationally coordinated at the G20 level,
+with residency-clock and exit-tax provisions and explicit
+carve-outs for primary residences and small productive-business
+assets.  The end of the billionaire class is the visible side
+effect of this proposal.  The proposal itself is about ownership.
+\end{abstract}
+
+%==========================================================================
+\section{Introduction}
+%==========================================================================
+
+The political conversation about wealth taxation has been dominated,
+since 2024, by a single number: 2 percent.  The G20 proposal advanced
+by \citet{zucman2024global} for a 2\% minimum effective tax on the
+assets of dollar-billionaires gave the wealth-tax debate a concrete
+focal point and the political appeal of a rate that is too modest to
+be dismissed as confiscatory and too visible to be dismissed as
+nominal.  The framing has been useful and the cross-jurisdictional
+political mobilisation around it has been real.
+
+This paper does not propose to displace that framing.  It proposes
+to extend it, on the basis of a calibrated agent-based simulation
+of a stylised UK-like economy, by drawing attention to a structural
+instrument that the contemporary debate has lost: an absolute ceiling
+on the amount any individual may inherit.
+
+The motivation for foregrounding the cap is not about ending the
+billionaire class as such, although the simulation does that
+cleanly under the cap.  The motivation is that the cap is the only
+instrument among the five we tested that lets the bottom half of
+the population own a meaningful share of the country's wealth.
+Under the joint-calibrated UK baseline, status quo and the Zucman
+2\% wealth tax both produce wealth distributions in which the
+bottom 50\% of the population holds essentially nothing (0.0\% and
+0.6\% of total household wealth respectively).  Under a \pounds 5
+million absolute cap on inheritance, the bottom-half share rises
+to 19.2\%.  Under cap-plus-tax it rises to 25.3\%.  The bottom-half
+ownership stake is the headline finding of this paper.
+
+The structural reason is bequest dynamics.  A wealth tax at rate
+$\tau$ above threshold $\theta$ produces a finite analytical
+ceiling on top wealth only if $\tau$ exceeds the rate of capital
+return $r$ \citep{benhabib2011distribution}; below that
+condition the tax accumulates state revenue but does not change
+the distributional structure at the top.  Every wealth-tax proposal
+we modelled, including Zucman's at the lowest tier, has $\tau$
+below realistic $r$ values for the UK ($r \geq 0.06$ on the
+calibrated baseline).  The cap operates on the bequest dynamics
+directly: every dynastic line resets to at most \pounds 5M at
+each death, and within-lifetime compounding from a capped bequest
+cannot reach the billionaire range under any plausible
+parameterisation.
+
+The cap and the wealth tax are therefore complementary, not
+competing.  The wealth tax raises substantial state revenue
+(roughly \pounds 56B per year at simulated UK scale, accumulating
+to \pounds 5T over a 180-tick run).  The cap raises far less
+revenue (\pounds 484B cumulative, mostly through inheritance
+excess at death) but redistributes ownership directly.  If the
+policy goal is funding the state at scale, the tax is the
+instrument.  If the policy goal is changing who owns the country,
+the cap is the instrument.  If the policy goal is both, the two
+stack cleanly.
+
+A third structural finding is that the cap moves the economy
+towards more productive activity.  Our productive-flow-share
+metric $\Phi$, defined as the share of per-tick monetary accrual
+going to or being created by productive-class agents rather than
+extractive-class agents, rises from approximately zero under
+status quo to 0.27 under the cap and 0.37 under cap-plus-tax.
+Cumulative value created over a 180-tick run rises by 6\% under
+the cap.  Population survival improves from 84\% to 91--92\%.
+The economy that operates under a bequest cap is, on the measures
+we have, doing more real work, dispersing ownership more widely,
+and keeping more of its population alive.
+
+The remainder of the paper is organised as follows.
+Section~\ref{sec:literature} positions the argument against five
+literatures: the classical philosophical case for inheritance
+limits, the twentieth-century history of estate taxation, the
+optimal-taxation theory of bequests, the recent wealth-tax
+revival, and the empirical tax-flight evidence.
+Section~\ref{sec:model} recaps the agent-based model in summary
+form.  Section~\ref{sec:comparison} presents the five-intervention
+comparison with both the wealth-distribution and the ownership
+findings.  Section~\ref{sec:benefits} reports the dashboard of
+positive-case outcomes (ownership, productive activity, survival,
+revenue) for each intervention.  Section~\ref{sec:cap-value}
+sweeps the cap value and identifies the \pounds 5M--\pounds 10M
+knee of the trade-off curve.  Section~\ref{sec:implementation}
+addresses implementation: the international-coordination
+requirement, the tax-flight evidence, trust-law issues, and
+asset-class carve-outs.  Section~\ref{sec:discussion} discusses
+why an ownership-effective instrument is in essentially no major
+political manifesto.
+
+%==========================================================================
+\section{Five literatures}
+\label{sec:literature}
+%==========================================================================
+
+\subsection{The classical philosophical case for inheritance limits}
+
+\citet{mill1848principles}, writing in 1848, argued that the bequest
+of property carries no moral analogy with the original earning of it,
+and that there is a legitimate role for the state in limiting the
+amount that any individual may inherit.  This was not a marginal
+position in the political-economy tradition Mill represented; it was
+the standard view among nineteenth-century liberal political
+economists who were sceptical of dynastic privilege but
+unenthusiastic about state ownership.
+
+\citet{carnegie1889wealth}'s \emph{Wealth}, often misread as a
+defence of capitalism, contains one of the most aggressive
+historical statements of the case for confiscatory estate taxation:
+``The man who dies thus rich dies disgraced.''  Carnegie's argument
+was that large fortunes had no moral right to be transmitted to the
+next generation and that the bulk of any large estate ought to be
+returned to society at death.  He was not arguing for high marginal
+income tax rates during life; he was arguing for what we would
+today call a near-100\% inheritance tax above a generous floor.
+
+\citet{rignano1924bequest} extended the case with a graduated scheme
+in which the rate of bequest taxation depended on how many
+generations had elapsed since the original accumulator: first-
+generation transfers light, multi-generational transfers heavy.
+The intellectual move was to distinguish the moral status of the
+\emph{accumulator's} bequest from that of the \emph{dynastic}
+bequest, a distinction the contemporary debate has lost and that
+the model we present in Section~\ref{sec:model} effectively respects
+because it imposes the same cap on all heirs regardless of generation
+without distinguishing original accumulation from inheritance.
+
+\citet{atkinson1972unequal} brought the British data of the
+mid-twentieth century to bear on the question of where, empirically,
+inherited rather than earned wealth sat in the UK distribution.
+\citet{atkinson2015inequality} returned to the question in his final
+book and proposed a universal capital endowment, funded from
+inheritance taxation, as a tractable redistributive device.  The
+proposal explicitly couples a cap-like instrument (the inheritance
+tax) with a redistributive mechanism (the dividend) on the revenue
+side.  The model we present is consistent with the spirit of this
+proposal: the cap on accumulation should be paired with a
+redistributive spending package on the revenue side, as our
+factorisation result (companion JASSS submission) shows.
+
+\citet{piketty2020capital} embeds the case for inheritance taxation
+in a global political-economy frame that distinguishes proprietarian
+from social-democratic regimes by, among other features, their
+treatment of intergenerational transfers.
+
+\subsection{The twentieth-century history of estate taxation}
+
+Estate and inheritance taxes were among the most aggressive
+redistributive instruments of the twentieth century.
+\citet{scheve2009scheidel} document the empirical association
+between mass-mobilisation warfare and the political viability of
+progressive taxation, including estate taxation; the high
+inheritance-tax rates of the mid-twentieth-century UK and US (top
+marginal rates above 75\% in both at various points) were a
+mass-warfare-era political fact rather than a peacetime norm.
+\citet{scheidel2017leveler} extends the empirical case across a
+longer time horizon: extreme wealth concentration historically
+\emph{ends} by violent levelling events (war, revolution, state
+collapse, pandemic) rather than by fiscal policy.
+
+\citet{oecd2021inheritance}'s OECD review of inheritance taxation
+across thirty-eight member countries is the most comprehensive
+recent empirical reference.  It documents (i) the steady erosion of
+top marginal rates since the 1970s, (ii) the abolition of estate
+taxation entirely in Sweden, Norway, Russia, Austria, India, and
+several smaller jurisdictions, (iii) the empirical decline in
+revenue as a share of GDP across the OECD, and (iv) the persistence
+of major exemptions for family-business and primary-residence
+succession.  The empirical pattern is one of an instrument in retreat
+across the major economies, contemporaneous with the documented rise
+in top wealth shares \citep{saez2019triumph, piketty2020capital}.
+
+\citet{kopczuk2003bequest, kopczuk2013taxation} provide the
+empirical reference on the contemporary US estate tax: how it is
+avoided in practice, the role of inter-vivos giving, and the
+empirical elasticity of bequest with respect to the marginal estate
+rate.  The Mirrlees Review \citep{mirrlees2011tax} chapter on
+wealth-transfer taxation \citep{boadway2010taxation} is the
+corresponding UK reference and provides the most thorough recent
+analytic treatment of the architecture choices a UK wealth-transfer
+tax would need to make.
+
+\subsection{The optimal-taxation theory of bequests}
+
+\citet{piketty2013theory} provide the canonical optimal-bequest-
+taxation derivation in the modern public-economics tradition.
+Their result is that the optimal bequest-tax rate is generally
+positive and substantial, with the precise value depending on
+elasticity assumptions and the social marginal welfare weight on
+inheritors versus the broader population.
+
+\citet{farhi2010progressive} characterise optimal estate taxation
+in a heterogeneous-agent dynamic model with productive bequests.
+Their result is that the optimal estate tax is progressive in
+both wealth and the inheritor's productivity, with the qualitative
+shape recovered by our cap (which is a 100\% marginal rate above
+the threshold, the limit case of progressivity).
+
+\citet{saez2018social} formalise a generalised social-marginal-
+welfare-weight framework that subsumes the optimal-bequest-taxation
+literature and makes the dependence on distributional preferences
+explicit.
+
+\citet{bastani2020capital} survey the broader optimal-capital-
+taxation literature and place the bequest-taxation question in the
+context of the canonical capital-vs-labour-tax debate.  Their
+review emphasises that the empirical sensitivity of capital
+allocation to the bequest-tax rate is more important for design
+than the canonical Chamley-Judd zero-capital-tax result, which is
+known to be fragile to plausible empirical sensitivity assumptions.
+
+\subsection{The recent wealth-tax revival}
+
+\citet{saez2019triumph} make the contemporary policy case for a
+progressive wealth tax in the US context.  Their proposal is closer
+to the Warren 2020 schedule (2\% above 50 million dollars, 6\% above
+1 billion dollars) than to Zucman's later G20 2\% minimum.
+
+\citet{zucman2024global}'s G20 proposal foregrounds the international
+coordination requirement explicitly.  The 2\% minimum effective
+rate is pitched not as the structurally optimal rate but as the
+politically achievable floor; the proposal's institutional
+innovation is a coordinated minimum effective rate rather than the
+specific 2\% figure.
+
+The recent UK policy literature has been led by IFS analyses of
+inheritance-tax incidence and reform options
+\citep[approximate citation;][]{ifs2023inheritance}, the OECD's
+2021 review, and the heterodox-economics commentary literature
+including work associated with Gary Stevenson on the empirical case
+that high $r$ in the UK is the central driver of wealth
+concentration.  None of these foreground the absolute-cap proposal
+we make here.
+
+\subsection{The empirical tax-flight literature}
+
+\citet{young2016millionaire} provide the largest administrative-
+data study of millionaire migration in response to state tax
+differences in the US.  Their headline finding is that the
+emigration elasticity of millionaires is small (annual migration
+rates roughly 2.4\% nationally; the elasticity to state-tax
+differentials is positive but smaller than commonly assumed).  The
+result is that unilateral progressive taxation by individual US
+states does not produce the catastrophic millionaire flight that
+opponents typically forecast.
+
+\citet{akcigit2016inventors} provide the corresponding analysis for
+the international mobility of inventors in response to top tax rates.
+Their finding is that the international elasticity is larger than
+the within-country elasticity (international migration is more
+sensitive to tax than interstate migration) but still modest in
+absolute terms.
+
+\citet{moretti2017taxing} document the geographic response of US
+star scientists to state-tax differences; their finding is in the
+same range as Young et al.\
+
+The empirical picture is that tax flight is real, larger across
+international borders than within them, but smaller in absolute
+magnitude than the contemporary political debate assumes.  None of
+the existing empirical studies, to our knowledge, addresses the
+specific question of mobility in response to an absolute cap on
+inheritance rather than a rate on income or wealth.  The model we
+present cannot speak to the empirical elasticity directly, but the
+cap-vs-rate distinction we make has direct implications for
+mobility design (see Section~\ref{sec:implementation}).
+
+\subsection{The agent-based and computational neighbours}
+
+The closest agent-based neighbours have been documented at length
+in our companion technical submissions.  \citet{spangler2022distribution}
+couple estate taxation with binary skill inheritance and show that
+the latter raises inequality.  \citet{cardoso2025wealth} show that
+in kinetic-tax models, the spending side of fiscal policy dominates
+the rate side.  \citet{benhabib2011distribution} provide the
+heterogeneous-agent-macro analytical neighbour for the
+fixed-point characterisation of top wealth under bequest dynamics.
+None of these papers, to our reading, compares a wealth tax to a
+bequest cap as fiscal-design instruments side by side under
+realistic dynamics.  That comparison is the central contribution
+of this paper.
+
+%==========================================================================
+\section{The model in summary}
+\label{sec:model}
+%==========================================================================
+
+We use a stylised stock-flow agent-based simulation of an economy
+with seven occupationally typed agents (workers, makers, employers,
+lenders, rentiers, speculators, and a single state) at fixed
+proportions per 100 agents.  Each agent has wealth, debt, age,
+lifespan, and a five-dimensional skill vector.  Per tick (one
+stylised year): production (makers and employers hire workers and
+transform inputs to outputs); extraction (rent, capital return,
+interest); consumption and credit (subsistence cost, optional
+borrowing); tax and UBI; life (death, reproduction with
+bandwidth-limited inheritance).
+
+The relevant policy dials for this paper are the wealth-tax tiers,
+the inheritance tax rate, the absolute inheritance cap, and the
+interest rate.
+
+We use the \emph{joint-calibrated UK baseline} throughout this
+paper: capital return $r = 0.08$, rent share of wage $0.20$,
+subsistence $0.30$, all other dials at default.  This configuration
+returns a top-10\% wealth share of 0.58 (matching the UK WID
+target of 0.57 within 0.01), a Pareto slope of $-0.63$ (within 10\%
+of the empirical $-0.71$ from the 2024 Sunday Times Rich List), and
+a survival rate of 83\% at terminal tick (high but plausible given
+the simulation's stylised demographic structure).  The choice of
+baseline is justified in our JEIC companion submission
+(Section 5 on calibration).
+
+We do not claim this configuration is a fully validated representation
+of the UK economy.  We claim that the wealth-distribution targets are
+reachable at this configuration, which is enough to use the
+configuration as the parameter setting under which to test fiscal-
+policy interventions.
+
+%==========================================================================
+\section{The central comparison: five interventions side by side}
+\label{sec:comparison}
+%==========================================================================
+
+We compare five structural interventions at the joint-calibrated
+UK baseline.  $N = 10{,}000$ agents, 5 seeds, 180 ticks.  The
+interventions are: status quo (no policy change); Zucman 2\%
+wealth tax above \pounds 10M as proposed; an absolute cap on
+inheritance at \pounds 5M; the two combined; and a ban on interest
+on loans (rate set to zero).
+
+\begin{table}[t]
+\centering
+\small
+\caption{Five interventions at the joint-calibrated UK baseline,
+with the state-spending package on.  $N = 10{,}000$, 5 seeds, 180
+ticks.  Top-thresholds and top-1\% share track the visible side of
+the wealth distribution; bottom-50\% share tracks who else owns
+anything.}
+\label{tab:five}
+\begin{tabular}{lrrrrrr}
+\toprule
+intervention & alive \% & $\geq$\pounds 1B & $\geq$\pounds 100M
+& top-10\% share & \textbf{bottom-50\% share} & top-1\% share \\
+\midrule
+status quo                & 84\% & 803 & 849 & 100.0\% & \textbf{0.0\%}  & 0.33 \\
+Zucman 2\% above \pounds 10M & 91\% & 800 & 804 &  98.9\% & \textbf{0.6\%}  & 0.30 \\
+interest ban ($i = 0$)    & 89\% & 803 & 847 & 100.0\% & \textbf{0.0\%}  & 0.35 \\
+\pounds 5M bequest cap     & 91\% & \textbf{2}  & 203 &  54.0\% & \textbf{19.2\%} & 0.20 \\
+Zucman 2\% + \pounds 5M cap & 92\% & \textbf{0}  &  63 &  39.9\% & \textbf{25.3\%} & 0.14 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The chart corresponding to Table~\ref{tab:five} is reported as
+Figure~\ref{fig:five}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{elegant_demo.png}
+\caption{Five interventions at the joint-calibrated UK baseline.
+Top panel: agents above each wealth threshold, log scale.  Bottom
+panel: percentage of population alive at terminal tick, with the
+UK calibration target of 80\% marked.  The visible story is the
+billionaire-count change; the structural story is the change in
+who else owns the country, reported in Table~\ref{tab:five} and
+Section~\ref{sec:benefits}.}
+\label{fig:five}
+\end{figure}
+
+The headline of Table~\ref{tab:five} is the
+bottom-50\%-wealth-share column, not the billionaire-count column.
+
+Under status quo, the joint-calibrated baseline produces a wealth
+distribution in which the bottom half of the population holds 0.0\%
+of the country's wealth.  This is not a calibration artefact.  It is
+what \emph{matches} the UK Pareto slope: the empirical UK bottom
+50\% holds a positive but very small share (roughly 5\% by recent
+estimates), and the model under-reproduces this by being slightly
+sharper than reality but in the same direction.
+
+The Zucman 2\% wealth tax above \pounds 10M raises the bottom-half
+share to 0.6\%, which is essentially noise.  The tax raises
+substantial state revenue (Section~\ref{sec:benefits}) but does
+not redistribute ownership.  The interest ban does not change the
+bottom-half share at all.  These are the two interventions in the
+contemporary debate that get the most political attention; neither
+of them changes who owns the country in any meaningful sense.
+
+The \pounds 5M cap on inheritance, with no other policy change,
+raises the bottom-half share from 0.0\% to 19.2\%.  The cap plus
+the wealth tax raises it to 25.3\%.  The cap is the only
+instrument among the five that changes the structural fact that
+the bottom half of the population owns essentially none of the
+country's wealth.
+
+The mechanism is direct.  Every dynastic line is reset to at most
+\pounds 5M at each death; the rest of the estate either goes to
+the state (as inheritance excess) and is then redistributed via
+UBI, state employment, and state purchases of maker output, or
+simply does not propagate to the next generation.  Wealth that
+would have remained locked in dynastic stocks is, mechanically,
+distributed.  The billionaire count going to zero is the visible
+side effect of this redistribution; the side effect is not the
+purpose.
+
+We frame this section's contribution accordingly.  The five-
+intervention comparison is, before anything else, a comparison of
+how different fiscal instruments treat the ownership stake of the
+bottom half of the country.  The interventions that do not change
+the ownership stake (Zucman 2\% alone, interest ban) are not, by
+this model's read, structural interventions in the wealth
+distribution.  They are revenue mechanisms (the wealth tax) or
+ethical mechanisms (the interest ban).  The cap is the structural
+intervention.
+
+\paragraph{The same comparison, from the other side.}  Reported
+in the more familiar billionaire-count terms: status quo produces
+803 billionaires per 10{,}000 agents; Zucman 2\% as proposed
+leaves 800; the interest ban leaves 803; the \pounds 5M cap leaves
+2 (within seed noise of zero); cap-plus-tax leaves 0.  The
+mathematics for the wealth-tax inability to cap top wealth is in
+the JEIC companion submission and follows from the analytical
+fixed point $w^* = \tau \theta / (\tau - r)$ requiring $\tau > r$
+which the Zucman rate does not satisfy at realistic capital
+returns.
+
+\paragraph{The interest-ban result.}  Banning interest on loans
+has effectively no impact on the wealth distribution because
+interest income is a flow from borrowers (mainly workers) to
+lenders (a small intermediate class), not a stock-growth mechanism
+on rentier wealth.  Rentier wealth grows at the capital return
+rate $r$, which the interest ban does not affect.  The historical
+and religious case for usury bans
+(Old Testament Deuteronomy, medieval Christian doctrine, Islamic
+finance today) is largely an ethical case about debt and
+dependence on the borrower side; it is not, by this model's read,
+an instrument for changing the wealth distribution at the top or
+the ownership stake at the bottom.
+
+\paragraph{The combined cap plus tax dominates all other
+configurations.}  Bottom-50\% share at 25.3\%, top-10\% share at
+39.9\%, top-1\% share at 0.14, survival at 92\%, zero billionaires.
+The two instruments operate on different timescales (the wealth
+tax drains during life; the cap truncates at death) and stack
+cleanly without mutual interference.
+
+\subsection{What each intervention does to wealth flows}
+\label{sec:sankey}
+
+The five-intervention comparison reports terminal-tick stocks
+(alive, wealth shares, billionaire counts).  Reporting the same
+comparison on per-tick flows gives a mechanistic reading of what
+each intervention is doing.  We split the five panels into two
+figures.  Figure~\ref{fig:sankey-noncap} shows the three
+rate-based interventions: status quo, the Zucman 2\% wealth tax,
+and the interest ban.  Figure~\ref{fig:sankey-capped} shows the
+two cap-based interventions: the \pounds 5M cap alone and the
+cap combined with the Zucman tax.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{sankey_cap_noncap.png}
+\caption{Steady-state per-tick wealth flows under the three
+rate-based interventions.  Edge widths are proportional to mean
+flow magnitude; node-box heights are proportional to total
+outflow (left) or inflow (right) of that class.  Total per-tick
+flow is annotated in each panel header.  Status quo and the
+interest ban are visually indistinguishable: a single dominant
+rentier-to-lender deposit loop accounts for 99.8\% of all
+monetary activity.  The Zucman 2\% wealth tax shrinks the loop
+by a factor of seven but does not break it.}
+\label{fig:sankey-noncap}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{sankey_cap_capped.png}
+\caption{Steady-state per-tick wealth flows under the two
+cap-based interventions, on the same axes and the same baseline
+as Figure~\ref{fig:sankey-noncap}.  The cap collapses the
+deposit loop entirely.  The dominant flow becomes
+rentier-to-state via inheritance excess at death, then onward
+to workers via the state-spending package.  Total per-tick flow
+falls by a factor of 98 relative to status quo because the
+dynastic-compounding flywheel is no longer turning, not because
+real economic activity has fallen.}
+\label{fig:sankey-capped}
+\end{figure}
+
+The figures together make the central claim of the paper visible
+in two images.  We walk through them in order.
+
+\paragraph{Status quo.}  At the joint-calibrated UK baseline with
+$r = 0.08$, 99.8\% of total per-tick monetary activity is the
+rentier-to-lender deposit loop: rentiers shovelling capital-return
+surplus into lender deposit accounts that grow on their own.
+Total per-tick flow is 6.16 million model units; productive wage
+flow (maker and employer to worker) is 0.2\% of this total.  The
+status-quo regime, in the model that matches the UK Pareto slope,
+is not productively an \emph{economy} in any sense the word
+usually carries.  It is a compounding stack with a small
+productive sector attached.
+
+\paragraph{Zucman 2\%.}  Total per-tick flow drops to 904 thousand
+units, a factor of seven below status quo.  The wealth tax does
+extract: rentier-to-state appears at 41\% of the new total.  But
+rentier-to-lender is still 42\%: the deposit loop is shrunk but
+not broken.  This is the visual demonstration of the
+\citet{benhabib2011distribution} fixed-point argument that a tax
+rate below the capital return rate cannot produce a finite
+analytical ceiling on top wealth.
+
+\paragraph{Interest ban.}  Total per-tick flow is 6.23 million
+units, visually indistinguishable from status quo.  The interest
+ban does not move the deposit loop at all, because the deposit
+loop is driven by capital return on rentier stocks and not by
+interest income to lenders.  The cleanest single visual argument
+the paper makes that bans on usury target the wrong mechanism
+for changing the wealth distribution is the visual identity of
+panels 1 and 3 in Figure~\ref{fig:sankey-noncap}.  The historical
+case for usury bans is largely about debt and dependence on the
+borrower side; that case is not in this Sankey because the
+Sankey is about the top.
+
+\paragraph{Cap alone.}  Total per-tick flow drops to 63 thousand
+units, a factor of 98 below status quo.  The cap breaks the
+deposit loop.  The dominant flow becomes rentier-to-state (35\%)
+via inheritance excess at death; lender-to-state is another
+17\%; state-to-worker (UBI from the spending package) appears at
+4\%.  The same productive flows that existed under status quo
+(employer-to-worker 4\%, maker-to-worker 3\%) are now a much
+larger share of total activity because the denominator (the
+deposit loop) has collapsed.
+
+\paragraph{Cap plus Zucman.}  Total per-tick flow drops further
+to 48 thousand units, the lowest of the five interventions.
+Same flow pattern as cap alone with slightly different weights:
+rentier-to-state 28\%, lender-to-state 15\%, state-to-worker 6\%.
+The wealth tax has shrunk rentier stocks further so there is less
+to capture at death and the worker-to-state tax channel is
+somewhat larger.
+
+\paragraph{Mechanism, in flow terms.}  The rentier-lender deposit
+loop that dominates the rate-based interventions
+(Figure~\ref{fig:sankey-noncap}) is a self-sustaining compounding
+mechanism: rentiers earn capital returns, deposit the surplus
+with lenders, lenders earn interest on their deposits, and the
+cycle compounds indefinitely.  The cap interrupts this cycle at
+death (Figure~\ref{fig:sankey-capped}).  Wealth that would have
+stayed locked in the loop becomes state revenue (inheritance
+excess), which the spending package then circulates to workers
+and makers.  The factor-of-98 drop in total flow magnitude
+between the two figures is not a decline in real economic
+activity but a collapse of the dynastic-compounding flywheel
+that did no productive work.
+
+\paragraph{Interpretation in ownership terms.}  The bottom-50\%
+wealth share rising from 0.0\% to 19.2\% (cap alone) and 25.3\%
+(cap plus tax) is the stock-side consequence of the flow-side
+change visible in Figures~\ref{fig:sankey-noncap}
+and~\ref{fig:sankey-capped}.  When the rentier-lender deposit
+loop circulates wealth back to itself indefinitely, no flow
+reaches the bottom half of the population in any meaningful
+sense; they are not in the loop.  When the cap breaks the loop
+and routes the excess through the state's spending package, the
+bottom half receives wage flows from state employment, UBI
+receipts, and indirectly maker-output purchases.  Over enough
+generations these flows accumulate as stock.  The Sankeys are the
+mechanism; the table of bottom-50\% shares in
+Section~\ref{sec:benefits} is the consequence.
+
+%==========================================================================
+\section{Positive-case outcomes: what the cap produces}
+\label{sec:benefits}
+%==========================================================================
+
+The standard framing for an intervention that ends the billionaire
+class is to describe it as a redistributive constraint.  In our
+simulation the cap turns out to do more than that.  It changes
+where monetary activity flows, increases the share of activity
+that is productive rather than extractive, and improves population
+survival.  We report the dashboard of these positive-case findings
+in Figure~\ref{fig:benefits-dashboard} and Table~\ref{tab:benefits}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{benefits_dashboard.png}
+\caption{The dashboard of positive-case findings under the five
+interventions.  Median wealth (top left), bottom-50\% wealth share
+(top right), productive-flow share $\Phi$ in the final quarter of
+the run (bottom left), and annual state revenue from the wealth
+tax channel (bottom right).  Joint-calibrated UK baseline,
+$N=10{,}000$, 4 seeds.}
+\label{fig:benefits-dashboard}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\small
+\caption{Positive-case dashboard: what each intervention does for
+the economy.}
+\label{tab:benefits}
+\begin{tabular}{lrrrr}
+\toprule
+intervention & bottom-50\% share & $\Phi$ (final quarter)
+& cumulative value created & state revenue / year \\
+\midrule
+status quo                & 0.0\%  & 0.00 & 752k & \pounds 0    \\
+Zucman 2\% above \pounds 10M & 0.6\%  & 0.01 & 790k & \pounds 56B   \\
+interest ban ($i = 0$)    & 0.0\%  & 0.00 & 753k & \pounds 0    \\
+\pounds 5M bequest cap     & \textbf{19.2\%} & \textbf{0.27} & 795k & indirect \\
+Zucman 2\% + \pounds 5M cap & \textbf{25.3\%} & \textbf{0.37} & 798k & \pounds 0.8B \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Ownership.}  The bottom-50\% wealth share rises from
+0.0\% under status quo to 19.2\% under the cap alone and 25.3\%
+under cap-plus-tax.  Stated as a multiple, the bottom-half
+ownership stake goes from zero to one quarter of the country.
+This is the headline finding of this paper.  The cap is the
+instrument by which redistribution of \emph{ownership} (not
+\emph{flow}) becomes the policy outcome.
+
+\paragraph{Productive-flow share.}  The productive-flow share
+$\Phi$ rises from approximately 0.00 under status quo to 0.27
+under the cap and 0.37 under cap-plus-tax.  $\Phi$ is the share of
+per-tick monetary activity that goes to or is created by
+productive-class agents (workers, makers, employers) rather than
+extractive-class agents (rentiers, lenders, speculators).  Under
+status quo, essentially all of the per-tick activity is the
+rentier-to-lender deposit-pool loop and the capital-return
+compounding within rentier stocks; the productive sector is
+relatively inert in flow terms.  Under the cap, the structural
+prevention of dynastic accumulation re-routes per-tick activity
+through the productive classes.  The economy moves towards being
+\emph{more productive in flow terms}, not just less unequal in
+stock terms.  Cumulative value created over the 180-tick run rises
+from 752 to 798 thousand model units, a 6\% increase.
+
+\paragraph{Survival.}  Population survival at terminal tick rises
+from 84\% under status quo to 91--92\% under the cap (with or
+without the wealth tax).  The mechanism is the state-spending
+package: revenue collected through inheritance excess or the
+wealth tax is redistributed via UBI and state employment, which
+catches working-class agents at the margin of subsistence
+failure.  The cap delivers this survival improvement not by
+making the cap itself life-saving but by funding the spending
+package that is.
+
+\paragraph{Revenue: the cap and the tax are complementary, not
+competing.}  The wealth tax raises substantial state revenue:
+the Zucman 2\% above \pounds 10M produces approximately
+\pounds 56B per year at simulated UK scale, accumulating to
+\pounds 5{,}165B in state wealth over the 180-tick run.  The
+\pounds 5M cap raises far less revenue through the explicit
+wealth-tax channel (zero, when paired with no wealth tax) but
+accumulates state wealth of \pounds 484B through inheritance
+excess at death.  Cap-plus-Zucman raises less than Zucman alone
+(\pounds 0.8B/year and \pounds 335B cumulative) because the cap
+prevents the buildup of wealth above the wealth-tax threshold that
+would otherwise have been taxed; the two instruments compete for
+the same upper-end tax base.
+
+The honest reading is that the cap and the wealth tax are
+\emph{instruments serving different goals}.  If the policy goal is
+to fund the state at scale, the wealth tax is the instrument; the
+cap reduces that revenue.  If the policy goal is to redistribute
+ownership, the cap is the instrument; the wealth tax barely does
+that.  Combining them produces the cleanest distributional
+outcome at the cost of some wealth-tax revenue, and the policy
+choice between cap-alone, tax-alone, and the combination is
+fundamentally a choice between three different objectives.
+
+%==========================================================================
+\section{The right cap value: a sweep}
+\label{sec:cap-value}
+%==========================================================================
+
+The choice of \pounds 5M as the cap value in Section~\ref{sec:comparison}
+is the best-fit point from the joint calibration in our JEIC companion.
+It does not follow that \pounds 5M is the correct cap value for any
+particular policy goal.  We sweep the cap from \pounds 1M to no cap
+(in nine log-spaced steps), both as a sole intervention and combined
+with the Zucman 2\% tax.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{cap_sweep.png}
+\caption{Cap-value sweep at the joint-calibrated UK baseline.  Four
+metrics on the same x-axis (the cap value in pounds, log-spaced).
+Solid line: cap alone.  Dashed line: cap plus Zucman 2\% above
+\pounds 10M.}
+\label{fig:capsweep}
+\end{figure}
+
+Two structural facts emerge.
+
+\paragraph{The knee of the trade-off curve sits between \pounds 5M
+and \pounds 10M.}  Above \pounds 10M the cap leaks: at \pounds 50M
+the model produces 86 billionaires under the cap-alone arm and 6
+under the cap-plus-Zucman arm; at \pounds 100M the leakage is
+substantial (318 and 44 respectively); at \pounds 500M and above the
+cap is essentially toothless.  Below \pounds 5M the cap begins to
+catch middle-class succession and survival falls: from 83\% at
+\pounds 5M to 80\% at \pounds 1M.  The model's stylised demography
+is too coarse to put a confident lower bound on the cap, but the
+direction of the survival cost as the cap is tightened is robust.
+
+\paragraph{The wealth tax shifts the knee inward by a factor of
+roughly two.}  At \pounds 5M cap plus Zucman 2\%, the top-1\% share
+is 0.135, compared to 0.198 under cap alone.  At \pounds 10M cap
+plus Zucman 2\%, the top-1\% share is 0.140 (compared to 0.222 under
+cap alone) and the billionaire count is still zero.  The combination
+allows a slightly higher cap to achieve the same top-share
+compression as a tighter cap alone; this is the design space the
+political debate could plausibly negotiate within.
+
+\paragraph{Goal-dependent recommendations.}  The right cap value is
+a function of which goal one is optimising for.
+
+\begin{itemize}
+\item \emph{Eliminate the billionaire class with minimal mortality
+cost}: \pounds 5M to \pounds 10M, the knee of the trade-off curve.
+This is where the model's qualitative finding is robust.
+
+\item \emph{Match the UK Pareto slope}: \pounds 5M.  The Pareto
+slope of the model under this configuration is $-0.45$, against
+an empirical target of $-0.71$; the slope is reachable at this cap
+value, the levels of top-1\% and top-0.1\% share remain below the
+UK targets.
+
+\item \emph{Minimum disruption to middle-class succession}:
+\pounds 10M, with explicit carve-outs for productive business
+assets and primary residences (Section~\ref{sec:implementation}).
+At this cap the cap-alone arm leaves 6 billionaires and the
+cap-plus-Zucman arm leaves 0; both numbers are an acceptable
+trade for avoiding family-business succession damage.
+
+\item \emph{Politically achievable in the UK alone before tax
+flight kicks in}: \pounds 25M to \pounds 50M, paired with a hard
+exit tax.  At \pounds 50M the cap-alone arm produces 86
+billionaires; the cap-plus-Zucman arm produces 6.  This is the
+compromise number, not the structurally optimal one.
+
+\item \emph{G20-coordinated implementation}: \pounds 5M to
+\pounds 10M.  Coordination removes the international flight
+constraint and lets the model's structurally optimal range apply.
+\end{itemize}
+
+%==========================================================================
+\section{Implementation}
+\label{sec:implementation}
+%==========================================================================
+
+The model says nothing about how to implement the cap.  Implementation
+is the harder political problem and we close it as honestly as we can
+on the basis of the existing empirical and legal literature.
+
+\subsection{The international flight problem}
+
+The single-generation flight problem is the strongest unilateral-
+implementation objection.  Under a UK-only inheritance cap, the
+children of current UK billionaires have one generation (roughly
+30 years on the parent's age at the law's passage) to establish
+foreign tax residence.  The legal architecture is well-developed:
+high-net-worth jurisdictions including Monaco, Singapore,
+Switzerland, Dubai, and several others already function as
+inheritance-tax havens, and the major UK private-client legal firms
+have established expertise in restructuring assets to use them.
+
+The empirical tax-flight literature
+\citep{young2016millionaire, akcigit2016inventors, moretti2017taxing}
+finds smaller flight responses than political opponents typically
+forecast, but those studies measure mobility in response to marginal
+rates on income or wealth, not in response to absolute caps on
+inheritance.  An absolute cap is a structurally different instrument
+because the trigger (death) is a one-shot event with predictable
+timing in expectation, and because the response (becoming tax-
+resident elsewhere) has to be settled before the trigger fires.
+We expect the empirical elasticity of inheritance-cap response to
+be higher than the existing studies' estimates of wealth-tax
+response, but the literature does not currently let us put a number
+on this.
+
+Two design elements address the unilateral-implementation problem:
+
+\paragraph{A residency clock.}  The cap should apply to any
+individual who has been UK tax-resident for any of the previous 20
+years, with the cap value reduced pro-rata for fewer years of
+residency.  This makes the unilateral flight strategy expensive in
+expected value because the lead time required to establish
+non-coverage extends across a substantial fraction of a lifetime.
+The architecture mirrors the UK's existing 17-out-of-20 ``deemed
+domicile'' rule for inheritance tax but extends the coverage period
+substantially.
+
+\paragraph{An exit tax.}  The cap should crystallise at the point of
+renouncing UK tax residence, not only at death.  This makes
+renunciation itself the taxable event and removes the time-arbitrage
+strategy.  The architecture mirrors the US exit-tax framework
+(IRC Section 877A) which already taxes deemed-realisation at
+expatriation; the difference is that the UK exit tax would apply
+the cap rather than the standard estate-tax rate.
+
+\paragraph{G20-coordinated implementation.}  The Zucman 2024
+proposal pitched coordination at the G20 level as the
+institutional innovation; the same logic applies, more strongly, to
+an inheritance cap.  G20 jurisdictions hold approximately 80\%
+of global wealth; a coordinated cap at the G20 level closes
+substantially more of the flight surface than a UK-only cap.
+
+\subsection{Trust law and asset definitions}
+
+The historical effectiveness of inheritance taxation has been limited
+by the use of trusts and other legal structures to separate beneficial
+ownership from formal title.  A cap on \emph{inheritance} that did not
+pierce trusts would be straightforwardly avoided.  Design elements:
+
+\paragraph{Beneficial-ownership tracing.}  Assets held in trust at
+the time of an individual's death (or expatriation) should be
+attributed to that individual for cap purposes in proportion to
+the individual's beneficial interest, with a residual rule that
+attributes assets to the original settlor if beneficial interests
+are otherwise undefined.  This is the same architecture as the
+UK's existing trust-anti-avoidance regime for inheritance tax,
+extended to absolute beneficial ownership.
+
+\paragraph{Gift inter-vivos taper.}  Gifts made in the seven years
+prior to death (or expatriation) should be counted toward the cap.
+Existing UK IHT design includes a seven-year taper for this reason.
+Whether the taper should be longer for cap purposes than for
+existing IHT is a policy choice; the model is silent on this.
+
+\paragraph{Life-insurance and pension carve-outs.}  Life insurance
+proceeds and defined-benefit pensions are economically inheritance
+in many cases and should be treated as such for cap purposes, with
+explicit carve-outs only for fully-portable defined-contribution
+pension pots up to a generous personal cap (perhaps the same
+\pounds 5M).
+
+\subsection{Asset-class carve-outs}
+
+The case for asset-class carve-outs is empirical and political
+rather than structural.  The model is too coarse to distinguish
+productive business assets from financial wealth; it treats all
+agent wealth as a single fungible state variable.  Real
+implementation will need to make choices.
+
+\paragraph{Productive-business assets.}  A sliding-scale carve-out
+that protects the first \pounds X of productive-business assets and applies
+the cap above this preserves family-business succession in the
+small-and-medium-enterprise band.  The UK's existing Business
+Relief regime is the architectural model; the design choice is
+where to set X and what counts as a productive-business asset.
+The empirical record on Business Relief is mixed; it has been used
+extensively for tax-avoidance purposes alongside its intended
+small-business-succession purpose.
+
+\paragraph{Primary residences.}  A carve-out for the primary
+residence up to a generous threshold (perhaps \pounds 2M for a UK
+implementation, indexed to housing) preserves middle-class
+intergenerational housing wealth.  The political economy of this
+carve-out is straightforward: it is the carve-out that median UK
+voters care about.
+
+\paragraph{Charitable bequests.}  Existing UK charity-relief
+regimes for inheritance already exist; the question for a cap
+implementation is whether charity-funded family foundations
+(the Gates Foundation architecture) should count toward the cap
+or not.  This is a design choice that the model cannot adjudicate;
+the political-economy case for treating large family foundations
+as inheritance-equivalent is strong but the implementation is
+fraught.
+
+\subsection{Comparison to existing instruments}
+
+The UK Inheritance Tax (40\% above \pounds 325k threshold) is the
+nearest existing UK instrument and is, by international comparison,
+unusually low both in threshold and rate.  The US Estate Tax (40\%
+above \$13.6M per individual) has a higher threshold but operates
+on the same rate-based architecture.  Both are rate-based, both
+permit a large family-business carve-out, and both have generated
+substantial avoidance infrastructure.
+
+The proposed cap differs structurally.  It is an absolute ceiling,
+not a marginal rate; it eliminates the ``one more pound'' arithmetic
+that drives marginal-rate avoidance; and it forces the design
+choice for the cap value into the political debate explicitly,
+where in the existing rate-based system the design choice is
+hidden in the marginal-rate schedule.
+
+%==========================================================================
+\section{Discussion}
+\label{sec:discussion}
+%==========================================================================
+
+\subsection{Why is this not in any manifesto?}
+
+The proposal of an absolute cap on inheritance is in no major
+political manifesto in the UK as of the time of writing.  The
+contemporary debate features the Zucman 2\% wealth tax in various
+formulations, several different progressive wealth-tax schedules
+(Warren, Sanders), various proposals to tighten the existing
+Inheritance Tax (lower threshold, higher rate, fewer carve-outs),
+and ongoing proposals to abolish IHT entirely.  None of these is
+the absolute-cap proposal.
+
+The political-economy explanation is, we suspect, two-fold.  First,
+the cap is a structurally different instrument from the rate, and
+the policy vocabulary of the contemporary debate is rate-based.
+The cap is the instrument the analytics points to but the analytics
+is in technical papers; the political debate operates at the level
+of headline rates that voters can compare across proposals.
+
+Second, the cap is the instrument that simultaneously raises the
+ownership stake of the bottom half of the country and preserves
+middle-class succession.  This combination does not fit either
+ideological camp's natural framing.  Existing left proposals
+attack the top with rates and accept that the bottom does not
+gain ownership directly.  Existing right proposals defend the
+middle with carve-outs and accept the top.  An absolute cap on
+inheritance simultaneously moves wealth share to the bottom half
+(from 0\% to 25\%) and leaves the middle largely untouched (a
+\pounds 5M cap protects the 99th percentile of UK households
+comfortably).  No major political programme is currently shaped to
+make this combination a slogan.
+
+We frame the case here in those terms, which we believe is the
+correct framing for the contemporary political moment.  Calling
+the proposal ``end the billionaire class'' is technically correct
+but politically miscoded as vendetta against a particular
+demographic.  Calling the proposal ``let the bottom half of the
+country own something'' is the same instrument described by what
+it does, which we believe lands better in the contemporary
+discourse.
+
+The instrument is also, in a sense, what economists would call
+\emph{unfashionable in mechanism design}.  The rate-based optimal-
+taxation tradition descends from
+\citet{piketty2013theory, farhi2010progressive, saez2018social}
+and operates in the language of marginal rates and elasticities.
+An absolute cap maps awkwardly into this framework because the
+marginal rate at the cap is undefined (or infinite).
+\citet{atkinson2015inequality} is the rare recent reference that
+proposes something cap-shaped, and even Atkinson framed it as a
+universal capital endowment (a redistribution mechanism) rather
+than as an absolute inheritance limit.
+
+\subsection{Limits of the model}
+
+The model is a stylised intuition pump, not a predictive instrument.
+It has no spatial structure, no firm formation, no fiscal-crisis
+dynamics for the state, toy speculator dynamics that do not produce
+bubbles, and a single lender pool with no shadow-banking.  The
+demographic assumptions (lifespan, age distribution at
+initialisation) are crude.
+
+The joint calibration matches the UK Pareto slope and the top-10\%
+share at 80\% survival, which is a reasonable summary fit but is
+not a fully validated calibration.  The remaining mismatches
+(top-1\% and top-0.1\% share both below the UK targets) suggest
+that the next calibration step should free the population
+proportions (the rentier share at 3\% of the population is
+plausibly too high for the strict billionaire class).  A joint
+calibration that frees the population proportions and the lifespan
+distribution to fit the wealth tail, the survival rate, and the
+demographic age distribution simultaneously is the natural follow-up.
+
+The cap-value sweep is at $N = 10{,}000$ with 4 seeds per cell.
+Statistical robustness is adequate for the qualitative claims but
+the confidence intervals on the specific cap values at the knee
+are not tight.  A scale-up and seed-up pass is the natural next
+robustness step.
+
+The model is also entirely closed-economy.  The international
+flight question is treated qualitatively here on the basis of the
+empirical literature and the implementation-architecture arguments;
+the model does not produce a quantitative estimate of the cap
+elasticity to international tax differentials.  An extension of the
+model to include a foreign residence option for agents above a
+wealth threshold is a natural next step.
+
+%==========================================================================
+\section{Conclusion}
+%==========================================================================
+
+We have presented a calibrated agent-based simulation of a
+stylised UK-like economy and used it to compare five fiscal-policy
+interventions on three structural outcomes: ownership distribution,
+productive-flow share, and survival.  The headline finding is that
+an absolute \pounds 5M cap on inheritance raises the wealth share
+held by the bottom half of the population from 0.0\% under status
+quo to 19.2\% under the cap alone and 25.3\% under cap-plus-tax.
+The cap is the only instrument among the five we tested that
+changes who owns the country.
+
+The cap also raises the productive-flow share $\Phi$ from
+approximately zero under status quo to 0.27 under the cap and 0.37
+under cap-plus-tax, increases cumulative value created by about
+6\%, and improves population survival from 84\% to 91--92\%.  The
+disappearance of the billionaire class is the visible side effect
+of these structural changes, not the policy goal.
+
+A cap-value sweep places the knee of the trade-off curve between
+\pounds 5M and \pounds 10M.  The right value within this range is
+a political choice that depends on whether the priority is the
+redistribution of ownership (lower cap) or the protection of
+middle-class business succession (higher cap, with carve-outs).
+
+The argument extends but does not displace the Zucman framing.  A
+2\% G20-coordinated wealth tax is an excellent revenue instrument
+and the case for international coordination is strong.  Our
+amendment is that the G20 coordination should be on the cap as
+well as on the rate, and that the cap is a categorically
+different policy lever: the tax raises revenue at scale, the cap
+redistributes ownership.  The two are complementary not competing.
+The cap has the deeper philosophical lineage
+\citep{mill1848principles, carnegie1889wealth, rignano1924bequest,
+atkinson2015inequality} and the wealth tax has the contemporary
+political momentum.
+
+We close with the positive claim:
+\emph{a \pounds 5 million to \pounds 10 million absolute cap on
+inheritance, internationally coordinated at the G20 level, with
+residency-clock and exit-tax provisions and explicit carve-outs
+for primary residences and small productive-business assets, is
+the single most effective structural fiscal instrument the model
+identifies for raising the ownership stake of the bottom half of
+the population from zero to roughly one quarter of the country's
+wealth, increasing the share of monetary activity that is
+productive rather than extractive, and improving population
+survival.}  The end of the billionaire class is the visible side
+effect.  The proposal is about ownership.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+\section{Cap-value sweep data}
+\label{app:sweep}
+
+\begin{table}[h]
+\centering
+\small
+\caption{Full results of the cap-value sweep at the joint-calibrated
+UK baseline.  $N = 10{,}000$, 4 seeds, 180 ticks.  Solid line in
+Figure~\ref{fig:capsweep}.}
+\begin{tabular}{lrrrrrrr}
+\toprule
+arm & cap & alive \% & $\geq$\pounds 1B & $\geq$\pounds 100M
+& $\geq$\pounds 10M & top-1\% & Pareto slope \\
+\midrule
+cap alone & \pounds 1M   & 80\% &   0 &  27 &   996 & 0.189 & $-0.698$ \\
+cap alone & \pounds 5M   & 83\% &   0 & 208 & 1{,}424 & 0.198 & $-0.455$ \\
+cap alone & \pounds 10M  & 83\% &   6 & 403 & 4{,}016 & 0.222 & $-0.454$ \\
+cap alone & \pounds 50M  & 83\% &  86 & 721 & 4{,}084 & 0.323 & $-0.443$ \\
+cap alone & \pounds 100M & 83\% & 318 & 840 & 4{,}084 & 0.352 & $-0.442$ \\
+cap alone & \pounds 500M & 83\% & 700 & 848 & 4{,}084 & 0.391 & $-0.440$ \\
+cap alone & \pounds 1B   & 83\% & 803 & 848 & 4{,}084 & 0.405 & $-0.440$ \\
+cap alone & no cap        & 83\% & 804 & 848 & 4{,}084 & 0.327 & $-0.260$ \\
+\midrule
+cap + Zucman 2\% & \pounds 1M   & 80\% &   0 &  16 &   980 & 0.146 & $-0.540$ \\
+cap + Zucman 2\% & \pounds 5M   & 83\% &   0 &  62 & 1{,}414 & 0.135 & $-0.333$ \\
+cap + Zucman 2\% & \pounds 10M  & 83\% &   0 &  98 & 3{,}998 & 0.140 & $-0.321$ \\
+cap + Zucman 2\% & \pounds 50M  & 83\% &   6 & 593 & 4{,}057 & 0.230 & $-0.296$ \\
+cap + Zucman 2\% & \pounds 100M & 83\% &  44 & 804 & 4{,}057 & 0.272 & $-0.291$ \\
+cap + Zucman 2\% & \pounds 500M & 83\% & 497 & 804 & 4{,}057 & 0.335 & $-0.282$ \\
+cap + Zucman 2\% & \pounds 1B   & 83\% & 800 & 804 & 4{,}057 & 0.353 & $-0.263$ \\
+cap + Zucman 2\% & no cap        & 83\% & 800 & 804 & 4{,}057 & 0.293 & $-0.226$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}

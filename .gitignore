@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# LaTeX intermediates
+*.aux
+*.log
+*.bbl
+*.blg
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+
+# Data dumps (regenerable from src/)
+out/data/*.npz
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
