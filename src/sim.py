@@ -152,6 +152,10 @@ class Dials:
     # carve-outs, valuation discounts, foreign assets, trusts: a share
     # (1 - inheritance_capture_rate) of the excess flows to the heir.
     inheritance_capture_rate: float = 1.0
+    # R2-10: enforcement friction on the wealth tax. Fraction of the
+    # theoretical wealth tax that HMRC actually collects. The
+    # uncollected share stays with the agent.
+    wealth_tax_capture_rate: float = 1.0
     memory_bandwidth_base: float = 0.5        # skill-dims always transmitted
     memory_bandwidth_wealth_scale: float = 0.5  # extra dims = scale * (wealth / 100)
     skill_mutation_rate: float = 0.05         # chance per dim per generation
@@ -722,6 +726,7 @@ def step(agents: list[Agent], d: Dials, rng: np.random.Generator,
             for thresh, rate in d.wealth_tax_tiers:
                 if a.wealth > thresh:
                     tax += rate * (a.wealth - thresh)
+            tax *= d.wealth_tax_capture_rate
             tax = min(tax, a.wealth)
             a.wealth -= tax
             tax_collected += tax

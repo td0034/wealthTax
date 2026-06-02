@@ -1,0 +1,76 @@
+{
+  "focus_arm": "wt90_10M",
+  "overrides": {
+    "wealth_tax_tiers": [
+      [
+        100.0,
+        0.9
+      ]
+    ]
+  },
+  "results": {
+    "capture_0.4": {
+      "alive_rate": 0.9448737373737373,
+      "billionaires": 0.0,
+      "centimillionaires": 0.0,
+      "bottom_50_share": 0.4650147886104947,
+      "top_10_share": 0.11717724020855652,
+      "top_1_share": 0.012350722911703128,
+      "state_wealth_final_gbp": 136515410344.1964
+    },
+    "capture_0.5": {
+      "alive_rate": 0.9452525252525252,
+      "billionaires": 0.0,
+      "centimillionaires": 0.0,
+      "bottom_50_share": 0.467722365892604,
+      "top_10_share": 0.11329532292206622,
+      "top_1_share": 0.011733110408074836,
+      "state_wealth_final_gbp": 134446738495.25461
+    },
+    "capture_0.6": {
+      "alive_rate": 0.9452020202020203,
+      "billionaires": 0.0,
+      "centimillionaires": 0.0,
+      "bottom_50_share": 0.4694132601412944,
+      "top_10_share": 0.11082733810597525,
+      "top_1_share": 0.01134551666783097,
+      "state_wealth_final_gbp": 132759832947.71616
+    },
+    "capture_0.7": {
+      "alive_rate": 0.9460353535353535,
+      "billionaires": 0.0,
+      "centimillionaires": 0.0,
+      "bottom_50_share": 0.47072755016898676,
+      "top_10_share": 0.10906801062003238,
+      "top_1_share": 0.011063479817408382,
+      "state_wealth_final_gbp": 131767139372.7187
+    },
+    "capture_0.8": {
+      "alive_rate": 0.9457070707070707,
+      "billionaires": 0.0,
+      "centimillionaires": 0.0,
+      "bottom_50_share": 0.471604819663106,
+      "top_10_share": 0.10775255412816581,
+      "top_1_share": 0.010858753472644804,
+      "state_wealth_final_gbp": 131025833588.06705
+    },
+    "capture_0.9": {
+      "alive_rate": 0.9458333333333334,
+      "billionaires": 0.0,
+      "centimillionaires": 0.0,
+      "bottom_50_share": 0.4724001676489292,
+      "top_10_share": 0.10672100321465568,
+      "top_1_share": 0.010698583355072037,
+      "state_wealth_final_gbp": 130445086707.5294
+    },
+    "capture_1.0": {
+      "alive_rate": 0.9461363636363637,
+      "billionaires": 0.0,
+      "centimillionaires": 0.0,
+      "bottom_50_share": 0.4729594034932754,
+      "top_10_share": 0.10592843093399348,
+      "top_1_share": 0.010568722488905103,
+      "state_wealth_final_gbp": 129966789747.00064
+    }
+  }
+}
