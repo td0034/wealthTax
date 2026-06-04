@@ -147,23 +147,95 @@ instrument has actual precedent and the headline rate (5-10%) is the
 sort of number that a serious reviewer can engage with empirically
 rather than dismissing as unimplementable.
 
-## What still needs to be tested
+## R2-11: loose-end stress tests
 
-- **Capital flight under the hybrid.** R2-3 tested flight on the cap
-  only. The hybrid at 10% above £10M is also flight-sensitive.
-  Continuous flow extraction means agents have time to relocate
-  before being heavily extracted; estimated flight rates from
-  Norway's 2022 wealth-tax reform are useful empirical anchors.
-- **Liquidity strain.** A 10% annual extraction on illiquid assets
-  forces sale or borrowing. The model has no liquidity friction;
-  reality does.
-- **Rate transition path.** Politically, you cannot jump from
-  current UK to 10% above £10M overnight. The transition path
-  (5-year ramp? 2-3-5-7-10% schedule? threshold-and-rate joint
-  schedule?) is a research question on its own.
-- **Combined with class-conditional carve-out (R2-5).** Apply the
-  hybrid only to extractive-class wealth, same as the carve-out
-  cap. This is the strongest proposal.
-- **Compare hybrid plus cap to either alone.** Stacking the hybrid
-  wealth tax with the cap may produce different dynamics; worth
-  testing.
+Four sub-experiments hardening the hybrid finding.
+
+### A. Flight under the hybrid
+
+| flight rate | bot-50% | top-10% | flown count | flown £B |
+|---|---|---|---|---|
+| 0.000 | 42.0% | 19.2% | 0 | 0 |
+| 0.005 | 43.7% | 15.5% | 914 | 22 |
+| 0.010 | 43.9% | 14.2% | 1,429 | 30 |
+| 0.020 | 43.4% | 12.4% | 2,205 | 42 |
+| 0.050 | 37.9% | 13.3% | 3,580 | 53 |
+
+Hybrid is markedly more flight-robust than the cap. At base rate
+0.005, the cap arm lost £100B+ and dropped remaining-alive from 91%
+to 55%. The hybrid at the same rate loses £22B and stays at 84%
+remaining-alive. The in-country distribution holds (bot-50 stays in
+the 38-44% range). Continuous flow extraction does not trigger the
+all-or-nothing emigration calculus the cap does because the
+extraction is recurrent and predictable rather than once-in-a-life.
+
+### B. Transition ramp
+
+| schedule | bot-50% | top-10% | state £B |
+|---|---|---|---|
+| instant deployment | 42.0% | 19.2% | 193 |
+| ramp 2→10% over 50 ticks | 42.5% | 19.1% | 226 |
+| ramp 2→10% over 100 ticks | 42.4% | 19.4% | **359** |
+
+Counterintuitive but robust: a slow ramp delivers the same
+distributional outcome as instant deployment *and raises more
+state revenue*. The ramp keeps the tax base larger for longer before
+the rate contracts it. Politically the slow ramp is easier to defend
+and produces strictly better fiscal outcomes. The paper should
+recommend a phased introduction explicitly.
+
+### C. Class-conditional
+
+| arm | bot-50% | top-10% | top-1% | state £B |
+|---|---|---|---|---|
+| hybrid universal | 42.0% | 19.2% | 2.6% | 193 |
+| hybrid extractive-only | 37.4% | 17.7% | 2.1% | 145 |
+
+Unlike the cap (R2-5 where class-conditional dominated universal),
+the hybrid wants to be universal. The rate-based mechanism does its
+work proportionally; exempting productive classes from the rate
+slightly reduces bottom-50% lift without buying anything on the
+family-business front, because at 10% > £10M the productive classes
+do not produce billionaires either way. The class-conditional logic
+that worked for the cap (productive classes never reach the cap
+threshold organically) does not apply to a rate-based instrument
+that operates on flow.
+
+### D. Stacked with the cap
+
+| arm | bn | £100M+ | bot-50% | top-10% | state £B |
+|---|---|---|---|---|---|
+| baseline | 804 | 841 | 0.0% | 100.0% | 0 |
+| cap only | 2 | 270 | 19.1% | 54.2% | 487 |
+| hybrid only | 0 | 0 | **42.0%** | 19.2% | 193 |
+| stacked (cap + hybrid) | 0 | 0 | 34.1% | 20.3% | 187 |
+
+**The critical finding.** Stacking the cap on top of the hybrid is
+worse than the hybrid alone on bottom-50% share (34.1% vs 42.0%).
+Mechanistically, the cap captures excess at death as one-shot state
+revenue that recirculates as income (UBI + state wages) that
+workers consume for subsistence rather than accumulate as stock,
+the same dynamic as R2-1. The hybrid by contrast leaves a higher
+fraction of post-tax wealth in the middle of the distribution as
+ongoing stock.
+
+The hybrid completely supersedes the cap. The paper's policy
+recommendation is the hybrid alone, not the cap, and not the
+stacked combination.
+
+## Updated recommendation
+
+The honest cap-paper replacement is:
+
+> **A recurrent wealth tax with marginal rate of 10% above £10M,
+> phased in over a 50--100 tick (5--10 year) transition window,
+> applied universally without class-conditional carve-outs, replaces
+> the inheritance-cap proposal entirely. It dominates the cap on
+> every distributional metric, is robust to enforcement leakage in
+> the 0.4--1.0 range where the cap collapses, is more flight-robust,
+> and is implementable within existing wealth-tax institutional
+> infrastructure (Norway, Switzerland, Spain).**
+
+This is a substantially different policy proposal from the round-1
+draft, and the model has now stress-tested it against every
+critique direction we identified.

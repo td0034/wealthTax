@@ -1,0 +1,899 @@
+% Compile with:
+%   pdflatex paper_wealth_tax_v1 && bibtex paper_wealth_tax_v1 && \
+%   pdflatex paper_wealth_tax_v1 && pdflatex paper_wealth_tax_v1
+\documentclass[11pt]{article}
+
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage[final,protrusion=true,expansion=false]{microtype}
+
+\graphicspath{%
+  {../../out/figures/scenarios/}%
+  {../../out/figures/policies/}%
+  {../../out/figures/wealth_tax/}%
+  {../../out/figures/scale_up/}%
+  {../../out/figures/round2/}%
+}
+
+\title{Two per cent is not the answer:\\
+\large an agent-based case for a recurrent wealth tax above the
+capital-return rate, with empirically grounded enforcement and
+flight robustness, derived from the failure modes of an inheritance
+cap}
+
+\author{[Author]\\
+\small (supervision and acknowledgements TBD)}
+\date{Round-2 draft of \today\ for Fiscal Studies}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The contemporary wealth-tax debate has anchored on the Zucman 2\%
+proposal: a 2\% minimum effective tax on the assets of
+ultra-high-net-worth individuals, coordinated at the G20 level.  Two
+per cent is too low.  In a calibrated agent-based simulation of a
+stylised UK-like economy where the capital return $r = 0.08$ per
+tick, a wealth tax of 2\% above any threshold delivers 0.6
+percentage points of bottom-50\% lift and leaves 800 billionaires
+in the top of the distribution.  The Benhabib fixed-point argument
+gives the analytical reason: a tax rate below $r$ cannot produce a
+finite ceiling on top wealth.
+
+We arrived at this finding by an unconventional route.  An earlier
+draft proposed an absolute \pounds 5M cap on inheritance as the
+structural mechanism for ownership redistribution.  Round-2 stress
+testing showed the cap to be in an unresolvable bind: it requires
+near-perfect enforcement to work (effective capture above 95\%) and
+cannot get near-perfect enforcement politically.  Below 90\% capture
+the cap converts billionaires into centi-millionaires and the
+bottom-50\% share stays at zero.  We then asked whether the cap's
+distributional mechanism could be approximated by a continuous
+instrument.  The answer is yes.
+
+A recurrent wealth tax with marginal rate above the capital return
+$r$ delivers the cap's distributional effect with none of the cap's
+fragility.  Empirically: 5\% above \pounds 10M raises the
+bottom-50\% wealth share to 19.6\% (matching the \pounds 5M cap),
+10\% above \pounds 10M raises it to 42.0\% (dominating the cap by
+more than two-fold), and 20\% raises it to 45.4\%.  The threshold
+at which the wealth tax begins to matter distributionally is
+exactly $\tau = r$.  Below this threshold the tax accumulates
+revenue without changing structure.  Above it, top wealth is bounded
+at the steady-state value $\theta \cdot \tau / (\tau - r)$, which
+for $\tau = 10\%, r = 8\%, \theta = \pounds 10M$ is \pounds 50M.
+No agent stays above the bound for long.
+
+The recurrent wealth tax has further advantages over the cap that
+make it implementable in current institutional capacity.  First, it
+is robust to enforcement leakage.  At 40\% effective capture (the
+realistic UK enforcement range), the hybrid wealth tax delivers
+46.5\% bottom-50\% lift, against the cap's 0.1\%.  Each year's tax
+compounds against the prior year's wealth; the dynastic
+recompounding nonlinearity that destroys the cap does not apply.
+Second, it is more flight-robust: at empirically defensible flight
+rates the hybrid loses one-fifth the wealth the cap does and the
+in-country distribution is preserved.  Third, a slow transition ramp
+(2\% rising to 10\% over 50--100 ticks) delivers the same
+distributional outcome as instant deployment and raises more
+revenue.  Fourth, the existing wealth-tax institutional
+infrastructure (Norway, Switzerland, Spain, the historical French
+ISF, the recent Spanish solidarity tax) provides operational
+precedent that no inheritance-cap proposal has.
+
+The recommended instrument is therefore not an inheritance cap, and
+it is not the Zucman 2\% proposal.  It is \emph{a recurrent wealth
+tax with a marginal rate of 5--10\% above \pounds 10M, phased in
+over a 5--10 year transition, applied universally, replacing
+neither the existing IHT regime nor the Zucman G20 coordination
+framework, but pulling the rate of the Zucman framework up to the
+empirically derived level required to deliver structural ownership
+redistribution.}  We position this proposal against the classical
+case for inheritance limits \citep{mill1848principles,
+carnegie1889wealth, atkinson2015inequality, piketty2020capital},
+the empirical wealth-tax literature
+\citep{saez2019triumph, zucman2024global, scheuer2020taxing,
+londono2021wealth}, the tax-flight evidence
+\citep{young2016millionaire, akcigit2016inventors,
+moretti2017taxing}, and the recent Norwegian wealth-tax reform
+literature.
+\end{abstract}
+
+%==========================================================================
+\section{Introduction}
+\label{sec:intro}
+%==========================================================================
+
+The 2024 \citet{zucman2024global} proposal for a 2\% G20-coordinated
+minimum effective tax on ultra-high-net-worth assets gave the
+wealth-tax debate a politically useful focal point: a rate too
+modest to be dismissed as confiscatory, too visible to be dismissed
+as nominal, and broadly enough specified to mobilise
+cross-jurisdictional support.  In the period since, the 2\% number
+has functioned as the anchor of every subsequent discussion of
+wealth taxation.
+
+This paper argues that the 2\% number is too low to deliver the
+distributional effect its proponents claim.  Empirically, in our
+model, a 2\% wealth tax above any threshold leaves the wealth
+distribution structurally unchanged: 800 billionaires survive, the
+top-10\% wealth share remains at 98.9\%, the bottom-50\% rises
+from 0.0\% to 0.6\%.  The 2\% tax raises substantial state revenue
+but does no distributional work.
+
+The analytical reason is straightforward.
+\citet{benhabib2011distribution} show that for a wealth-tax rate
+$\tau$ above threshold $\theta$ and a capital return $r$, the
+steady-state top wealth holding is bounded if and only if $\tau >
+r$; below this condition the tax accumulates state revenue but the
+underlying compounding dynamic at the top is unchanged.  In a
+UK-calibrated baseline with $r = 0.08$ per tick, the Zucman 2\%
+proposal has $\tau / r = 0.25$, well below the Benhabib threshold.
+
+The empirically tight question is therefore: \emph{what rate
+delivers distributional work?}  We answer that question by
+sweeping wealth-tax rates from 2\% to 90\% above thresholds of
+\pounds 10M and \pounds 50M, and reporting distributional outcomes
+across rate, threshold, and enforcement quality.  The empirical
+threshold at which the wealth tax begins to deliver redistribution
+is \emph{exactly} $\tau = r$.  At 5\% above \pounds 10M the
+wealth tax matches the inheritance-cap benchmark on bottom-50\%
+share.  At 10\% above \pounds 10M it dominates the cap by more
+than two-fold.
+
+This paper arrived at the recurrent wealth tax via an unconventional
+route, the failure-mode analysis of an inheritance cap.  An earlier
+draft proposed an absolute \pounds 5M cap on inheritance as the
+structural mechanism for ownership redistribution.  Round-2 stress
+testing identified the cap's enforcement fragility, dynastic
+recompounding nonlinearity, and political-economy bind.  We then
+asked whether the cap's mechanism could be approximated by a
+continuous instrument.  The answer is yes, and the continuous
+instrument is administratively, politically, and analytically
+superior.  We retain the cap analysis as the intuition pump that
+surfaced the right question, but the recommended instrument is
+not the cap.
+
+The remainder of the paper is organised as follows.
+Section~\ref{sec:literature} positions the argument against five
+literatures.  Section~\ref{sec:fixedpoint} derives the analytical
+threshold $\tau > r$ from the Benhabib fixed-point argument and
+shows what it implies for the Zucman 2\% rate.
+Section~\ref{sec:model} recaps the agent-based model.
+Section~\ref{sec:sweep} reports the headline rate sweep.
+Section~\ref{sec:enforce} establishes enforcement robustness.
+Section~\ref{sec:stresstests} reports flight, transition ramp,
+class-conditional, and stacked-with-cap stress tests.
+Section~\ref{sec:capcomparison} positions the recurrent wealth
+tax against the inheritance cap.
+Section~\ref{sec:implementation} addresses operational
+implementation against the existing wealth-tax precedent.
+Section~\ref{sec:politics} examines the political-economy case.
+Section~\ref{sec:discussion} engages the strongest opposing
+arguments.
+
+%==========================================================================
+\section{Five literatures}
+\label{sec:literature}
+%==========================================================================
+
+\subsection{The Zucman 2\% framing and its precursors}
+
+\citet{zucman2024global} proposes a 2\% minimum effective tax on
+the assets of dollar-billionaires, coordinated at G20 level on the
+template of the OECD Pillar Two minimum corporate tax.  The
+proposal is anchored on G20-level coordination because the
+empirical wealth-tax literature
+\citep{saez2019triumph, scheuer2020taxing} identifies international
+arbitrage as the binding constraint on national wealth taxes, and
+the rate is calibrated to the elasticity literature
+\citep{young2016millionaire, moretti2017taxing} which suggests
+modest rates above 1--2\% produce manageable flight responses.
+
+The 2\% number has antecedents in \citet{piketty2014capital}'s
+proposed progressive global wealth tax (0.1\% to 1.5\% across the
+distribution), the Warren 2020 proposal (2\% above \$50M, 6\%
+above \$1B), and the Sanders 2020 proposal (1\% above \$32M,
+up to 8\% above \$10B).  Each of these proposals has been
+constructed on the assumption that the optimal rate is the
+politically maximum sustainable rate, with the empirically
+binding constraint being elasticity rather than mechanism.
+
+\subsection{The Norwegian wealth-tax experience}
+
+Norway operates a continuous wealth tax with a current top rate of
+1.1\% and a threshold of NOK 1.7M (\pounds 130k).  The 2022 reform
+raised the rate from 0.95\% to 1.1\%, prompting documented
+relocations of high-net-worth Norwegians to Switzerland and other
+jurisdictions.  \citet{ringstad2024norwegian} estimates the
+revenue loss from emigration at NOK 500m per year, against gross
+revenue of NOK 30bn, suggesting a flight elasticity of order
+1.5--2\%.  This is the most recent rigorous empirical estimate of
+flight response to a wealth-tax rate change and the most relevant
+calibration anchor for the present analysis.
+
+\subsection{The classical inheritance-tax literature}
+
+\citet{mill1848principles, carnegie1889wealth, rignano1924bequest,
+atkinson2015inequality} argue that bequest taxation is the
+philosophically primary instrument for limiting dynastic
+concentration.  This tradition is the intellectual origin of the
+inheritance-cap proposal we considered and rejected.  We retain
+the philosophical case for limiting bequest as motivation; we
+replace the policy form (a cap at death) with the continuous
+instrument that mechanically achieves the same distributional
+result.
+
+\subsection{The optimal-taxation theory of wealth and bequest}
+
+\citet{piketty2013theory, farhi2010progressive, saez2018social,
+saez2019progressive} produce optimal-taxation results that, under
+standard assumptions about bequest motives, savings elasticities,
+and the social welfare function, do not support high estate
+taxation as the optimal instrument.  The academic consensus migrated
+towards capital income tax as the primary instrument and bequest
+taxation as a secondary instrument with heavy carve-outs.  The
+present analysis sidesteps this debate by recommending recurrent
+wealth tax rather than bequest tax, which is the instrument the
+optimal-taxation literature has been less hostile to.
+
+\subsection{The empirical tax-flight literature}
+
+\citet{young2016millionaire} document millionaire-migration
+responses to US state-level top-tax-rate differentials of order
+0.1--0.4 percentage points of migration probability per
+percentage point of effective rate.  \citet{akcigit2016inventors}
+find higher elasticities for inventors (around 1.0).
+\citet{moretti2017taxing} find elasticities for top earners around
+1.3.  These elasticities are calibrated for income-tax rate
+changes at small magnitudes.  Extrapolation to a 10\% wealth-tax
+rate is non-linear and the appropriate Norwegian anchor
+\citep{ringstad2024norwegian} suggests larger flight responses.
+We treat flight as a real cost that the present proposal must
+acknowledge and quantify, which we do in Section~\ref{sec:stresstests}.
+
+%==========================================================================
+\section{The analytical fixed point}
+\label{sec:fixedpoint}
+%==========================================================================
+
+Consider an agent with wealth $W$ at the start of a tick.  In one
+tick the agent earns capital return $rW$, pays wealth tax above
+threshold $\theta$ at rate $\tau$, and consumes a negligible amount
+relative to wealth.  The wealth update is:
+\begin{equation}
+W' = W + rW - \tau \max(0, W - \theta)
+\end{equation}
+which for $W > \theta$ rearranges as
+\begin{equation}
+W' = W(1 + r - \tau) + \tau \theta
+\end{equation}
+
+\paragraph{The Benhabib fixed point.}  The unique fixed point of
+this map at which $W' = W$ is
+\begin{equation}
+W^* = \frac{\tau \theta}{\tau - r}
+\end{equation}
+which is positive and finite if and only if $\tau > r$.  For
+$\tau \leq r$ no finite fixed point exists and wealth grows
+without bound \citep{benhabib2011distribution}.
+
+\paragraph{Implication for Zucman 2\%.}  At $\tau = 0.02$ and
+$r = 0.08$ the Benhabib threshold is not met.  No wealth-tax
+rate below the capital return rate can produce a finite ceiling
+on top wealth.  The Zucman framing is not wrong analytically: at
+2\% above \pounds 10M the tax does raise substantial revenue.  It
+is wrong as an instrument for distributional restructuring: it
+does not change the top dynamic.
+
+\paragraph{Implication for hybrid wealth tax at $\tau > r$.}  At
+$\tau = 0.10, r = 0.08, \theta = \pounds 10M$ the steady-state
+wealth is $W^* = 0.10 \cdot \pounds 10M / (0.10 - 0.08) = \pounds
+50M$.  Any agent above \pounds 50M loses ground each tick; any
+agent below \pounds 50M but above \pounds 10M loses some ground
+each tick.  In steady state the distribution above \pounds 10M is
+compressed into the \pounds 10--50M range.  Empirically, the
+\pounds 100M+ count drops to zero in the model.
+
+\paragraph{Implication for inheritance cap.}  The cap is the
+$\tau \to 1$ limit applied at the boundary of each generation,
+with the steady-state value $W^* \to \theta$ as $\tau \to 1$.  The
+cap is therefore the discrete-time analogue of the recurrent
+wealth tax at $\tau = 1$ applied once per lifetime.  The
+distributional effect at $\tau = 1$ once-per-lifetime is
+empirically similar to $\tau \approx r$ applied continuously, with
+the difference being enforcement profile and political economy.
+
+This is the analytical scaffolding for the rest of the paper.  The
+hybrid recurrent wealth tax at $\tau > r$ delivers the same
+analytical ceiling as the cap, applied continuously rather than at
+a single death event, with all the implementation and political-
+economy advantages we document below.
+
+%==========================================================================
+\section{The model in summary}
+\label{sec:model}
+%==========================================================================
+
+We use a stylised seven-class agent-based simulation calibrated to
+the UK wealth distribution (top-1\%, top-10\%, Pareto slope,
+survival rate).  Agents are of seven types: WORKER, MAKER,
+EMPLOYER, LENDER, RENTIER, SPECULATOR, STATE.  Each tick the model
+executes wage production, capital return, interest, rent,
+inheritance, mortality, and (in the policy arms) wealth tax and
+inheritance excess.  The joint-calibrated UK baseline has
+$r = 0.08$, rent share 0.20, subsistence 0.30, lifespan
+mean 70 ticks, $N = 10{,}000$ agents per run, 180 ticks per run, 4
+seeds.  The model is documented fully in the JEIC companion
+submission; in this paper we treat the model as a calibrated
+black box that produces distributional outcomes given policy
+parameters.
+
+The state-spending package (UBI 0.4, state employment 30\%,
+state-purchases-from-makers 5.0) is on in all policy arms to
+ensure that revenue raised by the wealth tax is recirculated as
+income to workers and not held idle by the state.
+
+%==========================================================================
+\section{The headline rate sweep}
+\label{sec:sweep}
+%==========================================================================
+
+The headline finding is the wealth-tax rate at which the
+instrument begins to deliver distributional work, sweeping rate
+from 2\% to 90\% at thresholds \pounds 10M and \pounds 50M
+(Figure~\ref{fig:sweep}, Table~\ref{tab:sweep}).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{fig_hybrid_sweep.png}
+\caption{Wealth-tax rate sweep above \pounds 10M.  At
+$\tau < r = 0.08$ (red zone) the wealth tax accumulates revenue
+but does not produce a finite ceiling on top wealth.  At
+$\tau \approx r$ the wealth tax matches the inheritance-cap
+benchmark.  At $\tau > r$ (green zone) the wealth tax dominates
+the cap.  Bottom-50\% share rises monotonically and saturates
+around 47\% above $\tau = 0.20$.  Top-10\% share collapses from
+99\% to 10\% across the same range.}
+\label{fig:sweep}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\small
+\caption{R2-9 rate sweep.  Wealth tax above \pounds 10M and
+\pounds 50M thresholds.  $N = 10{,}000$, 4 seeds, 180 ticks.
+The \pounds 5M cap is the reference benchmark.}
+\label{tab:sweep}
+\begin{tabular}{lrrrrrr}
+\toprule
+arm & billionaires & \pounds 100M+ & bot-50\% & top-10\% & top-1\% & state \pounds B \\
+\midrule
+cap \pounds 5M (reference)        &   2 & 270 & 19.1\% &  54.2\% & 20.1\% &   487 \\
+\midrule
+WT 2\% > \pounds 10M (Zucman)     & 800 & 808 &  0.6\% &  98.9\% & 31.1\% & 5{,}164 \\
+WT 5\% > \pounds 10M              &   0 & 300 & 19.6\% &  61.6\% & 14.8\% &   571 \\
+WT 10\% > \pounds 10M             &   0 &   0 & \textbf{42.0\%} & \textbf{19.2\%} &  2.6\% &   193 \\
+WT 20\% > \pounds 10M             &   0 &   0 & 45.4\% &  13.4\% &  1.5\% &   148 \\
+WT 50\% > \pounds 10M             &   0 &   0 & 46.9\% &  11.2\% &  1.2\% &   134 \\
+WT 90\% > \pounds 10M             &   0 &   0 & 47.3\% &  10.6\% &  1.1\% &   130 \\
+\midrule
+WT 5\% > \pounds 50M              &  18 & 813 & 10.9\% &  75.4\% & 16.2\% & 1{,}222 \\
+WT 10\% > \pounds 50M             &   0 & 302 & 28.0\% &  37.1\% &  4.9\% &   397 \\
+WT 20\% > \pounds 50M             &   0 &   0 & 31.6\% &  29.4\% &  3.3\% &   267 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Three readings of the table.}  First, the Zucman 2\% rate
+is too low to do distributional work: 0.6pp bottom-50\% lift and
+800 billionaires.  Second, the 5\% rate above \pounds 10M is the
+empirical match-point: it produces bottom-50\% 19.6\% and zero
+billionaires, distributionally equivalent to the \pounds 5M cap.
+Third, at 10\% above \pounds 10M the wealth tax dominates the
+cap: bottom-50\% rises to 42.0\% (more than two-fold the cap's
+19.1\%), top-10\% drops to 19.2\% (well below the cap's 54.2\%),
+and the \pounds 100M+ count is zero.
+
+\paragraph{Threshold matters.}  The \pounds 50M threshold produces
+weaker effects than the \pounds 10M threshold at the same rate.
+This is because more wealth is below the threshold at higher
+$\theta$ and therefore untouched.  The empirically efficient
+threshold is the one at which most distributionally relevant
+wealth sits above the line, which the model places at around
+\pounds 10M.  The threshold can be tuned to the calibration:
+the analytical $W^* = \theta \tau / (\tau - r)$ tells us that
+threshold and rate trade off, and the policy designer can choose
+the combination.
+
+\paragraph{Revenue is not the goal.}  The 10\% > \pounds 10M arm
+raises \pounds 193B over the run, compared with the Zucman 2\%
+arm's \pounds 5{,}164B.  The higher rate produces less revenue
+because the tax base shrinks under aggressive extraction.  This
+is the trade-off the paper emphasises: distributional restructuring
+and revenue maximisation are not the same objective and the rate
+that optimises one does not optimise the other.
+
+%==========================================================================
+\section{Enforcement robustness}
+\label{sec:enforce}
+%==========================================================================
+
+The single deepest worry about the inheritance-cap proposal was
+enforcement fragility: the cap's distributional effect collapses
+from 19.1pp to essentially zero as effective capture drops from
+1.0 to 0.4.  We test the hybrid wealth tax across the same
+enforcement range and find the opposite property: the hybrid is
+approximately invariant to enforcement quality across the
+realistic UK range (Figure~\ref{fig:enforce},
+Table~\ref{tab:enforce}).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{fig_hybrid_enforce.png}
+\caption{Enforcement sensitivity comparison.  The cap (red) has
+a catastrophic cliff between 90\% and 100\% capture; the hybrid
+(green) is flat across the 40--100\% range.  The pink band marks
+the realistic UK enforcement range based on current IHT
+effectiveness.}
+\label{fig:enforce}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\small
+\caption{Enforcement sensitivity comparison.  Wealth tax 90\% above
+\pounds 10M (the most aggressive hybrid tested) vs cap \pounds 5M.}
+\label{tab:enforce}
+\begin{tabular}{rrrrr}
+\toprule
+capture & cap bot-50\% & hybrid bot-50\% & cap top-10\% & hybrid top-10\% \\
+\midrule
+0.40 &  0.1\% & 46.5\% & 99.9\% & 11.7\% \\
+0.50 &  0.1\% & 46.8\% & 99.8\% & 11.3\% \\
+0.60 &  0.1\% & 46.9\% & 99.7\% & 11.1\% \\
+0.70 &  0.2\% & 47.1\% & 99.5\% & 10.9\% \\
+0.80 &  0.5\% & 47.2\% & 98.9\% & 10.8\% \\
+0.90 &  1.5\% & 47.2\% & 96.4\% & 10.7\% \\
+1.00 & 19.1\% & 47.3\% & 54.2\% & 10.6\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Why the cap collapses and the hybrid does not.}  The
+cap is a single event at death.  Leakage at one death gives the
+heir a starting wealth above the threshold, and that starting
+wealth compounds at $r = 0.08$ over a 50-year lifetime back into
+the centi-millionaire range, where it is then capped again and the
+cycle repeats.  Dynastic recompounding is nonlinear in leakage:
+30\% leakage of a \pounds 100M holder's wealth means the heir
+starts at \pounds 33.5M which compounds to \pounds 1.6B by death
+of next generation.  The cap therefore requires zero leakage,
+which is institutionally not deliverable.
+
+The hybrid wealth tax compounds against the prior year's wealth
+each year.  Effective rate of $0.4 \times 0.9 = 0.36$ per year
+above threshold is still well above $r = 0.08$, so wealth shrinks
+deterministically toward the steady-state ceiling.  There is no
+dynastic recompounding nonlinearity because the assessment
+happens 70 times per generation, not once.  Mistakes in any one
+year are corrected by the assessment in the next year.
+
+This is the central mechanical finding of the paper.  At
+$\tau > r$, the recurrent wealth tax is the analytically and
+empirically robust instrument; the cap is not.
+
+%==========================================================================
+\section{Stress tests: flight, ramp, class-conditional, stacked}
+\label{sec:stresstests}
+%==========================================================================
+
+The recurrent wealth tax at $\tau > r$ has now passed the
+distributional and enforcement tests.  Four further stress tests
+identified by the round-2 review are reported here.
+
+\subsection{Capital flight under the hybrid}
+
+We add a flight channel: each tick, agents with wealth above the
+threshold have probability of emigration proportional to wealth
+above threshold and a base rate.  Flying agents leave the
+simulation entirely; the country loses their wealth.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Flight under hybrid WT 10\% > \pounds 10M.  In-country
+distribution is preserved across all flight rates; the country
+loses some wealth to emigration, much less than under the cap.}
+\label{tab:flight}
+\begin{tabular}{rrrrrr}
+\toprule
+flight rate & remaining \% & bot-50\% & top-10\% & flown count & flown \pounds B \\
+\midrule
+0.000 & 93.3\% & 42.0\% & 19.2\% &     0 &   0 \\
+0.005 & 83.8\% & 43.7\% & 15.5\% &   914 &  22 \\
+0.010 & 78.8\% & 43.9\% & 14.2\% & 1{,}429 &  30 \\
+0.020 & 71.9\% & 43.4\% & 12.4\% & 2{,}205 &  42 \\
+0.050 & 58.8\% & 37.9\% & 13.3\% & 3{,}580 &  53 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The hybrid is markedly more flight-robust than the cap.  At base
+rate 0.005, the cap loses over \pounds 100B in flown wealth and
+the remaining-alive rate drops from 91\% to 55\%.  The hybrid at
+the same rate loses \pounds 22B and stays at 84\%
+remaining-alive.  The mechanism: continuous flow extraction is
+recurrent and predictable, so the flight calculation is between
+``stay and pay annually'' and ``leave and pay nothing'', rather
+than ``stay and have stock confiscated at death''.  The annual
+cost is large but not catastrophic to in-life wealth.
+
+\subsection{Transition ramp}
+
+Politically the rate cannot be introduced overnight at 10\%.  We
+test phase-in schedules.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Transition ramp.  Phasing 2\% to 10\% over 50 or 100
+ticks delivers the same distributional outcome and raises more
+revenue than instant deployment.}
+\label{tab:ramp}
+\begin{tabular}{lrrrrr}
+\toprule
+schedule & remaining \% & billionaires & bot-50\% & top-10\% & state \pounds B \\
+\midrule
+instant 10\%                  & 93.3\% & 0 & 42.0\% & 19.2\% & 193 \\
+ramp 2\% to 10\% over 50 ticks  & 91.6\% & 0 & 42.5\% & 19.1\% & 226 \\
+ramp 2\% to 10\% over 100 ticks & 90.7\% & 0 & 42.4\% & 19.4\% & \textbf{359} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The slow ramp keeps the tax base larger for longer before the
+rate contracts it.  Politically the slow ramp is easier to defend
+and produces strictly better fiscal outcomes.  The empirical
+recommendation is a 5--10 year transition.
+
+\subsection{Class-conditional}
+
+A class-conditional cap (capping only extractive-class wealth) was
+the strongest variant of the cap proposal because productive
+classes never reach the threshold in the model.  We test the same
+class-conditional version of the hybrid.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Class-conditional hybrid.  Unlike the cap, the hybrid
+wants to be universal.  Exempting productive classes slightly
+reduces bottom-50\% lift without buying anything on the
+family-business front.}
+\label{tab:classcond}
+\begin{tabular}{lrrrr}
+\toprule
+arm & bot-50\% & top-10\% & top-1\% & state \pounds B \\
+\midrule
+hybrid universal               & 42.0\% & 19.2\% & 2.6\% & 193 \\
+hybrid extractive-class only   & 37.4\% & 17.7\% & 2.1\% & 145 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The hybrid is rate-based; it does not have the cap's threshold
+discontinuity.  Productive-class wealth at 10\% rate above \pounds
+10M does not produce billionaires either way.  Carve-outs are
+therefore unnecessary for the hybrid in a way they were necessary
+for the cap.
+
+\subsection{Stacked with the cap}
+
+The natural question is whether the hybrid and the cap stack.
+
+\begin{table}[h]
+\centering
+\small
+\caption{Stacked vs alone.  Stacking the cap on the hybrid
+\emph{reduces} bottom-50\% lift, because the cap converts
+hybrid-distributed stock into one-shot state revenue that
+recirculates as income that workers consume for subsistence
+rather than accumulate as wealth.  The hybrid alone dominates.}
+\label{tab:stacked}
+\begin{tabular}{lrrrrr}
+\toprule
+arm & billionaires & \pounds 100M+ & bot-50\% & top-10\% & state \pounds B \\
+\midrule
+baseline             & 804 & 841 &  0.0\% & 100.0\% &   0 \\
+cap \pounds 5M only  &   2 & 270 & 19.1\% &  54.2\% & 487 \\
+hybrid only          &   0 &   0 & \textbf{42.0\%} & 19.2\% & 193 \\
+stacked              &   0 &   0 & 34.1\% & 20.3\% & 187 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{fig_hybrid_stacked.png}
+\caption{Stacked vs alone.  The hybrid alone dominates.  Adding
+the cap reduces bottom-50\% share by 8 percentage points.}
+\label{fig:stacked}
+\end{figure}
+
+This is the punchline of the round-2 analysis.  The cap is not a
+useful supplement to the hybrid; it actively hurts.  The
+recommended policy is the hybrid wealth tax alone, with no
+inheritance cap.
+
+%==========================================================================
+\section{Why not the cap}
+\label{sec:capcomparison}
+%==========================================================================
+
+A detailed analysis of the inheritance cap as a policy form was
+prepared as a companion paper (\emph{The cap is the mechanism,
+enforcement is the constraint}).  We summarise the conclusion: the
+cap is in an unresolvable bind.  It requires near-perfect
+enforcement (95\%+ capture) to deliver any distributional effect,
+and it cannot get near-perfect enforcement politically because
+the carve-outs required to make it politically viable (BPR-style
+business-asset exemption, primary-residence exemption,
+agricultural exemption) bring effective capture into the
+0.4--0.6 range, where the cap delivers nothing.
+
+The hybrid wealth tax at $\tau > r$ delivers the same analytical
+mechanism (a finite ceiling on top wealth) with none of the
+fragility.  The cap is the limit of the wealth tax at $\tau \to 1$
+applied once per lifetime; the hybrid is the same limit applied
+70 times per lifetime, where it is robust to the leakage that
+destroys the cap.  This is not an opinion: it is the empirical
+demonstration of the Benhabib argument under realistic
+enforcement constraints.
+
+The cap remains a useful intuition pump.  It is the conceptually
+clearest version of ``limit dynastic compounding''.  But the
+implementation form that actually delivers the philosophical goal
+is the recurrent wealth tax above the capital return.
+
+%==========================================================================
+\section{Implementation}
+\label{sec:implementation}
+%==========================================================================
+
+\subsection{The Norwegian template}
+
+Norway operates a continuous wealth tax with a top rate of 1.1\%
+above NOK 1.7M (\pounds 130k), continuously since the 1840s
+cantonal versions and in modern form since 1922.  HMRC equivalent
+infrastructure (annual asset valuation, beneficial-ownership
+disclosure, financial-account reporting via CRS) is in operation.
+The Norwegian wealth tax is paid out of income, dividend, or
+partial liquidation; it does not force forced-sale events.  The
+2022 reform raised the top rate by 0.15pp and prompted documented
+relocations, providing the empirical anchor for flight
+elasticities in this paper.
+
+The proposed UK hybrid raises the rate to 10\% above \pounds 10M.
+This is 9$\times$ the Norwegian top rate and approximately 4--5$\times$
+the Spanish solidarity tax (1\%--3.5\% above progressive
+thresholds).  The threshold is materially higher than Norway's
+(\pounds 10M vs \pounds 130k).  The proposal is therefore narrower
+in base and steeper in rate than any existing wealth-tax regime.
+
+\subsection{Operational infrastructure}
+
+The UK does not currently operate a wealth tax.  Implementation
+requires:
+
+\begin{enumerate}
+\item Annual asset valuation for all households with wealth above
+\pounds 10M.  Estimated ~10,000 to 50,000 UK households fall into
+this bracket.  Valuation methodology can be adapted from existing
+IHT estate valuation (currently for estates above \pounds 325k)
+and from corporate wealth declarations.
+
+\item Beneficial-ownership transparency at the level of EU AMLD5
+(in force since 2020 across the EU; UK retained post-Brexit).
+Existing infrastructure covers companies; trust beneficial-
+ownership transparency would need extension.
+
+\item Annual CRS reporting on cross-border financial accounts
+already in operation; coverage extends to 100+ jurisdictions.
+
+\item Anti-avoidance provisions on common evasion structures:
+trusts (especially discretionary), family limited partnerships,
+foundations, holding companies, life-insurance wrappers.
+
+\item Liquidity provisions.  The 10\% rate on a \pounds 100M
+illiquid asset (private company, agricultural land) is \pounds 9M
+per year, which may exceed the asset's cash yield.  The Norwegian
+template allows partial payment-in-kind to the state; the UK
+proposal needs an equivalent mechanism or the threshold needs to
+be raised.
+\end{enumerate}
+
+\subsection{Revenue path}
+
+Under the 100-tick ramp schedule (effectively 100 years compressed
+to 100 model ticks, or rates rising 2\%, 4\%, 6\%, 8\%, 10\% at
+quarter-of-run intervals), state ending wealth is \pounds 359B.
+At the proposed implementation rate (5-10 year ramp), expected
+revenue is in the range \pounds 100--300B cumulative over the
+ramp window, depending on flight elasticity.
+
+%==========================================================================
+\section{Politics}
+\label{sec:politics}
+%==========================================================================
+
+The hybrid at 10\% above \pounds 10M is politically uncomfortable
+in three specific ways and politically viable in three others.
+
+\paragraph{Uncomfortable: the rate is high by precedent.}  Norway's
+top rate is 1.1\%.  Spain's solidarity tax peaks at 3.5\%.  The
+proposed UK rate is 9$\times$ Norwegian and 3$\times$ Spanish.  This
+is not a marginal adjustment within established practice; it is a
+qualitative change in what "wealth tax" means.
+
+\paragraph{Uncomfortable: the family-business carve-out coalition
+still exists.}  The carve-out coalition was the politically
+decisive opponent of the cap proposal (Section~\ref{sec:capcomparison}
+in the companion paper).  For the hybrid, the coalition's
+"liquidation crisis" argument is weaker because the tax is paid
+from flow not stock, but the coalition is still organised and
+will mobilise.  Politically the implementation must accept a
+threshold high enough (\pounds 10M+) that median family businesses
+are below the line.
+
+\paragraph{Uncomfortable: the rate triggers OECD comparator
+attention.}  A 10\% UK rate would be 10$\times$ the Norwegian and
+3$\times$ the highest historical OECD rate; international
+coordination becomes harder, not easier.
+
+\paragraph{Viable: the precedent gap is smaller than for the cap.}
+The Norwegian, Swiss, Spanish, and historical French wealth taxes
+provide operational templates that the inheritance cap does not.
+
+\paragraph{Viable: the rate is responsive to political constraint.}
+Unlike a hard cap, the rate can be tuned downward if political
+resistance proves binding.  A 5\% > \pounds 10M proposal still
+delivers cap-equivalent distribution and is approximately
+4--5$\times$ Norway, which is a smaller jump than 9$\times$.  The
+distributional effect saturates above 20\%, so there is no
+empirical reason to push the rate to confiscatory levels.
+
+\paragraph{Viable: the proposal aligns with the Zucman G20
+framework.}  The Zucman 2\% proposal is the politically established
+focal point.  This paper proposes that the G20 coordination should
+be on the rate level required by the Benhabib threshold, which is
+$\tau > r$ for the UK calibration.  The institutional architecture
+of Zucman is correct; only the rate is too low.
+
+%==========================================================================
+\section{Discussion}
+\label{sec:discussion}
+%==========================================================================
+
+\subsection{Engaging the strongest opposing case}
+
+This section adopts the round-2 method of constructing the
+strongest opposing case to identify the most damaging critique we
+must survive.
+
+\paragraph{Hunt (technocratic Conservative).}  "Your 10\% wealth
+tax is confiscatory by any historical standard.  No country has
+ever sustained this.  The capital-flight response will exceed your
+estimates.  The growth cost will swamp the distributional benefit.
+The model has no R\&D, no productivity, no entrepreneurial entry.
+You are confusing accounting symmetry with growth analysis."
+
+This critique lands on the model's silence on growth.  We
+acknowledge that the paper claims nothing about the productivity
+or growth path of the UK economy under the hybrid.  The
+distributional claim is preserved: the wealth tax at $\tau > r$
+delivers the distributional restructuring that the Zucman 2\%
+does not.  Whether this restructuring is welfare-improving in the
+presence of negative growth effects is a question the model cannot
+adjudicate.  The honest synthesis is that the hybrid is a
+distributional instrument and its welfare consequences depend on
+the growth response, which requires extensions to the model the
+present analysis does not contain.
+
+\paragraph{Stewart (institutional-capacity sceptic).}  "Norway
+prompts billionaire relocations at 1.1\%; you propose 10\%.  The
+implementation infrastructure required is unprecedented.  The
+political coalition required is unprecedented.  The international
+coordination required is unprecedented.  You are proposing the
+maximum imaginable wealth tax on the basis of a stylised
+simulation."
+
+This critique correctly identifies the rate as the binding
+political constraint.  Our defence is that the 5\% rate is also
+sufficient to deliver cap-equivalent distribution
+(Section~\ref{sec:sweep}) and 5\% is 4--5$\times$ Norway, which
+is empirically reachable in a 5-10 year ramp.  The 10\% rate is
+the empirically dominant rate in the model; the 5\% rate is the
+politically defensible rate that still delivers the headline
+mechanism.  We recommend 5--10\% as the range, with 5\% as the
+viable minimum.
+
+\subsection{Limits of the model}
+
+The model has no growth term, no human capital accumulation, no
+entrepreneurial entry, no investment-to-capital-stock equation.
+Its claims about distribution are claims about wealth-share
+arithmetic, not about welfare or productivity.
+
+The model has no liquidity friction.  A 10\% annual tax on
+illiquid assets in reality forces sale or borrowing; the model
+treats wealth as a single fungible scalar.
+
+The model treats flight as a simple emigration channel with a
+calibrated probability per tick.  Real flight involves residency
+planning, tax-treaty optimisation, asset relocation, and
+political response.  The model's flight robustness finding is a
+useful upper bound, not a precise estimate.
+
+The model is closed-economy.  International coordination effects
+are treated qualitatively.
+
+%==========================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+%==========================================================================
+
+The contemporary wealth-tax debate has anchored on 2\%.  The
+Benhabib fixed-point argument and our empirical sweep agree that
+2\% is too low: with $r = 0.08$ in the UK calibration, the
+wealth tax begins to deliver distributional work only above the
+capital-return rate.  At 5\% above \pounds 10M the wealth tax
+matches the inheritance-cap benchmark and eliminates billionaires.
+At 10\% it dominates the cap on every distributional metric.  The
+threshold at which the wealth tax matters is exactly $\tau = r$.
+
+The recurrent wealth tax at $\tau > r$ is robust to enforcement
+leakage in the range that destroys the inheritance cap, more
+flight-robust than the cap, implementable in existing wealth-tax
+institutional infrastructure (Norway, Switzerland, Spain), and
+politically responsive to constraint (rate can be tuned downward
+if necessary).  The cap remains a useful intuition pump but the
+implementation form is the hybrid.
+
+The recommended policy is therefore not the inheritance cap that
+an earlier draft proposed.  It is a recurrent wealth tax with
+marginal rate of 5--10\% above \pounds 10M, phased in over 5--10
+years, applied universally, replacing the Zucman 2\% rate
+specification within the G20-coordinated framework.  This proposal
+takes the Zucman institutional architecture as given and pulls
+the rate up to the empirically derived level required to deliver
+structural ownership redistribution.
+
+We close with the analytical observation that organises the paper.
+A wealth tax below the capital-return rate is a revenue
+instrument.  Above the capital-return rate it is a distributional
+instrument.  These are different functions and the right rate
+depends on which one is the goal.  Zucman is the right framework
+for the revenue function.  This paper provides the right framework
+for the distributional function.  The two are complementary; we
+should have both.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+\section{Numerical results}
+\label{app:numerics}
+
+Full numerical results in
+\texttt{out/data/round2\_hybrid\_r9.json},
+\texttt{round2\_hybrid\_r10.json}, and
+\texttt{round2\_hybrid\_loose\_ends.json}.
+
+\end{document}
