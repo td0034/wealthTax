@@ -156,6 +156,23 @@ class Dials:
     # theoretical wealth tax that HMRC actually collects. The
     # uncollected share stays with the agent.
     wealth_tax_capture_rate: float = 1.0
+    # Path-B growth channels. Default 0 means the existing behaviour is
+    # preserved (model is stationary in productivity). Positive values
+    # activate two endogenous productivity channels:
+    #   skill_productivity_coeff: human-capital channel. Per-tick
+    #     productivity dividend to workers and makers, proportional to
+    #     the population-mean worker skill breadth divided by SKILL_DIMS.
+    #     Heterodox-friendly: broad skills raise labour productivity.
+    #     Calibration anchor: Hanushek/Romer growth literature implies
+    #     0.3-0.5 for skill-stock elasticity of labour productivity.
+    #   capital_productivity_coeff: capital-deepening channel. Per-tick
+    #     productivity dividend to makers proportional to the
+    #     log-transformed mean employer wealth. Orthodox-friendly:
+    #     employer cash flow funds investment which raises productivity.
+    #     Calibration anchor: Solow growth accounting puts capital share
+    #     of income at 0.3-0.4.
+    skill_productivity_coeff: float = 0.0
+    capital_productivity_coeff: float = 0.0
     memory_bandwidth_base: float = 0.5        # skill-dims always transmitted
     memory_bandwidth_wealth_scale: float = 0.5  # extra dims = scale * (wealth / 100)
     skill_mutation_rate: float = 0.05         # chance per dim per generation
@@ -771,6 +788,51 @@ def step(agents: list[Agent], d: Dials, rng: np.random.Generator,
             knowledge_lost += max(0.0, a.skill_total - transmitted_mass)
             births += 1
 
+    # --- PRODUCTIVITY DIVIDENDS (Path-B growth channels) -----------------
+    # Applied after production/inheritance/tax so they reflect the
+    # current-tick steady state. Heterodox skill channel pays workers
+    # and makers a productivity dividend proportional to population-mean
+    # worker skill breadth. Orthodox capital channel pays makers a
+    # dividend proportional to log-mean employer wealth. Both channels
+    # are recorded as productive_flow (real value creation) and added
+    # to metabolic_rate.
+    human_capital_boost = 0.0
+    capital_deepening_boost = 0.0
+    if d.skill_productivity_coeff > 0 or d.capital_productivity_coeff > 0:
+        living_now = [a for a in agents
+                      if a.alive and a.type != Type.STATE]
+        workers_now = [a for a in living_now if a.type == Type.WORKER]
+        makers_now = [a for a in living_now if a.type == Type.MAKER]
+        employers_now = [a for a in living_now if a.type == Type.EMPLOYER]
+        if workers_now and d.skill_productivity_coeff > 0:
+            mean_breadth = float(np.mean([a.skill_breadth for a in workers_now]))
+            human_capital_boost = (d.skill_productivity_coeff
+                                    * mean_breadth / SKILL_DIMS)
+        if employers_now and d.capital_productivity_coeff > 0:
+            mean_emp_w = float(np.mean([max(0.0, a.net_worth)
+                                         for a in employers_now]))
+            # log-tanh form: saturates as employer wealth grows so the
+            # orthodox channel does not get unbounded benefit from
+            # absurd top-tail accumulation.
+            capital_deepening_boost = (d.capital_productivity_coeff
+                                        * float(np.tanh(mean_emp_w / 50.0)))
+        # Apply dividends. Dividend per worker = wage * human_capital_boost.
+        # Dividend per maker = wage * (human_capital_boost + capital_boost).
+        if human_capital_boost > 0:
+            for w in workers_now:
+                bonus = d.wage * human_capital_boost
+                w.wealth += bonus
+                productive_flow += bonus
+                metabolic_rate += bonus
+                _rec("PRODUCTIVITY", "WORKER", bonus)
+        if (human_capital_boost > 0 or capital_deepening_boost > 0):
+            for m in makers_now:
+                bonus = d.wage * (human_capital_boost + capital_deepening_boost)
+                m.wealth += bonus
+                productive_flow += bonus
+                metabolic_rate += bonus
+                _rec("PRODUCTIVITY", "MAKER", bonus)
+
     # --- PEAK-WEALTH UPDATE ---------------------------------------------
     # Update each agent's peak lifetime wealth for mortality-corrected stats.
     for a in agents:
@@ -840,6 +902,8 @@ def step(agents: list[Agent], d: Dials, rng: np.random.Generator,
         "top10_share_corrected": top_frac_share_corrected(
             nws, recent_deaths, tick, 0.10),
         "state_wealth": float(state.wealth) if state else 0.0,
+        "human_capital_boost": float(human_capital_boost),
+        "capital_deepening_boost": float(capital_deepening_boost),
     }
 
 
