@@ -43,12 +43,14 @@ We compute six measures of growth across five tax-policy arms in a
 calibrated agent-based simulation of a stylised UK-like economy: gross
 monetary throughput (GMT), productive throughput (PT), a calibrated
 GDP proxy (CGDP), a capability index (CI), median worker wealth (MC),
-and total knowledge stock (KS).  Across all five arms and four
-productivity-channel parameterisations (including the orthodox-
-dominant calibration with capital-deepening coefficient five times the
-human-capital coefficient), the result is consistent: \emph{wealth
+and total knowledge stock (KS).  Across all five arms, four productivity-channel parameterisations
+(including the orthodox-dominant calibration with capital-deepening
+coefficient five times the human-capital coefficient), seven values
+of the CGDP weighting coefficient $\alpha \in [0.05, 0.40]$, and four
+capability-index compositions (product, geometric mean, arithmetic
+mean, MPI-style deprivation), the result is consistent: \emph{wealth
 taxation collapses the extractive-inclusive measures (GMT, CGDP) to
-near zero and raises every other measure by 9--15 percentage points}.
+near zero and raises every other measure by 3--15 percentage points}.
 
 The empirical pattern follows from the model's structure: the orthodox
 measure counts the rentier-lender deposit loop as economic activity at
@@ -435,6 +437,108 @@ range) or accept that the capital channel does not save the
 orthodox conclusion in the model.
 
 %==========================================================================
+\section{Two further robustness checks}
+\label{sec:robust-extra}
+%==========================================================================
+
+The headline pattern survives all four productivity-channel regimes
+(Section~\ref{sec:robust}).  Two further questions a sceptical reader
+will ask are addressed here: whether the CGDP collapse depends on the
+particular value of $\alpha$ we use, and whether the capability
+finding depends on the particular composition of the index.
+
+\subsection{Alpha sweep on the CGDP weighting}
+
+The base case sets $\alpha = 0.20$, reflecting the UK financial-
+services + real-estate share of national-accounts gross value added.
+The question is whether the headline CGDP collapse is an artefact of
+this choice.  We recompute the CGDP at $\alpha \in \{0.05, 0.10, 0.15,
+0.20, 0.25, 0.30, 0.40\}$ from the existing portfolio data
+(Figure~\ref{fig:alpha-sweep}, Table~\ref{tab:alpha-sweep}).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{fig_alpha_sweep.png}
+\caption{R-A alpha sweep.  CGDP ratio of each policy arm vs status
+quo across the $\alpha$ range. Wealth-tax arms never cross 1.0 at
+any $\alpha$ in the tested range.  The CGDP-collapse finding is
+invariant to the specific $\alpha$ calibration; the magnitude of the
+collapse increases with $\alpha$ because higher $\alpha$ weights the
+extractive flow more heavily and the wealth-tax arms have
+near-zero extractive flow.}
+\label{fig:alpha-sweep}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\small
+\caption{R-A alpha sweep (R0 baseline regime). CGDP ratio of each
+policy arm vs status quo across $\alpha$. The wealth-tax arms are
+never close to status-quo CGDP at any $\alpha$ in the tested range.}
+\label{tab:alpha-sweep}
+\begin{tabular}{lrrrrr}
+\toprule
+arm & $\alpha=0.05$ & $\alpha=0.10$ & $\alpha=0.20$ & $\alpha=0.30$ & $\alpha=0.40$ \\
+\midrule
+A status quo     & 1.00$\times$    & 1.00$\times$    & 1.00$\times$ & 1.00$\times$ & 1.00$\times$ \\
+C Zucman 2\%     & 0.07$\times$    & 0.07$\times$    & 0.06$\times$ & 0.06$\times$ & 0.06$\times$ \\
+D cap \pounds 5M & 0.01$\times$    & 6$\times 10^{-3}$ & 4$\times 10^{-3}$ & 3$\times 10^{-3}$ & 3$\times 10^{-3}$ \\
+E hybrid 5\%     & 0.01$\times$    & 7$\times 10^{-3}$ & 5$\times 10^{-3}$ & 4$\times 10^{-3}$ & 4$\times 10^{-3}$ \\
+F hybrid 10\%    & 0.01$\times$    & 5$\times 10^{-3}$ & 3$\times 10^{-3}$ & 2$\times 10^{-3}$ & 2$\times 10^{-3}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The CGDP-collapse finding is robust to the alpha calibration.  The
+Mirrlees-orthodox conclusion (wealth tax depresses CGDP) holds at
+every alpha in the tested range; we are not selecting alpha to
+manufacture the result.
+
+\subsection{Capability composition}
+
+The base capability index is $CI = $ survival $\times$ breadth
+$\times$ diversity.  We test three alternative compositions:
+
+\begin{itemize}
+\item Geometric mean (HDI-style): $\sqrt[3]{\text{survival} \cdot
+\bar{b} \cdot \bar{d}}$ where $\bar{b}$ and $\bar{d}$ are normalised
+to $[0, 1]$.
+\item Arithmetic mean: $(\text{survival} + \bar{b} + \bar{d})/3$.
+\item MPI-style (Multidimensional Poverty Index flavour): $1 -
+\bar{D}$ where $\bar{D}$ is the mean of the three deprivations $(1 -
+\text{survival}), (1 - \bar{b}), (1 - \bar{d})$.
+\end{itemize}
+
+Results in Figure~\ref{fig:cap-comp}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{fig_capability_compositions.png}
+\caption{R-B capability composition robustness.  All four composition
+forms show the wealth-tax case winning across all four productivity-
+channel regimes.  The product form (base case) gives the largest
+gains (9--14\% above status quo) because it multiplies the three
+positive effects.  Geometric mean attenuates via cube root and gives
+3--4\%.  Arithmetic mean and MPI-style give 5--8\%.  All four are
+unambiguous in direction.}
+\label{fig:cap-comp}
+\end{figure}
+
+The capability finding is robust to composition choice.  The
+magnitude of the wealth-tax advantage varies with composition (3\%
+under HDI-style, 14\% under product form), but the direction is
+invariant.  The HDI-style geometric mean is the most conservative
+choice and we report it as the lower bound on the capability gain.
+
+\paragraph{Synthesis of the robustness checks.}  Across the four
+productivity-channel regimes, seven $\alpha$ values, and four
+capability compositions tested, the qualitative result is invariant:
+extractive-inclusive measures (GMT, CGDP) collapse under the wealth
+tax arms and every other measure (PT, CI under any composition, KS,
+MC) rises.  No reasonable methodological choice we have tested
+reverses the headline.
+
+%==========================================================================
 \section{The CGDP growth-rate artefact}
 \label{sec:cgdp-artefact}
 %==========================================================================
@@ -614,12 +718,8 @@ deepening) are simple and parameter-light.  A richer treatment
 (Path C1) would strengthen the argument.
 \item The model is closed-economy.  International coordination
 effects are out of scope.
-\item The capability index is one composition; alternative
-compositions (HDI-style, multi-dimensional poverty index style)
-should be tested.
-\item The $\alpha = 0.20$ CGDP coefficient is the UK financial +
-real-estate share of value added.  Robustness over $\alpha \in
-[0.10, 0.40]$ would tighten the result.
+\item Capability composition and $\alpha$ calibration robustness are
+established (Section~\ref{sec:robust-extra}); the result survives.
 \item The model has no consumption decisions; the median
 consumption measure is a wealth-stock proxy.  A consumption-
 function extension would clarify the household welfare measure.
