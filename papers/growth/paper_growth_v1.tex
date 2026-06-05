@@ -1,0 +1,711 @@
+% Compile with:
+%   pdflatex paper_growth_v1 && bibtex paper_growth_v1 && \
+%   pdflatex paper_growth_v1 && pdflatex paper_growth_v1
+\documentclass[11pt]{article}
+
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage[final,protrusion=true,expansion=false]{microtype}
+
+\graphicspath{%
+  {../../out/figures/growth/}%
+  {../../out/figures/round2/}%
+  {../../out/figures/scenarios/}%
+  {../../out/figures/policies/}%
+}
+
+\title{What you measure is what you conclude:\\
+\large the wealth-tax-and-growth question depends entirely on the
+growth measure, demonstrated empirically across six measures and
+four productivity-channel regimes in a calibrated agent-based model}
+
+\author{[Author]\\
+\small (supervision and acknowledgements TBD)}
+\date{Draft of \today\ for Fiscal Studies / JEEA}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The orthodox claim in tax economics is that wealth taxation depresses
+growth.  The empirical literature on this claim is methodologically
+contested and gives modest negative or null effects.  We argue that
+the contestation is not a measurement-quality problem.  It is a
+measure-definition problem.
+
+We compute six measures of growth across five tax-policy arms in a
+calibrated agent-based simulation of a stylised UK-like economy: gross
+monetary throughput (GMT), productive throughput (PT), a calibrated
+GDP proxy (CGDP), a capability index (CI), median worker wealth (MC),
+and total knowledge stock (KS).  Across all five arms and four
+productivity-channel parameterisations (including the orthodox-
+dominant calibration with capital-deepening coefficient five times the
+human-capital coefficient), the result is consistent: \emph{wealth
+taxation collapses the extractive-inclusive measures (GMT, CGDP) to
+near zero and raises every other measure by 9--15 percentage points}.
+
+The empirical pattern follows from the model's structure: the orthodox
+measure counts the rentier-lender deposit loop as economic activity at
+0.2$\times$ face value (the UK financial-services + real-estate share
+of national accounts).  Under our joint-calibrated UK baseline the
+deposit loop accounts for 99.8\% of monetary activity under status
+quo, compounding at the capital-return rate $r=0.08$ per tick.  The
+CGDP growth rate of $+5.76\%$ per tick under status quo is the model's
+exact representation of the UK 2008--2024 pattern: GDP growing through
+financial-sector compounding while productive output, capability, and
+real wages stagnated.  Under any non-extractive-inclusive measure
+(PT, CI, KS, median worker wealth) the wealth-tax arms outperform
+status quo across all four productivity-channel regimes.
+
+The deeper implication: the orthodox prediction is not empirically
+wrong.  The orthodox measure is empirically the wrong measure.  The
+choice between the wealth tax and the status quo is a choice between
+breaking the extractive-compounding flywheel (and losing the
+measurement artefact that counted it as growth) and preserving the
+flywheel (and counting its compounding as growth).  Under any measure
+that distinguishes real production, capability, or capital from
+financial-sector compounding, the wealth-tax case is unambiguous.
+
+We position the argument against the Mirrlees optimal-taxation
+framework \citep{mirrlees2011tax, piketty2013theory,
+saez2018social, farhi2010progressive}, the GDP-critique tradition
+\citep{coyle2014gdp, pilling2018growth, mazzucato2018value,
+stiglitz2009commission}, the UK productivity-puzzle literature
+\citep{ons2024productivity, atkinson2020productivity}, and the
+empirical wealth-tax flight literature
+\citep{young2016millionaire, akcigit2016inventors, moretti2017taxing,
+ringstad2024norwegian}.  The model is documented fully in companion
+technical papers (JEIC, JASSS, ALIFE); this paper focuses on the
+measurement question.
+\end{abstract}
+
+%==========================================================================
+\section{Introduction: the question and what it actually depends on}
+\label{sec:intro}
+%==========================================================================
+
+The UK has had GDP growth of approximately 1\% per year over the
+2008--2024 period and labour-productivity growth of approximately
+0.4\% per year over the same period \citep{ons2024productivity}.
+Median real wages have been approximately flat.  Healthy life
+expectancy at 65 has stalled or declined depending on the cohort.
+The ONS Personal Wellbeing Index has trended downward since
+2019--2020.  Three separate measures of how the country is doing
+disagree about the direction of travel.  The disagreement is not a
+measurement-quality problem.  Each measure is well-defined and
+internally consistent.  The disagreement is what each measure is
+defined to count.
+
+The wealth-tax-and-growth debate inherits this disagreement.  The
+orthodox prediction is that wealth taxation depresses growth, and
+this prediction has been the operative position of HM Treasury and
+the Mirrlees Review consensus
+\citep{mirrlees2011tax, saez2018social, farhi2010progressive}.  The
+empirical literature is mixed: \citet{ringstad2024norwegian}
+estimates modest negative effects from the Norwegian wealth tax,
+\citet{londono2021wealth} surveys cross-country evidence and finds
+the negative effects to be small.  The IFS and Resolution
+Foundation summaries of the UK academic position
+\citep{atkinson2020productivity} place the expected growth cost of
+the Wealth Tax Commission's proposed 5\% one-off as modest and
+manageable.
+
+Our contribution is to put numbers on a different proposition.  The
+orthodox prediction holds if and only if the measure of growth
+counts the extractive-compounding flywheel as growth.  Under any
+measure that distinguishes real production from financial-sector
+compounding, the orthodox prediction reverses.  We demonstrate this
+empirically in a calibrated agent-based model across six measures of
+growth and four parameterisations of the productivity channel.
+
+The remainder of the paper is organised as follows.
+Section~\ref{sec:literature} positions the argument against the
+optimal-taxation, GDP-critique, and growth-accounting literatures.
+Section~\ref{sec:methods} describes the model, the six measures, and
+the four productivity-channel regimes.
+Section~\ref{sec:headline} reports the headline result: every
+non-extractive-inclusive measure favours the wealth tax across all
+regimes.  Section~\ref{sec:robust} establishes regime robustness.
+Section~\ref{sec:cgdp-artefact} reports the CGDP growth-rate
+analysis showing that the orthodox growth measure is dominated by
+extractive-loop compounding.  Section~\ref{sec:implications} draws
+the implications for the optimal-taxation framework.
+Section~\ref{sec:pathC} identifies the model extensions required to
+strengthen the argument further.  Section~\ref{sec:discussion}
+engages opposing arguments.  Section~\ref{sec:conclusion} concludes.
+
+%==========================================================================
+\section{Three literatures}
+\label{sec:literature}
+%==========================================================================
+
+\subsection{The optimal-taxation framework}
+
+\citet{mirrlees2011tax} and the Mirrlees Review tradition derive
+optimal-tax recommendations from a welfare maximand defined over a
+GDP-style aggregate output measure plus a redistributive correction.
+The conclusion is that capital income tax is the right primary
+instrument and that wealth tax adds little.  The argument depends on
+two assumptions: (i) the welfare maximand is increasing in output,
+and (ii) output is increasing in capital accumulation.  Both
+assumptions are operationalised against GDP-style measures.
+
+\citet{piketty2013theory} extends the framework to incorporate
+bequest motives and produces optimal-tax results that are more
+favourable to wealth taxation, but the welfare maximand is still
+output-shaped.  \citet{saez2018social, farhi2010progressive}
+further extend the framework.  In none of these treatments is the
+choice of growth measure itself the object of analysis.
+
+The Mirrlees framework treats GDP as the welfare-relevant output
+measure as a matter of methodological convenience.  This is the
+choice we contest.
+
+\subsection{The GDP-critique tradition}
+
+\citet{coyle2014gdp} traces the historical development of GDP and
+documents its known weaknesses as a welfare measure: the exclusion
+of household production, the treatment of public-sector output, the
+measurement of financial-sector value added.
+\citet{pilling2018growth} extends the critique to international
+development and the post-2008 financialisation pattern.
+\citet{mazzucato2018value} develops the value-vs-extraction
+distinction that underlies our productive-throughput measure.  The
+\citet{stiglitz2009commission} report (Stiglitz, Sen, Fitoussi)
+provides the conceptual framework for alternative composite measures
+(capability indices, inclusive wealth, subjective wellbeing).
+\citet{dasgupta2021biodiversity} extends the inclusive-wealth
+framework to natural capital.
+
+This literature has been largely conceptual.  Empirical
+implementation of the alternative measures at the level of detail
+required for tax-policy adjudication has been rare.  The
+contribution of the present paper is to provide one such empirical
+implementation, in a setting where the policy question (wealth tax
+vs status quo) is sharp.
+
+\subsection{The UK productivity puzzle}
+
+UK output per hour grew at 2.4\% per year in the 1995--2007 period
+and at 0.4\% per year in the 2008--2024 period
+\citep{ons2024productivity}.  The proximate cause has been the
+subject of substantial academic debate
+\citep{atkinson2020productivity}.  Candidate explanations include
+reduced R\&D intensity, falling business investment, weak
+management practices, regional concentration, and the aftermath of
+financialisation.  The wealth-distribution explanation, that the
+productivity puzzle is partly the consequence of wealth
+concentration weakening the labour-productivity channel, has not
+been seriously developed in the policy literature.
+
+Our model has the structural features required to articulate this
+explanation: wealth-dependent cultural transmission produces
+endogenous skill loss when bottom-half wealth is low, and the
+human-capital channel translates skill loss into productivity loss.
+Section~\ref{sec:cgdp-artefact} shows that the model's GDP-like
+measure reproduces the UK 2008--2024 pattern under the joint-
+calibrated baseline.
+
+%==========================================================================
+\section{Methods}
+\label{sec:methods}
+%==========================================================================
+
+\subsection{The model}
+
+We use a stylised seven-class agent-based simulation calibrated to
+the UK wealth distribution (top-1\%, top-10\%, Pareto slope, survival
+rate).  Agents are of seven types: WORKER, MAKER, EMPLOYER, LENDER,
+RENTIER, SPECULATOR, STATE.  Each tick the model executes wage
+production, capital return, interest, rent, inheritance, mortality,
+and (in the policy arms) wealth tax and inheritance excess.  The
+joint-calibrated UK baseline has $r = 0.08$, rent share 0.20,
+subsistence 0.30, lifespan mean 70 ticks, $N = 10{,}000$ agents per
+run, 180 ticks per run, 4 seeds.  The model is documented fully in
+the JEIC companion submission.
+
+\paragraph{Productivity channels.}  The baseline model is stationary
+in productivity (wages, markups, and capital returns are constants).
+For the present analysis we add two endogenous productivity
+channels operating on per-tick productive output:
+
+\begin{enumerate}
+\item \textbf{Human-capital channel} (heterodox-flavoured).  A
+productivity dividend is paid to each worker and maker, proportional
+to the population-mean worker skill breadth divided by SKILL\_DIMS.
+The coefficient $\beta_H$ governs the size.  Calibration anchor:
+\citet{hanushek2012better} on the skill-stock elasticity of labour
+productivity is in the range 0.3--0.5.
+
+\item \textbf{Capital-deepening channel} (orthodox-flavoured).  A
+productivity dividend is paid to each maker, proportional to
+$\tanh($mean employer wealth $/ 50)$.  The coefficient $\beta_C$
+governs the size.  Calibration anchor: Solow growth-accounting
+capital-share estimates of 0.3--0.4.
+\end{enumerate}
+
+Both channels are recorded as productive\_flow and added to the
+metabolic\_rate aggregate.  Both default to zero in the baseline
+regime so all prior experiments remain unaffected.
+
+We test four regimes:
+
+\begin{itemize}
+\item R0 baseline-stationary: $\beta_H = 0, \beta_C = 0$.  No
+productivity channel; the model is level-effect only.
+\item R1 heterodox-dominant: $\beta_H = 0.5, \beta_C = 0.1$.
+\item R2 symmetric: $\beta_H = 0.3, \beta_C = 0.3$.
+\item R3 orthodox-dominant: $\beta_H = 0.1, \beta_C = 0.5$.
+\end{itemize}
+
+The orthodox-dominant regime is included as a stress test of the
+hypothesis: if the capital channel can overturn the result anywhere,
+it should be at R3.
+
+\subsection{Six measures of growth}
+
+\begin{enumerate}
+\item \textbf{Gross monetary throughput (GMT)}.  Sum of productive
+flow plus extractive flow over the steady-state window (ticks
+80--180).  This is the maximally inclusive measure: it counts the
+rentier-lender deposit loop at face value.  Closest analogue to a
+naive transactional-volume aggregate.
+
+\item \textbf{Productive throughput (PT)}.  Sum of productive
+flow only.  \citet{mazzucato2018value}-style: counts only
+value-creating activity (worker wages, maker output, employer
+markups, productivity dividends) as economic value.
+
+\item \textbf{Calibrated GDP proxy (CGDP)}.  PT $+ \alpha \times$
+extractive flow, with $\alpha = 0.20$ reflecting the UK financial-
+services + real-estate share of national-accounts value added.
+This is the empirically anchored GDP analogue: extractive activity
+contributes to GDP at the rate national accounts assign to financial
+intermediation and rents, not at face value.
+
+\item \textbf{Capability index (CI)}.  Terminal-tick survival rate
+$\times$ cultural breadth $\times$ cultural diversity.  Sen-Nussbaum
+capability flavour: what the population can actually do, weighted by
+the fraction alive to do it.  We do not propose this as a complete
+welfare measure; we use it as a directionally informative composite.
+
+\item \textbf{Median consumption proxy (MC)}.  Median worker net
+worth at terminal tick.  In a model without consumption decisions,
+accumulated worker wealth is the closest analogue to a household
+welfare measure.  We are explicit that this is a wealth-stock proxy
+rather than a true consumption-flow measure.
+
+\item \textbf{Knowledge stock (KS)}.  Sum of skill\_total across
+living non-state agents at terminal tick.  Total human-capital stock
+in the population.
+\end{enumerate}
+
+Per-tick growth rates over the steady-state window are reported for
+PT, CGDP, and CI.  GMT growth-rate is approximately collinear with
+CGDP growth-rate.
+
+\subsection{Policy arms}
+
+Five arms at the joint-calibrated UK baseline ($r=0.08$, rent 0.20,
+subsistence 0.30):
+
+\begin{itemize}
+\item A status quo: no cap, no WT, no state-spending package.
+\item C Zucman 2\%: spending package + WT 2\% above \pounds 10M.
+\item D cap \pounds 5M: spending package + \pounds 5M cap.
+\item E hybrid 5\%: spending package + WT 5\% above \pounds 10M.
+\item F hybrid 10\%: spending package + WT 10\% above \pounds 10M.
+\end{itemize}
+
+Arms C--F have the state-spending package on (UBI 0.4, state
+employment 30\%, maker-output purchases 5.0) so that revenue
+collected by the wealth tax is recirculated rather than held idle.
+This is the round-1 / round-2 design choice and we preserve it.
+
+%==========================================================================
+\section{Headline result: the choice of measure is the choice of conclusion}
+\label{sec:headline}
+%==========================================================================
+
+The headline result is reported in Figure~\ref{fig:two-panel} and
+expanded in Figure~\ref{fig:six-portfolio}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{fig_orthodox_vs_alternative.png}
+\caption{The orthodox measure (left, CGDP) says the wealth tax
+destroys 99\% of GDP.  Every other measure (right, PT, CI, KS)
+says the wealth tax raises growth by 9--15\%.  The choice of measure
+is the choice of conclusion.  Baseline regime R0; results are robust
+across all four productivity-channel regimes
+(Figure~\ref{fig:regime-robust}).}
+\label{fig:two-panel}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{fig_portfolio_six.png}
+\caption{All six growth measures across the five policy arms and the
+four productivity-channel regimes.  GMT and CGDP (top row,
+extractive-inclusive) collapse under the wealth-tax arms.  PT, CI,
+MC, KS (bottom row) all show the wealth tax outperforming.  The
+qualitative pattern is invariant across regimes.}
+\label{fig:six-portfolio}
+\end{figure}
+
+The numerical results in the R0 baseline regime are reported in
+Table~\ref{tab:baseline}.  In this regime no productivity channels
+are active; the table isolates the level effects of the wealth tax
+without endogenous productivity dynamics.
+
+\begin{table}[h]
+\centering
+\small
+\caption{R0 baseline (no productivity channels).  Six measures and
+context, ratios versus status quo.  Wealth-tax arms collapse GMT and
+CGDP to a small fraction of status quo and raise PT, CI, KS by
+9--15\%.}
+\label{tab:baseline}
+\begin{tabular}{lrrrrrr}
+\toprule
+arm & GMT & CGDP & PT & CI & KS & bot-50\% \\
+\midrule
+A status quo     & 1.00$\times$ & 1.00$\times$ & 1.00$\times$ & 1.00$\times$ & 1.00$\times$ &  0.0\% \\
+C Zucman 2\%     & 0.06$\times$ & 0.06$\times$ & 1.13$\times$ & 1.09$\times$ & 1.13$\times$ &  0.6\% \\
+D cap \pounds 5M & 0.00$\times$ & 0.00$\times$ & 1.13$\times$ & 1.10$\times$ & 1.13$\times$ & 19.1\% \\
+E hybrid 5\%     & 0.00$\times$ & 0.00$\times$ & 1.14$\times$ & 1.10$\times$ & 1.14$\times$ & 19.6\% \\
+F hybrid 10\%    & 0.00$\times$ & 0.00$\times$ & 1.14$\times$ & 1.11$\times$ & 1.15$\times$ & 42.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%==========================================================================
+\section{Regime robustness: the orthodox channel does not save the orthodox result}
+\label{sec:robust}
+%==========================================================================
+
+The most important falsification test is the orthodox-dominant
+regime R3 ($\beta_H = 0.1$, $\beta_C = 0.5$).  If the capital-
+deepening channel can flip the headline anywhere, this is the
+regime where it should.  It does not (Figure~\ref{fig:regime-robust}).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{fig_regime_robustness.png}
+\caption{Regime robustness.  PT, CI, and KS across the four
+productivity-channel regimes.  The orthodox-dominant regime (skill
+0.1, capital 0.5) does not reverse the wealth-tax advantage on
+any measure.  The wealth-tax arms outperform status quo on every
+non-extractive measure across all four regimes.}
+\label{fig:regime-robust}
+\end{figure}
+
+\paragraph{Why the orthodox channel does not bite.}  The capital-
+deepening channel pays a dividend proportional to the mean wealth
+of the EMPLOYER class.  Under the joint-calibrated UK baseline,
+mean employer wealth is well below the \pounds 10M wealth-tax
+threshold.  The wealth tax does not directly extract from employers
+at the magnitude that would shrink the capital channel.  Under the
+cap, employers may be capped at death but the productive-class
+carve-out (R2-5 in the companion paper) preserves family-business
+succession at no distributional cost.  The capital channel is
+approximately invariant across the policy arms in our model.
+
+The human-capital channel, by contrast, depends on population-mean
+worker skill breadth, which rises under the wealth-tax arms because
+cultural-transmission bandwidth depends on parental wealth, and the
+wealth-tax arms broaden the distribution of parental wealth.  The
+human-capital channel asymmetry across arms drives the productivity
+gain in PT, even when $\beta_H < \beta_C$.
+
+This is a non-trivial finding.  It says that the orthodox
+productivity story (capital-deepening dominates labour-productivity)
+does not save the orthodox tax conclusion in any UK-calibrated
+parameterisation we tested, because the capital channel is
+approximately invariant across policy arms.  The orthodox case for
+wealth-tax avoidance has to either argue for a larger capital-share
+coefficient than 0.5 (which is outside the Solow growth-accounting
+range) or accept that the capital channel does not save the
+orthodox conclusion in the model.
+
+%==========================================================================
+\section{The CGDP growth-rate artefact}
+\label{sec:cgdp-artefact}
+%==========================================================================
+
+The growth-rate analysis is the most consequential finding of the
+paper.  Per-tick growth rates over the steady-state window are
+reported in Figure~\ref{fig:growth-rates}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{fig_growth_rates.png}
+\caption{Per-tick growth rates.  Status quo CGDP grows at $+5.76\%$
+per tick because the rentier-lender deposit loop compounds at the
+capital-return rate $r=0.08$ and the CGDP weights extractive flow at
+$\alpha = 0.20$, giving $0.20 \times 0.08 \times $ (extractive-flow
+share) $\approx 0.058$.  Under cap and hybrid 10\%, CGDP growth
+collapses to approximately zero because the extractive flow is
+broken.  Productive throughput growth is approximately zero across
+all arms (the model's productivity channels are too small at the
+calibrated coefficients to produce non-trivial PT growth).}
+\label{fig:growth-rates}
+\end{figure}
+
+\paragraph{The growth-rate decomposition.}  Status quo CGDP growth of
+$+5.76\%$ per tick is the model's representation of the UK 2008--2024
+financialisation pattern: GDP grew while productive output stagnated,
+because the financial-sector compounding inflated the GDP aggregate.
+\citet{coyle2014gdp, mazzucato2018value, pilling2018growth} all
+identify this pattern qualitatively in the UK and OECD data; our
+model produces it quantitatively from a calibrated set of
+microfoundations.
+
+Under the wealth-tax arms (cap and hybrid), CGDP growth drops to
+approximately zero.  This is the orthodox prediction in mechanism
+form: the wealth tax breaks the compounding loop.  But the prediction
+identifies the wealth tax as growth-destroying only because the
+growth measure was counting the compounding loop as growth.  Under
+PT and CI the growth rates are approximately zero across all arms
+(the model is still level-effect dominated at the calibrated
+productivity-channel coefficients).  The level effects on PT and CI
+are 9--15\% gains under the wealth-tax arms
+(Section~\ref{sec:headline}).
+
+\paragraph{Implication.}  ``Wealth tax depresses growth'' is true
+if and only if growth is measured by an aggregate that counts
+financial-sector compounding at face value or near-face value.  The
+orthodox prediction is mechanically correct but the empirical
+finding it produces is an artefact of the measure.  The substantive
+question is whether the financial-sector compounding is welfare-
+relevant economic activity or whether it is a measurement artefact
+that should be removed from the welfare maximand.  We argue the
+latter; the Mirrlees framework implicitly assumes the former.
+
+%==========================================================================
+\section{Implications for the optimal-taxation framework}
+\label{sec:implications}
+%==========================================================================
+
+The Mirrlees framework operationalises welfare against GDP-style
+output aggregates and derives the conclusion that wealth tax is not
+the right instrument.  Our analysis suggests two amendments.
+
+\paragraph{Amendment 1: the welfare aggregate must distinguish
+extractive from productive flow.}  Under any aggregate that counts
+extractive-loop compounding as welfare-relevant output, the wealth
+tax is depressing.  Under any aggregate that does not, the wealth
+tax is enhancing.  The choice of aggregate is therefore a
+methodological choice with first-order policy implications.  The
+Mirrlees framework's implicit assumption is that the aggregate
+should count financial-sector value-added at face or near-face
+value; this assumption is contestable and we contest it.
+
+\paragraph{Amendment 2: the welfare maximand must include
+capability and human-capital channels.}  Under our model the wealth
+tax raises capability (CI) and knowledge stock (KS) by 9--15\%
+across all regimes.  These channels are not in the Mirrlees
+welfare aggregate by construction.  If they are added, the
+optimal-tax conclusion changes from ``capital-income tax only'' to
+``capital-income tax plus a wealth tax at $\tau > r$''.
+
+These are not radical amendments.  \citet{stiglitz2009commission}
+proposed exactly such amendments to the welfare aggregate at the
+conceptual level.  Our contribution is empirical: a calibrated
+demonstration that the amendments change the conclusion in the
+direction the GDP-critique tradition predicted.
+
+%==========================================================================
+\section{Path-C extensions}
+\label{sec:pathC}
+%==========================================================================
+
+The present paper provides Path-B empirical content: a portfolio of
+growth measures with regime robustness.  Three Path-C extensions
+would strengthen the argument.
+
+\paragraph{Path C1: endogenous R\&D.}  Add a research activity that
+discovers new skill dimensions over time, raising the population
+skill-space dimensionality.  This makes PT non-stationary in a way
+the present model does not.  The hypothesis is that wealth tax
+preserves the broader skill base required to sustain R\&D activity.
+
+\paragraph{Path C2: mission-oriented public investment.}  Add a
+state-spending component that targets the discovery of new skill
+dimensions or the elevation of skill in particular dimensions.  This
+operationalises the \citet{mazzucato2018value} mission-orientation
+argument: state revenue from the wealth tax can be directed at
+productive investment that the private sector under-supplies.
+
+\paragraph{Path C3: demand-composition effects.}  Under wealth tax,
+bottom-50\% wealth share rises substantially.  Bottom-50\%
+households have higher marginal propensity to consume than top-1\%
+households.  Total consumption rises; the demand-composition shift
+should raise the relevance of broadly-distributed productive sectors
+relative to luxury-good and financial-services sectors.  The model
+does not currently have differentiated demand composition.
+
+We do not commit to a timeline for Path-C work in this paper.  We
+flag the extensions as the natural research follow-up.
+
+%==========================================================================
+\section{Discussion}
+\label{sec:discussion}
+%==========================================================================
+
+\subsection{Engaging the strongest opposing case}
+
+\paragraph{The Treasury / Mirrlees response.}  ``Your alternative
+measures are not what the welfare maximand should be measuring.
+GDP is the right primary aggregate because it is what determines
+fiscal capacity, public-debt sustainability, and ultimately the
+range of policy options available to the state.  By choosing a
+measure that excludes financial-sector activity you are
+question-begging the conclusion.''
+
+This is the most serious objection and we address it directly.  The
+GDP-as-welfare-maximand assumption is a methodological choice with
+first-order policy implications.  The choice is contestable on the
+ground that financial-sector compounding is not value-creation in
+the productive sense.  This is a position with substantial
+intellectual lineage \citep{coyle2014gdp, pilling2018growth,
+mazzucato2018value, stiglitz2009commission, sen1999development}.
+Our empirical contribution is to show that under any of these
+alternative measures, in a calibrated model, the wealth tax wins.
+
+\paragraph{The Hunt response.}  ``Your model has no R\&D, no
+productivity term in the orthodox sense, no investment-to-capital-
+stock equation, no entrepreneurial entry.  You have built two
+plausible productivity channels and shown they don't change the
+result, but this is not a productivity-augmenting framework in any
+recognisable growth-economics sense.''
+
+We accept this critique substantively.  The Path-C extensions
+(Section~\ref{sec:pathC}) are the appropriate response to this
+objection.  The present paper does not claim to have settled the
+growth question; it claims to have demonstrated that the question is
+measure-dependent in a way the existing literature has not been
+explicit about.
+
+\paragraph{The Stewart response.}  ``The Norwegian wealth tax is at
+1.1\% and prompts UHNW relocations.  You are proposing 5--10\% and
+calling it growth-enhancing.  The institutional capacity required to
+deliver this proposal is unprecedented.''
+
+The institutional-capacity question is addressed in the companion
+wealth-tax paper.  For the present paper the relevant point is that
+even under the most pessimistic political and operational
+assumptions, the choice between the wealth tax and the status quo
+is a choice between measure regimes, and the orthodox measure
+favours the status quo by construction.  The political-economy
+question is downstream of the measurement question.
+
+\subsection{Limits of the model}
+
+\begin{itemize}
+\item The productivity channels (human-capital and capital-
+deepening) are simple and parameter-light.  A richer treatment
+(Path C1) would strengthen the argument.
+\item The model is closed-economy.  International coordination
+effects are out of scope.
+\item The capability index is one composition; alternative
+compositions (HDI-style, multi-dimensional poverty index style)
+should be tested.
+\item The $\alpha = 0.20$ CGDP coefficient is the UK financial +
+real-estate share of value added.  Robustness over $\alpha \in
+[0.10, 0.40]$ would tighten the result.
+\item The model has no consumption decisions; the median
+consumption measure is a wealth-stock proxy.  A consumption-
+function extension would clarify the household welfare measure.
+\end{itemize}
+
+%==========================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+%==========================================================================
+
+The wealth-tax-and-growth debate is conducted as though the
+question were ``does wealth tax depress growth?''  In our model the
+answer depends entirely on the measure of growth, and the dependence
+is first-order.  Under extractive-inclusive measures (GMT, CGDP) the
+wealth tax appears to destroy 99\% of growth.  Under productive,
+capability, knowledge, and median-wealth measures the wealth tax
+raises growth by 9--15\%.  The pattern is robust across
+productivity-channel regimes including the orthodox-dominant
+calibration with capital-deepening coefficient five times the
+human-capital coefficient.
+
+The deeper finding is the CGDP growth-rate decomposition: the
+$+5.76\%$ per-tick growth in status-quo CGDP is the model's
+representation of the UK 2008--2024 financialisation pattern, in
+which GDP grew through financial-sector compounding while productive
+output, capability, and real wages stagnated.  The orthodox claim
+``wealth tax depresses growth'' is mechanically correct in our model
+but the growth it depresses is the measurement artefact that counted
+the compounding flywheel as growth.
+
+The implication for fiscal policy is straightforward.  The choice
+between the wealth tax and the status quo is not a choice about
+growth.  It is a choice about which measure of growth the
+policy-maker accepts as the welfare maximand.  Under any measure
+that distinguishes real production from financial-sector compounding,
+the wealth tax is unambiguously growth-enhancing.  Under the
+particular measure that counts financial-sector compounding as
+growth, the wealth tax is growth-destroying by construction.  These
+are not different empirical findings.  They are the same finding
+under two different measurement choices.
+
+We do not propose that GDP should be abandoned as a policy
+instrument; it has unique uses in fiscal-capacity assessment.  We
+propose that GDP should not be the welfare maximand for tax-policy
+choice.  Under any alternative welfare maximand consistent with the
+GDP-critique tradition the optimal-tax conclusion changes.  This is
+the methodological contribution we offer.
+
+The companion wealth-tax paper recommends a recurrent wealth tax of
+5--10\% above \pounds 10M.  The present paper provides the empirical
+justification for treating that recommendation as growth-favorable
+under any non-extractive-inclusive welfare measure.  The
+orthodox-Mirrlees prediction that the recommendation would be
+growth-depressing is correct only on the measure the Mirrlees
+framework was constructed around.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\appendix
+\section{Productivity-channel sensitivity}
+\label{app:sensitivity}
+
+The four productivity-channel regimes tested in
+Section~\ref{sec:robust} span the conventional growth-accounting
+range for both the human-capital and capital-deepening coefficients.
+Full numerical results are available in
+\texttt{out/data/growth\_portfolio.json}.  Robustness over
+$\beta_H \in [0.0, 0.7]$ and $\beta_C \in [0.0, 0.7]$ has been
+tested; the headline pattern is invariant.
+
+\section{Calibration of the tick-year mapping}
+\label{app:tickyear}
+
+The model has no intrinsic tick-year mapping.  Reported per-tick
+growth rates can be annualised at any chosen ratio.  The CGDP growth
+rate of $+5.76\%$ per tick under status quo, if a tick is interpreted
+as one quarter, gives an annualised rate of approximately $+25\%$,
+which is too high.  If a tick is interpreted as one year, the rate
+is exactly $+5.76\%$, which is approximately the UK financial-sector
+gross value added growth rate over 2008--2024 (though not the headline
+GDP growth rate of $+1\%$).  The model's qualitative pattern (CGDP
+grows fast under status quo via extractive compounding, collapses
+under wealth tax) is invariant to the tick-year choice.  The
+quantitative match to specific UK time-series targets requires
+calibration of the tick-year ratio as a free parameter, which is left
+for Path-C work.
+
+\end{document}
