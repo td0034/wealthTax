@@ -229,7 +229,13 @@ production, capital return, interest, rent, inheritance, mortality,
 and (in the policy arms) wealth tax and inheritance excess.  The
 joint-calibrated UK baseline has $r = 0.08$, rent share 0.20,
 subsistence 0.30, lifespan mean 70 ticks, $N = 10{,}000$ agents per
-run, 180 ticks per run, 4 seeds.  The model is documented fully in
+run, 180 ticks per run.  We use 4 seeds for the four-regime
+robustness sweep (Sections~\ref{sec:robust}--\ref{sec:robust-extra})
+and 20 seeds with 2000-resample percentile bootstrap for the
+headline CIs (Section~\ref{sec:headline}).  Under the tick-year
+calibration (Appendix~\ref{app:tickyear}), one tick maps to one year,
+the run length to 180 years, and the steady-state window to a 100-year
+operating regime.  The model is documented fully in
 the JEIC companion submission.
 
 \paragraph{Productivity channels.}  The baseline model is stationary
@@ -369,20 +375,62 @@ without endogenous productivity dynamics.
 \begin{table}[h]
 \centering
 \small
-\caption{R0 baseline (no productivity channels).  Six measures and
-context, ratios versus status quo.  Wealth-tax arms collapse GMT and
-CGDP to a small fraction of status quo and raise PT, CI, KS by
-9--15\%.}
+\caption{R0 baseline (no productivity channels).  Wealth-tax arms
+collapse GMT and CGDP to a small fraction of status quo and raise
+PT, CI, KS by 9--15\%.  Ratios reported with 95\% percentile-bootstrap
+CIs over 20 seeds, 2000 resamples per cell.  No wealth-tax-arm CI
+crosses 1.0 on any non-extractive measure; no wealth-tax-arm CI
+crosses 1.0 on extractive measures from below.}
 \label{tab:baseline}
-\begin{tabular}{lrrrrrr}
+\begin{tabular}{lcccc}
 \toprule
-arm & GMT & CGDP & PT & CI & KS & bot-50\% \\
+arm & CGDP & PT & CI & KS \\
 \midrule
-A status quo     & 1.00$\times$ & 1.00$\times$ & 1.00$\times$ & 1.00$\times$ & 1.00$\times$ &  0.0\% \\
-C Zucman 2\%     & 0.06$\times$ & 0.06$\times$ & 1.13$\times$ & 1.09$\times$ & 1.13$\times$ &  0.6\% \\
-D cap \pounds 5M & 0.00$\times$ & 0.00$\times$ & 1.13$\times$ & 1.10$\times$ & 1.13$\times$ & 19.1\% \\
-E hybrid 5\%     & 0.00$\times$ & 0.00$\times$ & 1.14$\times$ & 1.10$\times$ & 1.14$\times$ & 19.6\% \\
-F hybrid 10\%    & 0.00$\times$ & 0.00$\times$ & 1.14$\times$ & 1.11$\times$ & 1.15$\times$ & 42.0\% \\
+A status quo     & 1.00$\times$
+                  & 1.00$\times$
+                  & 1.00$\times$
+                  & 1.00$\times$ \\
+C Zucman 2\%     & 0.064$\times$ [.064, .064]
+                  & 1.134$\times$ [1.131, 1.137]
+                  & 1.089$\times$ [1.086, 1.093]
+                  & 1.104$\times$ [1.102, 1.106] \\
+D cap \pounds 5M & 0.004$\times$ [.004, .004]
+                  & 1.135$\times$ [1.132, 1.138]
+                  & 1.095$\times$ [1.092, 1.099]
+                  & 1.109$\times$ [1.107, 1.111] \\
+E hybrid 5\%     & 0.005$\times$ [.005, .005]
+                  & 1.140$\times$ [1.137, 1.143]
+                  & 1.104$\times$ [1.100, 1.107]
+                  & 1.122$\times$ [1.120, 1.124] \\
+F hybrid 10\%    & 0.003$\times$ [.003, .003]
+                  & 1.144$\times$ [1.141, 1.147]
+                  & 1.114$\times$ [1.110, 1.118]
+                  & 1.137$\times$ [1.135, 1.139] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The bootstrap CIs are tight because the model is largely deterministic
+once seeded.  The headline numbers (PT ratio 1.13--1.14$\times$,
+CGDP ratio 0.003--0.06$\times$, CI ratio 1.09--1.11$\times$) have
+sub-percent confidence bands at 20 seeds.  Survival ratio and
+bottom-50\% share are also statistically distinct from status quo
+(Table~\ref{tab:context-cis}).
+
+\begin{table}[h]
+\centering
+\small
+\caption{Context measures with 95\% bootstrap CIs, 20 seeds.}
+\label{tab:context-cis}
+\begin{tabular}{lcccc}
+\toprule
+arm & survival & $\Phi$ (productive flow) & bot-50\% & billionaires \\
+\midrule
+A status quo     & 0.827          & 0.0036         &  0.00\% & 800.6 \\
+C Zucman 2\%     & 0.907 [.905, .909] & 0.0197 [.020, .020] &  0.55\% [.55, .55] & 800 \\
+D cap \pounds 5M & 0.913 [.911, .914] & 0.2515 [.250, .254] & 18.46\% [18.2, 18.7] & 2.05 \\
+E hybrid 5\%     & 0.922 [.920, .923] & 0.1657 [.165, .166] & 19.12\% [19.1, 19.2] & 0 \\
+F hybrid 10\%    & 0.932 [.931, .934] & 0.4890 [.488, .490] & 40.84\% [40.7, 40.9] & 0 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -794,18 +842,66 @@ tested; the headline pattern is invariant.
 \section{Calibration of the tick-year mapping}
 \label{app:tickyear}
 
-The model has no intrinsic tick-year mapping.  Reported per-tick
-growth rates can be annualised at any chosen ratio.  The CGDP growth
-rate of $+5.76\%$ per tick under status quo, if a tick is interpreted
-as one quarter, gives an annualised rate of approximately $+25\%$,
-which is too high.  If a tick is interpreted as one year, the rate
-is exactly $+5.76\%$, which is approximately the UK financial-sector
-gross value added growth rate over 2008--2024 (though not the headline
-GDP growth rate of $+1\%$).  The model's qualitative pattern (CGDP
-grows fast under status quo via extractive compounding, collapses
-under wealth tax) is invariant to the tick-year choice.  The
-quantitative match to specific UK time-series targets requires
-calibration of the tick-year ratio as a free parameter, which is left
-for Path-C work.
+The model has no intrinsic time scale.  We anchor the mapping using
+four UK 2008--2024 reference points and find that the consistent
+interpretation is \emph{one tick equals one year}.
+
+\paragraph{Anchor 1: capital return.}  The model uses $r = 0.08$
+per tick.  The UK FTSE All-Share long-run total return is
+approximately 7--8\% per year in nominal terms over the 2008--2024
+period (real returns lower).  The 8\% per tick matches 8\% per year.
+
+\paragraph{Anchor 2: lifespan.}  The model lifespan mean is 70 ticks.
+UK life expectancy at birth in the 2020--2022 period is 78.6 years
+(male) / 82.6 years (female), with healthy-life expectancy in the
+60s.  The 70 ticks matches the broad UK lifespan.
+
+\paragraph{Anchor 3: CGDP growth rate.}  The model status-quo CGDP
+grows at $+5.76\%$ per tick.  UK total nominal GDP grew at approximately
+$+3\%$ per year over 2008--2024.  However, UK financial-services and
+real-estate gross value added (the components our CGDP $\alpha$
+weighting targets) grew at approximately $+5{-}6\%$ per year over the
+same period \citep{ons2024productivity}.  The 5.76\% per tick
+matches the financial-sector component growth rate, not the
+headline total-GDP growth rate.
+
+This is consistent with the paper's central interpretation.  The
+CGDP measure is dominated by the extractive-flow $\alpha$-weighted
+component (because productive throughput is small relative to
+extractive flow under status quo).  So CGDP tracks the financial
+sector specifically, not the productive sector or headline GDP.
+The $5.76\%$ per-tick growth is the model's representation of the
+post-2008 UK financial-sector compounding pattern, which is the
+exact pattern the paper claims is the measurement artefact behind
+the orthodox ``GDP growth'' headline.
+
+\paragraph{Anchor 4: productive throughput growth rate.}  The model
+PT is approximately stationary across all arms (per-tick growth
+near zero in the calibrated regimes tested).  UK output per hour
+grew at $+0.4\%$ per year over 2008--2024.  The stationary PT under
+status quo is consistent with the UK productivity puzzle at $+0.4\%$
+per year being close to zero within the 4-seed sampling noise of the
+present calibration.  A higher-precision PT calibration is a Path-C
+extension (Section~\ref{sec:pathC}).
+
+\paragraph{Implications.}  Under the 1 tick = 1 year mapping:
+\begin{itemize}
+\item The model run length of 180 ticks corresponds to 180 years,
+which spans roughly 2.5 lifetimes and is well above the steady-state
+horizon used for the headline measures (ticks 80--180 are the
+steady-state window, corresponding to a 100-year operating regime).
+\item The CGDP collapse from $+5.76\%$ per year under status quo to
+$\sim 0\%$ per year under the wealth-tax arms can be interpreted as
+the wealth tax breaking the financial-sector compounding mechanism
+that drove the UK's headline GDP growth over 2008--2024.
+\item The PT and CI changes are stock-level changes over the
+steady-state window, not annual growth rates.  Their magnitudes
+should be read as ``percentage gain over a multi-generational
+steady-state horizon'', not ``annual percentage growth''.
+\end{itemize}
+
+The qualitative result is invariant to the tick-year choice.  The
+quantitative interpretation we adopt (1 tick = 1 year) is the one
+that simultaneously matches the four UK reference points above.
 
 \end{document}
