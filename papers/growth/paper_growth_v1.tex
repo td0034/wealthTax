@@ -394,7 +394,13 @@ C Zucman 2\%     & 0.064$\times$ [.064, .064]
                   & 1.134$\times$ [1.131, 1.137]
                   & 1.089$\times$ [1.086, 1.093]
                   & 1.104$\times$ [1.102, 1.106] \\
-D cap \pounds 5M & 0.004$\times$ [.004, .004]
+D cap \pounds 5M\footnote{The CGDP CI is essentially zero-width
+across all wealth-tax arms.  This is not a statistical artefact of
+the bootstrap; the wealth-tax mechanism mechanically bounds the
+extractive-flow contribution to CGDP regardless of seed.  The CI
+collapse should be read as ``CGDP collapse is mechanically
+determined by the wealth-tax constraint'', not as a noisy estimate
+of an uncertain effect.} & 0.004$\times$ [.004, .004]
                   & 1.135$\times$ [1.132, 1.138]
                   & 1.095$\times$ [1.092, 1.099]
                   & 1.109$\times$ [1.107, 1.111] \\
@@ -411,9 +417,19 @@ F hybrid 10\%    & 0.003$\times$ [.003, .003]
 \end{table}
 
 The bootstrap CIs are tight because the model is largely deterministic
-once seeded.  The headline numbers (PT ratio 1.13--1.14$\times$,
-CGDP ratio 0.003--0.06$\times$, CI ratio 1.09--1.11$\times$) have
-sub-percent confidence bands at 20 seeds.  Survival ratio and
+once seeded.\footnote{The CIs reported here are sampling CIs over
+seeded stochastic realisations of a fixed model specification.  They
+are not inferential CIs that incorporate model-uncertainty (the
+uncertainty over alternative microfoundation choices, alternative
+calibration anchors, alternative agent classes).  Model-uncertainty
+across the four regime calibrations is reported in
+Section~\ref{sec:robust}; model-uncertainty across the $\alpha$
+weighting and capability composition is reported in
+Section~\ref{sec:robust-extra}.  The narrow sampling CIs should be
+read as ``high statistical power within the present specification'',
+not as the full inferential range.}  The headline numbers (PT ratio
+1.13--1.14$\times$, CGDP ratio 0.003--0.06$\times$, CI ratio
+1.09--1.11$\times$) have sub-percent confidence bands at 20 seeds.  Survival ratio and
 bottom-50\% share are also statistically distinct from status quo
 (Table~\ref{tab:context-cis}).
 
@@ -902,6 +918,14 @@ steady-state horizon'', not ``annual percentage growth''.
 
 The qualitative result is invariant to the tick-year choice.  The
 quantitative interpretation we adopt (1 tick = 1 year) is the one
-that simultaneously matches the four UK reference points above.
+that simultaneously matches the four UK reference points above.  We
+note that the simultaneous match to four independent UK reference
+points is consistent with but not conclusive evidence that the
+calibration is correct: the model architecture was designed against
+UK distributional targets in the JEIC companion submission, and a
+sceptical reviewer may read the multi-anchor coincidence as
+within-jurisdiction overfitting.  A comparable-country test
+(Norway, Sweden, US, Germany) is a natural Path-C robustness
+extension that would discipline this concern.
 
 \end{document}

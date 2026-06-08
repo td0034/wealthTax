@@ -1,96 +1,95 @@
 # Unequal Agents
 
-Agent-based simulation of wealth inequality. Stylised seven-class
+Agent-based simulation of wealth inequality.  Stylised seven-class
 stock-flow ABM (Worker, Maker, Employer, Lender, Rentier, Speculator,
-State) with production, extraction, credit, taxation, inheritance, and
-a bandwidth-limited cultural-transmission channel.
+State) with production, extraction, credit, taxation, inheritance,
+and a bandwidth-limited cultural-transmission channel.
 
-The project produced four papers (see `papers/`). The headline finding,
-formalised in the cap paper, is that an absolute ceiling on
-inheritance at around £5--10M is the structural mechanism for raising
-the wealth share held by the bottom half of the population from
-approximately zero to around one quarter of total household wealth,
-without imposing meaningful mortality cost.
+Six papers and counting.  The project has evolved through three
+phases: round 1 (cap proposal), round 2 (Stewart/Hunt stress testing,
+hybrid wealth-tax derivation), and growth (Path B, the
+GDP-is-an-artefact case).  Headline findings, in current form:
+
+1. **A recurrent wealth tax of 5--10% above £10M dominates both
+the inheritance cap and the Zucman 2% proposal** on every
+distributional metric tested, including in the orthodox-favoured
+parameterisations.  Documented in `papers/wealth_tax/`.
+
+2. **The orthodox claim ``wealth tax depresses growth'' is a
+measurement artefact.**  Under any growth measure that distinguishes
+real production from financial-sector compounding, the wealth tax
+raises growth by 3--15%.  The CGDP-style growth in the status quo is
+the model's representation of the UK 2008--2024 financialisation
+pattern.  Documented in `papers/growth/`.
+
+3. **The inheritance cap is in an unresolvable enforcement bind.**
+It needs near-perfect (>95%) capture to deliver any distributional
+effect but cannot get that capture politically.  The hybrid wealth
+tax bypasses the bind because recurrent flow extraction does not
+have the dynastic-recompounding nonlinearity that destroys the cap.
+Documented in `papers/cap_v2/`.
+
+For the full project state see `PROJECT_STATE.md`.
 
 ## Layout
 
 ```
-src/                 all Python source: core model + experiments
-papers/
-  master/            full master paper (30 pp, all findings)
-  cap/               Fiscal Studies submission: caps as ownership
-  jasss/             JASSS submission: three-lever factorisation
-  jeic/              JEIC submission: analytical fixed point + calibration
-  alife/             Artificial Life submission: cultural mechanism
+PROJECT_STATE.md     Top-level overview of the intellectual arc and
+                     current state of work
+src/                 All Python source code
+  INDEX.md           Catalogue of scripts by paper and purpose
+  sim.py             The core agent-based model
+  ...                ~50 experiment, analysis, and figure scripts
+papers/              All paper drafts
+  INDEX.md           Catalogue with submission strategy
+  wealth_tax/        Round-3 lead policy paper for Fiscal Studies
+  growth/            Round-3 methodological companion
+  jeic/, jasss/,
+  alife/             Technical companions (round-2 ready)
+  cap_v2/, cap/,
+  master/            Intellectual trail (archived for context)
+review/              Referee reports, adversarial critiques, findings
+  INDEX.md           Catalogue with reading order
 docs/                FINDINGS.md, LITERATURE.md, DIALS.md
+                     PATH_C_PLAN.md (next research extension)
 out/
-  data/              JSON summaries + npz arrays
-  figures/           PNG outputs by topic
-    phase/           3-D phase portrait + shadows + landscapes
-    scenarios/       per-scenario plots, survival curves, elasticity
-    sweeps/          5 N=100 scenario sweeps
-    policies/        11 policies + Sankey + comparison panels
-    wealth_tax/      threshold-rate sweeps + fixed-point
-    scale_up/        N=10k results
-    legacy/          v0 outputs kept for archaeology
-review/              referee reports (round 1 and round 2)
+  data/              JSON summaries from all experiments
+  figures/           Figures by topic: round2/, growth/, scenarios/,
+                     policies/, etc.
 ```
 
-## Running the simulation
-
-All Python sources live under `src/`. Run from the project root so
-that `out/...` paths resolve correctly:
+## Quickstart: reproducing the headline papers
 
 ```
-python3 src/scenarios.py           # 13 scenarios, ~1 min
-python3 src/sweeps.py              # 5 sweeps, ~3 min
-python3 src/phase3d.py             # phase portrait, ~30 s
-python3 src/policies.py            # 11 policies + switch runs, ~2 min
-python3 src/wealth_tax_sweep.py    # 2 wealth-tax sweeps, ~3 min
-python3 src/scale_up.py            # N=10k suite + sweep, ~10 min
-python3 src/elegant_demo.py        # the headline chart, ~3 min
-python3 src/benefits_analysis.py   # ownership + revenue dashboard, ~3 min
-python3 src/cap_sweep.py           # cap-value sweep, ~8 min
-python3 src/calibration_joint.py   # joint calibration, ~5 min
+# Wealth-tax paper (5--10% above £10M is the right policy)
+python3 src/round2_hybrid.py
+python3 src/round2_hybrid_loose_ends.py
+python3 src/round2_hybrid_figures.py
+cd papers/wealth_tax && pdflatex paper_wealth_tax_v1 && \
+    bibtex paper_wealth_tax_v1 && \
+    pdflatex paper_wealth_tax_v1 && pdflatex paper_wealth_tax_v1
+
+# Growth paper (the GDP-is-an-artefact case)
+python3 src/growth_portfolio.py
+python3 src/growth_seeds20.py
+python3 src/growth_cis.py
+python3 src/growth_robustness.py
+python3 src/growth_figures.py
+python3 src/growth_robustness_figures.py
+cd papers/growth && pdflatex paper_growth_v1 && \
+    bibtex paper_growth_v1 && \
+    pdflatex paper_growth_v1 && pdflatex paper_growth_v1
 ```
 
-The core library scripts (`sim.py`, `scenarios.py`, `policies.py`) are
-imported by everything; the experiment scripts each produce one or two
-figures and a JSON summary in `out/`.
+Outputs go to `out/data/` (JSON) and `out/figures/` (PNG).  The PDF
+ships in the paper folder.
 
-## Compiling a paper
+## Where to start reading
 
-```
-cd papers/cap
-pdflatex paper_cap && bibtex paper_cap && pdflatex paper_cap && pdflatex paper_cap
-```
-
-Each paper subfolder is self-contained (its own `paper_*.tex` and
-`references.bib`); figures are read from `../../out/figures/`.
-
-## The four-paper split
-
-The same model and the same data underlie all four submissions.  Each
-foregrounds a different contribution.
-
-- **cap** (Fiscal Studies). The policy paper. Five interventions
-  compared at the joint-calibrated UK baseline. The cap raises the
-  bottom-50% wealth share from 0% to 19--25%. Cap and wealth tax are
-  complementary instruments serving different goals (revenue vs
-  ownership).
-- **jasss** (Journal of Artificial Societies and Social Simulation).
-  The methodological paper. Productive-flow share metric Φ, Sankey
-  visualisation, three-lever factorisation (extended to four-lever
-  with the cap).
-- **jeic** (Journal of Economic Interaction and Coordination). The
-  economic-theory paper. Analytical fixed point
-  *w\* = τθ / (τ − r)* and the cap-tax complementarity in revenue
-  vs ownership terms. Joint calibration to the UK Sunday Times Rich
-  List.
-- **alife** (Artificial Life / ALIFE). The cultural-mechanism paper.
-  Wealth-coupled cultural-transmission bandwidth, class-specific
-  skill-to-wealth elasticity decomposition, open-skill demo, hard
-  material constraint as autopoietic check.
-
-The cap paper is the recommended submission target for first
-publication.
+- **Policy people**: `papers/wealth_tax/paper_wealth_tax_v1.pdf`,
+  then `papers/growth/paper_growth_v1.pdf`.
+- **Methodology people**: `papers/jeic/`, `papers/jasss/`,
+  `papers/alife/`.
+- **For the project history**: `PROJECT_STATE.md` and
+  `review/INDEX.md`.
+- **For what comes next**: `docs/PATH_C_PLAN.md`.
