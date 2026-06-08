@@ -173,6 +173,24 @@ class Dials:
     #     of income at 0.3-0.4.
     skill_productivity_coeff: float = 0.0
     capital_productivity_coeff: float = 0.0
+    # Path-C C1: endogenous R&D.  Default 0 means the channel is off and
+    # the existing behaviour is preserved.  When active:
+    #   each tick MAKERs and EMPLOYERs pay rd_share_of_*_wealth * wealth
+    #   into a tick-local R&D budget.  The innovation rate is then
+    #     rate = rd_innovation_coeff
+    #          * sqrt(rd_budget)
+    #          * (mean_worker_skill_breadth / SKILL_DIMS) ** elasticity
+    #   The rate is multiplied by d.wage and distributed as a productivity
+    #   dividend to living MAKERs and WORKERs.  Cumulative innovation
+    #   compounds in accum["productivity_multiplier"].
+    # The skill_breadth_elasticity is the central parameter: at 0 only
+    # R&D budget matters (status-quo concentrated R&D wins); at 1 budget
+    # and breadth are equally weighted; at >1 breadth dominates (wealth
+    # tax broader skill base wins).
+    rd_share_of_maker_wealth: float = 0.0
+    rd_share_of_employer_wealth: float = 0.0
+    rd_innovation_coeff: float = 0.0
+    rd_skill_breadth_elasticity: float = 0.5
     memory_bandwidth_base: float = 0.5        # skill-dims always transmitted
     memory_bandwidth_wealth_scale: float = 0.5  # extra dims = scale * (wealth / 100)
     skill_mutation_rate: float = 0.05         # chance per dim per generation
@@ -833,6 +851,70 @@ def step(agents: list[Agent], d: Dials, rng: np.random.Generator,
                 metabolic_rate += bonus
                 _rec("PRODUCTIVITY", "MAKER", bonus)
 
+    # --- PATH-C C1: ENDOGENOUS R&D --------------------------------------
+    # Romerian compounding-growth mechanism.  MAKERs and EMPLOYERs
+    # invest a share of wealth in R&D.  The per-tick innovation rate
+    # depends on R&D budget AND population skill base.  The cumulative
+    # productivity multiplier M_t = M_{t-1} * (1 + innovation_rate_t)
+    # multiplies the baseline per-tick productive_flow.  PT growth rate
+    # over time = innovation_rate.  Distributed as productivity dividends
+    # proportionally to MAKERs and WORKERs.
+    innovation_rate = 0.0
+    rd_budget_pool = 0.0
+    if d.rd_innovation_coeff > 0:
+        # Capture the no-R&D baseline productive_flow for this tick.
+        baseline_pf_this_tick = productive_flow
+        living_now = [a for a in agents
+                      if a.alive and a.type != Type.STATE]
+        makers_now = [a for a in living_now if a.type == Type.MAKER]
+        employers_now = [a for a in living_now if a.type == Type.EMPLOYER]
+        workers_now = [a for a in living_now if a.type == Type.WORKER]
+        for m in makers_now:
+            if m.wealth <= 0 or d.rd_share_of_maker_wealth <= 0:
+                continue
+            inv = d.rd_share_of_maker_wealth * m.wealth
+            inv = min(inv, max(0.0, m.wealth - d.subsistence))
+            m.wealth -= inv
+            rd_budget_pool += inv
+            _rec("MAKER", "RD", inv)
+        for e in employers_now:
+            if e.wealth <= 0 or d.rd_share_of_employer_wealth <= 0:
+                continue
+            inv = d.rd_share_of_employer_wealth * e.wealth
+            inv = min(inv, max(0.0, e.wealth - d.subsistence))
+            e.wealth -= inv
+            rd_budget_pool += inv
+            _rec("EMPLOYER", "RD", inv)
+        if rd_budget_pool > 0 and workers_now and baseline_pf_this_tick > 0:
+            mean_breadth = float(np.mean([a.skill_breadth for a in workers_now]))
+            breadth_norm = mean_breadth / SKILL_DIMS
+            innovation_rate = (d.rd_innovation_coeff
+                                * np.sqrt(rd_budget_pool)
+                                * (breadth_norm ** d.rd_skill_breadth_elasticity))
+            # Compounding productivity multiplier.
+            M_old = accum.get("productivity_multiplier", 1.0)
+            M_new = M_old * (1.0 + innovation_rate)
+            # The per-tick dividend is M_new times baseline minus what
+            # baseline already represents (M_old times baseline).  This
+            # is the marginal productivity gain attributable to this tick.
+            dividend_total = (M_new - M_old) * baseline_pf_this_tick
+            recipients = makers_now + workers_now
+            if recipients and dividend_total > 0:
+                # Distribute proportional to count (each worker and maker
+                # gets equal share).  More complex weightings could be
+                # tested later.
+                bonus_per = dividend_total / len(recipients)
+                for a in recipients:
+                    a.wealth += bonus_per
+                    productive_flow += bonus_per
+                    metabolic_rate += bonus_per
+                    _rec("INNOVATION", a.type.name, bonus_per)
+            accum["productivity_multiplier"] = M_new
+        accum["rd_budget_cum"] = accum.get("rd_budget_cum", 0.0) + rd_budget_pool
+        accum["innovation_rate_cum"] = (
+            accum.get("innovation_rate_cum", 0.0) + innovation_rate
+        )
+
     # --- PEAK-WEALTH UPDATE ---------------------------------------------
     # Update each agent's peak lifetime wealth for mortality-corrected stats.
     for a in agents:
@@ -904,6 +986,10 @@ def step(agents: list[Agent], d: Dials, rng: np.random.Generator,
         "state_wealth": float(state.wealth) if state else 0.0,
         "human_capital_boost": float(human_capital_boost),
         "capital_deepening_boost": float(capital_deepening_boost),
+        "innovation_rate": float(innovation_rate),
+        "rd_budget": float(rd_budget_pool),
+        "productivity_multiplier": float(
+            accum.get("productivity_multiplier", 1.0)),
     }
 
 
