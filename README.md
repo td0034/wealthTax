@@ -1,5 +1,8 @@
 # Unequal Agents
 
+[![CI](https://github.com/td0034/wealthTax/actions/workflows/ci.yml/badge.svg)](https://github.com/td0034/wealthTax/actions/workflows/ci.yml)
+[![Licence: MIT (code) / CC BY 4.0 (papers)](https://img.shields.io/badge/licence-MIT_%2F_CC--BY_4.0-blue.svg)](LICENCE)
+
 A playground for simulating wealth taxes.
 
 This repository is an agent-based simulation of a stylised UK-like
@@ -170,8 +173,13 @@ more interesting and worth a pull request.
 
 ## Licence
 
-To be determined.  In the meantime, treat the code as inspectable
-and runnable but not as licensed for redistribution without contact.
+Dual-licenced.
+
+- **Code** (everything outside `papers/`) is MIT-licenced.  See
+  `LICENCE`.  You can fork, modify, and use the simulation under
+  the standard MIT terms.
+- **Papers** (everything inside `papers/`) is CC BY 4.0.  See
+  `LICENCE_papers.md`.  You can share and adapt with attribution.
 
 ## Acknowledgements
 

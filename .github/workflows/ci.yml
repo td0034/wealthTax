@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy matplotlib pytest
+
+      - name: Run smoke tests and regression-direction tests
+        run: python -m pytest tests/ -v
+
+      - name: Verify scenarios.py builds (compile-only smoke test)
+        run: python -c "import sys; sys.path.insert(0, 'src'); import scenarios"
+
+  lint-paper-builds:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Verify each paper has a tex file and references.bib
+        shell: bash
+        run: |
+          set -e
+          for dir in papers/*/; do
+            if ls "$dir"*.tex > /dev/null 2>&1; then
+              echo "ok: $dir has tex"
+            else
+              echo "missing tex in $dir"
+              exit 1
+            fi
+            if [ -f "$dir"references.bib ]; then
+              echo "ok: $dir has references.bib"
+            else
+              echo "missing references.bib in $dir"
+              exit 1
+            fi
+          done
