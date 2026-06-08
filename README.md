@@ -1,95 +1,187 @@
 # Unequal Agents
 
-Agent-based simulation of wealth inequality.  Stylised seven-class
-stock-flow ABM (Worker, Maker, Employer, Lender, Rentier, Speculator,
-State) with production, extraction, credit, taxation, inheritance,
-and a bandwidth-limited cultural-transmission channel.
+A playground for simulating wealth taxes.
 
-Six papers and counting.  The project has evolved through three
-phases: round 1 (cap proposal), round 2 (Stewart/Hunt stress testing,
-hybrid wealth-tax derivation), and growth (Path B, the
-GDP-is-an-artefact case).  Headline findings, in current form:
+This repository is an agent-based simulation of a stylised UK-like
+economy that you can use to test fiscal policies on three structural
+outcomes: who owns the country, what the economy actually does, and
+who survives.  Out of the box, the model lets you compare an
+inheritance cap, the Zucman 2% wealth tax, a steeper hybrid wealth
+tax, an interest ban, and various spending packages, against a
+calibrated status-quo baseline.
 
-1. **A recurrent wealth tax of 5--10% above £10M dominates both
-the inheritance cap and the Zucman 2% proposal** on every
-distributional metric tested, including in the orthodox-favoured
-parameterisations.  Documented in `papers/wealth_tax/`.
+The simulation is the artefact.  Several papers grew out of it (see
+`papers/`), but the headline thing this repository is for is *try
+your own policy and see what happens*.  Change a tax rate, change a
+threshold, change the capital return, change the demographic
+assumptions, see how the wealth distribution, productive output, and
+population survival respond.
 
-2. **The orthodox claim ``wealth tax depresses growth'' is a
-measurement artefact.**  Under any growth measure that distinguishes
-real production from financial-sector compounding, the wealth tax
-raises growth by 3--15%.  The CGDP-style growth in the status quo is
-the model's representation of the UK 2008--2024 financialisation
-pattern.  Documented in `papers/growth/`.
+## What is in here
 
-3. **The inheritance cap is in an unresolvable enforcement bind.**
-It needs near-perfect (>95%) capture to deliver any distributional
-effect but cannot get that capture politically.  The hybrid wealth
-tax bypasses the bind because recurrent flow extraction does not
-have the dynastic-recompounding nonlinearity that destroys the cap.
-Documented in `papers/cap_v2/`.
+Seven agent classes (Worker, Maker, Employer, Lender, Rentier,
+Speculator, State) move money around each tick by producing,
+extracting, lending, renting, taxing, and inheriting.  Skills
+transmit imperfectly between generations through a wealth-dependent
+bandwidth channel, so wealth concentration narrows the population
+skill base over time.  The model is calibrated to UK Wealth and
+Assets Survey targets (top-1%, top-10%, Pareto slope, survival
+rate).
 
-For the full project state see `PROJECT_STATE.md`.
+You can think of it as a digital sandbox where the rules of a
+financialised economy are explicit, and where the consequences of
+changing those rules can be measured under reproducible conditions.
+It is not a forecasting tool.  It is an intuition pump for stylised
+mechanisms, calibrated against real distributional data.
+
+## A worked example
+
+The single sharpest finding from the playground:
+
+| arm | bottom-50% wealth share | billionaires | top-10% wealth share |
+|---|---|---|---|
+| status quo | 0.0% | 800 | 100% |
+| Zucman 2% above £10M | 0.6% | 800 | 99% |
+| £5M inheritance cap | 19% | 2 | 54% |
+| **5% wealth tax above £10M** | **20%** | **0** | **62%** |
+| 10% wealth tax above £10M | 42% | 0 | 19% |
+
+The Benhabib fixed-point argument predicts that a wealth tax with
+rate $\tau$ above threshold $\theta$ produces a finite ceiling on
+top wealth only if $\tau$ exceeds the capital return $r$.  In our
+calibration $r = 0.08$.  The Zucman 2% sits below the threshold and
+the simulation shows it does not move the structural distribution at
+the top, even though it raises substantial revenue.  Cross $\tau = r$
+and the wealth tax starts doing structural work.  By 10%, top-10%
+share has dropped from 100% to 19%.
+
+You can reproduce this run in about ten minutes on a normal laptop.
+Change the rate, the threshold, or the calibration and see what
+breaks.
+
+## Quickstart
+
+```bash
+git clone git@github.com:td0034/wealthTax.git
+cd wealthTax
+pip install numpy matplotlib
+
+# Replicate the Zucman-vs-cap-vs-hybrid headline:
+python3 src/round2_hybrid.py
+python3 src/round2_hybrid_loose_ends.py
+
+# Outputs go to out/data/ (JSON) and out/figures/ (PNG).
+```
+
+If you want to try your own policy: copy `src/round2_hybrid.py`,
+change the `ARMS` dictionary at the top, run it.  All the dials are
+on the `Dials` dataclass in `src/sim.py`.  The most useful ones:
+
+- `capital_return`: the return rate on rentier wealth per tick
+- `wealth_tax_tiers`: tuple of (threshold, rate) pairs above which
+  the wealth tax bites
+- `inheritance_cap`: hard ceiling on bequest size
+- `inheritance_tax_rate`: flat clawback at death
+- `inheritance_capture_rate`: enforcement effectiveness (0 to 1)
+- `wealth_tax_capture_rate`: enforcement on the wealth tax
+- `ubi`, `state_employs_fraction`, `state_buys_maker_output`:
+  three knobs for state-spending packages
+
+The `Dials` docstring in `src/sim.py` lists everything.
+
+## What grew out of the playground
+
+The simulation produced several papers in `papers/`.  The two that
+matter most for someone arriving here cold:
+
+- **`papers/wealth_tax/`**.  The recommendation paper: a recurrent
+  wealth tax of 5--10% above £10M, phased in over 5--10 years.
+  Dominates the inheritance cap on every metric and is robust to
+  enforcement leakage in the range where the cap collapses.
+- **`papers/growth/`**.  The methodological paper: the orthodox
+  ``wealth tax depresses growth'' result holds only if you measure
+  growth in a way that counts the rentier-lender deposit loop as
+  growth.  Under any productive-output or capability measure, the
+  wealth tax raises growth by 9--15%.
+
+Other papers under `papers/` are technical companions (JEIC, JASSS,
+ALIFE) and the historical trail (`cap/`, `cap_v2/`, `master/`)
+showing how the wealth-tax recommendation was derived.
+
+For the full project state and the planned next extension (an
+endogenous-growth paper) see `PROJECT_STATE.md` and
+`docs/PATH_C_PLAN.md`.
 
 ## Layout
 
 ```
-PROJECT_STATE.md     Top-level overview of the intellectual arc and
-                     current state of work
+PROJECT_STATE.md     Top-level overview of the intellectual arc
 src/                 All Python source code
-  INDEX.md           Catalogue of scripts by paper and purpose
-  sim.py             The core agent-based model
-  ...                ~50 experiment, analysis, and figure scripts
-papers/              All paper drafts
-  INDEX.md           Catalogue with submission strategy
-  wealth_tax/        Round-3 lead policy paper for Fiscal Studies
-  growth/            Round-3 methodological companion
-  jeic/, jasss/,
-  alife/             Technical companions (round-2 ready)
-  cap_v2/, cap/,
-  master/            Intellectual trail (archived for context)
-review/              Referee reports, adversarial critiques, findings
-  INDEX.md           Catalogue with reading order
-docs/                FINDINGS.md, LITERATURE.md, DIALS.md
-                     PATH_C_PLAN.md (next research extension)
-out/
-  data/              JSON summaries from all experiments
-  figures/           Figures by topic: round2/, growth/, scenarios/,
-                     policies/, etc.
+  INDEX.md           Catalogue of scripts by purpose
+  sim.py             The core model: Dials, Agent, step()
+  ...                Experiment, analysis, and figure scripts
+papers/              Paper drafts (see papers/INDEX.md)
+review/              Findings, critiques, strategy memos
+docs/                FINDINGS, LITERATURE, DIALS, PATH_C_PLAN
+out/                 Generated data (JSON) and figures (PNG)
 ```
 
-## Quickstart: reproducing the headline papers
+## What this repo is not
 
-```
-# Wealth-tax paper (5--10% above £10M is the right policy)
-python3 src/round2_hybrid.py
-python3 src/round2_hybrid_loose_ends.py
-python3 src/round2_hybrid_figures.py
-cd papers/wealth_tax && pdflatex paper_wealth_tax_v1 && \
-    bibtex paper_wealth_tax_v1 && \
-    pdflatex paper_wealth_tax_v1 && pdflatex paper_wealth_tax_v1
+- **Not a forecasting model.**  The agents are stylised, the
+  population is small (N = 10,000), and many real features are
+  absent (firms, banks, monetary policy, international trade,
+  housing).  Results are about mechanisms, not predicted GDP next
+  year.
+- **Not a finished policy proposal.**  The papers make policy
+  arguments that go through peer review; the simulation is one
+  input among several.
+- **Not anti-billionaire vendetta.**  The model is honestly
+  symmetric in how it treats all classes.  The wealth tax wins on
+  the measures we report because the structural mechanism
+  (compounding above a finite ceiling) is robust to the wide range
+  of parameter regimes tested, not because the model is rigged
+  against the top.
 
-# Growth paper (the GDP-is-an-artefact case)
-python3 src/growth_portfolio.py
-python3 src/growth_seeds20.py
-python3 src/growth_cis.py
-python3 src/growth_robustness.py
-python3 src/growth_figures.py
-python3 src/growth_robustness_figures.py
-cd papers/growth && pdflatex paper_growth_v1 && \
-    bibtex paper_growth_v1 && \
-    pdflatex paper_growth_v1 && pdflatex paper_growth_v1
-```
+## Honest limitations
 
-Outputs go to `out/data/` (JSON) and `out/figures/` (PNG).  The PDF
-ships in the paper folder.
+Worth knowing before reading the headline numbers as truth:
 
-## Where to start reading
+- The model has no growth term in the orthodox sense (no R&D, no
+  capital deepening as a separate sector).  The growth paper makes
+  the most it can of the level effects; Path C is the planned
+  extension.
+- The capital-flight elasticity is a single rate, not a structural
+  decision.  The flight stress test is an upper bound on what
+  flight could destroy, not a precise estimate.
+- The model is closed-economy.  International coordination effects
+  are treated qualitatively.
+- The calibration is to the UK 2008--2024 case.  Other countries
+  may have different parameter regimes (the comparable-country
+  test is Path C).
 
-- **Policy people**: `papers/wealth_tax/paper_wealth_tax_v1.pdf`,
-  then `papers/growth/paper_growth_v1.pdf`.
-- **Methodology people**: `papers/jeic/`, `papers/jasss/`,
-  `papers/alife/`.
-- **For the project history**: `PROJECT_STATE.md` and
-  `review/INDEX.md`.
-- **For what comes next**: `docs/PATH_C_PLAN.md`.
+## Contributing
+
+Forks, pull requests, and new policy arms welcome.  If you find a
+parameter regime where the headline finding flips, that is
+genuinely interesting and worth opening an issue.  If you find a
+bug in `sim.py` that changes the headline numbers, that is even
+more interesting and worth a pull request.
+
+## Licence
+
+To be determined.  In the meantime, treat the code as inspectable
+and runnable but not as licensed for redistribution without contact.
+
+## Acknowledgements
+
+Original inspiration: a Gary Stevenson / Gabriel Zucman discussion
+of an inheritance cap.  The framing of the orthodox-vs-alternative
+growth measures owes a great deal to Diane Coyle, David Pilling,
+Mariana Mazzucato, and the Stiglitz-Sen-Fitoussi Commission.  The
+hybrid wealth-tax recommendation builds on Saez and Zucman's G20
+framework with the rate level pulled up to the Benhabib analytical
+threshold.
+
+If you use this simulation in published work, citation of the
+papers in `papers/` is welcome.
